@@ -765,90 +765,47 @@ model AiChatSession {
 }`
   },
   nextAuthApi: {
-    title: 'NextAuth.js (Credentials + Google OAuth + Admin Role Guard)',
-    path: 'app/api/auth/[...nextauth]/route.ts',
+    title: 'NextAuth.js (Vercel Secret-Based Administrator Login)',
+    path: 'lib/auth.ts',
     language: 'typescript',
-    description: 'Supports Admin & Reader login via Email/Password Credentials and Google OAuth, attaching user.role ("ADMIN" | "READER") to the JWT session.',
-    code: `// app/api/auth/[...nextauth]/route.ts
-import NextAuth, { NextAuthOptions } from 'next-auth';
+    description: 'Verifies the administrator email and password on the server using private Vercel environment variables. No demo credentials or client-controlled role.',
+    code: `// lib/auth.ts
+import { createHash, timingSafeEqual } from 'node:crypto';
+import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import GoogleProvider from 'next-auth/providers/google';
-import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
 
-const ADMIN_EMAILS = ['masud040502@gmail.com', 'admin@alburhan.dev'];
+function passwordMatches(candidate: string, configured: string) {
+  const left = createHash('sha256').update(candidate).digest();
+  const right = createHash('sha256').update(configured).digest();
+  return timingSafeEqual(left, right);
+}
 
 export const authOptions: NextAuthOptions = {
-  session: { strategy: 'jwt' },
+  secret: process.env.NEXTAUTH_SECRET,
+  useSecureCookies: process.env.NODE_ENV === 'production',
+  session: { strategy: 'jwt', maxAge: 60 * 60 * 8 },
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
     CredentialsProvider({
-      name: 'Credentials',
+      name: 'Administrator',
       credentials: {
-        email: { label: 'Email', type: 'email' },
+        email: { label: 'Administrator email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Email and password are required');
-        }
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email.toLowerCase() },
-        });
-        if (!user || !user.passwordHash) {
-          throw new Error('Invalid credentials');
-        }
-        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
-        if (!isValid) {
-          throw new Error('Invalid credentials');
-        }
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        };
+        const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        const email = credentials?.email?.trim().toLowerCase();
+        const password = credentials?.password;
+
+        if (!adminEmail || !adminPassword || !email || !password) return null;
+        if (email !== adminEmail || !passwordMatches(password, adminPassword)) return null;
+
+        return { id: \`admin:\${adminEmail}\`, email: adminEmail, name: 'Administrator', role: 'ADMIN' };
       },
     }),
   ],
-  callbacks: {
-    async signIn({ user, account }) {
-      if (account?.provider === 'google' && user.email) {
-        const isAdmin = ADMIN_EMAILS.includes(user.email.toLowerCase());
-        await prisma.user.upsert({
-          where: { email: user.email.toLowerCase() },
-          update: { name: user.name || 'User', googleId: account.providerAccountId },
-          create: {
-            email: user.email.toLowerCase(),
-            name: user.name || 'User',
-            googleId: account.providerAccountId,
-            role: isAdmin ? 'ADMIN' : 'READER',
-          },
-        });
-      }
-      return true;
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.role = (user as any).role || (ADMIN_EMAILS.includes(user.email || '') ? 'ADMIN' : 'READER');
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        (session.user as any).id = token.sub;
-        (session.user as any).role = token.role;
-      }
-      return session;
-    },
-  },
 };
-
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };`
+`
   },
   searchApi: {
     title: 'Next.js Smart Hybrid Search + Admin CRUD API Route',
@@ -1261,7 +1218,7 @@ export default function App() {
   // Authentication comes only from the signed, HTTP-only NextAuth session.
   const { data: session, status: authStatus, update: updateSession } = useSession();
   const sessionUser = session?.user as
-    | (typeof session.user & { id?: string; role?: 'ADMIN' | 'READER' })
+    | (NonNullable<typeof session>['user'] & { id?: string; role?: 'ADMIN' | 'READER' })
     | undefined;
   const currentUser: AuthUser | null = sessionUser
     ? {
