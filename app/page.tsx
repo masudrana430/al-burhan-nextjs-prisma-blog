@@ -52,7 +52,9 @@ import {
   Mail,
   CheckCircle2,
   AlertCircle,
-  EyeOff
+  EyeOff,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 // --- TYPES ---
@@ -1193,6 +1195,27 @@ function RichPostContentRenderer({ post }: { post: BlogPost }) {
 
 // --- MAIN COMPONENT ---
 export default function App() {
+  // Remember the reader's light/dark preference on this device.
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  useEffect(() => {
+    try {
+      const savedTheme = window.localStorage.getItem('al_burhan_theme');
+      if (savedTheme === 'dark' || savedTheme === 'light') {
+        setTheme(savedTheme);
+      }
+    } catch {
+      // Use the calm light theme when browser storage is unavailable.
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('al_burhan_theme', theme);
+    } catch {
+      // Theme still works for the current session if storage is blocked.
+    }
+  }, [theme]);
   // State: Posts (persisted safely in localStorage)
   const [posts, setPosts] = useState<BlogPost[]>(() => {
     try {
@@ -1824,7 +1847,7 @@ export default function App() {
   }, [posts, adminSearchFilter]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-200">
+    <div className={`app-shell min-h-screen flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-200 ${theme === 'dark' ? 'theme-dark' : 'theme-light'}`}>
       {/* TOAST BANNER */}
       {toast && (
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-emerald-950/95 border border-emerald-500/40 text-emerald-100 shadow-2xl backdrop-blur-md">
@@ -1929,18 +1952,16 @@ export default function App() {
             }}
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 via-teal-600 to-amber-500 p-0.5 shadow-lg shadow-emerald-950/50">
-              <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                <ShieldCheck className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
-              </div>
+            <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center">
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-emerald-200 to-amber-200 bg-clip-text text-transparent">
+                <span className="font-semibold text-lg tracking-tight text-slate-100">
                   AL-BURHAN
                 </span>
-                <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                  Next.js + Prisma + AI
+                <span className="text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-800">
+                  Research Library
                 </span>
               </div>
               <p className="text-xs text-slate-400 hidden sm:block">
@@ -2029,8 +2050,18 @@ export default function App() {
             </button>
           </nav>
 
-          {/* Right Action Controls: Auth Status + AI Chatbot */}
+          {/* Right Action Controls: Theme, Auth Status + AI Chatbot */}
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setTheme((current) => current === 'light' ? 'dark' : 'light')}
+              aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+              title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs sm:text-sm font-medium transition-colors"
+            >
+              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+              <span className="hidden sm:inline">{theme === 'light' ? 'Dark' : 'Light'}</span>
+            </button>
             {currentUser ? (
               <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5">
                 <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xs font-bold text-emerald-300">
@@ -2075,7 +2106,7 @@ export default function App() {
 
             <button
               onClick={() => setIsChatOpen((prev) => !prev)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-emerald-950/60 transition-all"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs sm:text-sm font-medium transition-colors"
             >
               <Sparkles className="w-4 h-4 text-amber-200" />
               <span className="hidden sm:inline">AI Bot</span>
@@ -2085,7 +2116,7 @@ export default function App() {
       </header>
 
       {/* MAIN CONTENT CONTAINER */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
         {/* VIEW 1: SINGLE ARTICLE READER (WITH INTERLEAVED TEXT, IMAGES & YOUTUBE VIDEO EMBEDS) */}
         {selectedPostId && activePost ? (
           <div className="max-w-4xl mx-auto">
