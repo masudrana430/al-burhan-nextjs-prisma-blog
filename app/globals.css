@@ -1,3 +1,212 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * AL-BURHAN visual system
+ * Quiet, Google-inspired surfaces: soft neutrals, clear type, restrained borders,
+ * no decorative gradients, and a persistent reader-controlled light/dark theme.
+ */
+
+:root {
+  color-scheme: light;
+  --app-bg: #f8f9fa;
+  --surface: #ffffff;
+  --surface-muted: #f1f3f4;
+  --surface-hover: #e8eaed;
+  --text-primary: #202124;
+  --text-secondary: #5f6368;
+  --text-muted: #80868b;
+  --border: #dadce0;
+  --accent: #1a73e8;
+  --accent-soft: #e8f0fe;
+  --accent-strong: #1558b0;
+}
+
+html {
+  min-height: 100%;
+  background: var(--app-bg);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  font-family: Arial, Roboto, "Google Sans", system-ui, sans-serif;
+  background: var(--app-bg);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.app-shell {
+  min-height: 100vh;
+  background: var(--app-bg);
+  color: var(--text-primary);
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.theme-light {
+  color-scheme: light;
+  --app-bg: #f8f9fa;
+  --surface: #ffffff;
+  --surface-muted: #f1f3f4;
+  --surface-hover: #e8eaed;
+  --text-primary: #202124;
+  --text-secondary: #5f6368;
+  --text-muted: #80868b;
+  --border: #dadce0;
+  --accent: #1a73e8;
+  --accent-soft: #e8f0fe;
+  --accent-strong: #1558b0;
+  background-color: var(--app-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+.theme-dark {
+  color-scheme: dark;
+  --app-bg: #202124;
+  --surface: #292a2d;
+  --surface-muted: #303134;
+  --surface-hover: #3c4043;
+  --text-primary: #e8eaed;
+  --text-secondary: #bdc1c6;
+  --text-muted: #9aa0a6;
+  --border: #45474b;
+  --accent: #8ab4f8;
+  --accent-soft: #26364d;
+  --accent-strong: #aecbfa;
+  background-color: var(--app-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Calm down the existing Tailwind palette without changing the page structure. */
+.theme-light [class*="bg-slate-950"] { background-color: var(--app-bg) !important; }
+.theme-light [class*="bg-slate-900"] { background-color: var(--surface) !important; }
+.theme-light [class*="bg-slate-800"] { background-color: var(--surface-muted) !important; }
+.theme-light [class*="bg-slate-700"] { background-color: var(--surface-hover) !important; }
+
+.theme-dark [class*="bg-slate-950"] { background-color: var(--app-bg) !important; }
+.theme-dark [class*="bg-slate-900"] { background-color: var(--surface) !important; }
+.theme-dark [class*="bg-slate-800"] { background-color: var(--surface-muted) !important; }
+.theme-dark [class*="bg-slate-700"] { background-color: var(--surface-hover) !important; }
+
+.theme-light [class*="border-slate-"] { border-color: var(--border) !important; }
+.theme-dark [class*="border-slate-"] { border-color: var(--border) !important; }
+
+.theme-light [class~="text-white"],
+.theme-light [class*="text-slate-100"],
+.theme-light [class*="text-slate-200"] { color: var(--text-primary) !important; }
+.theme-light [class*="text-slate-300"],
+.theme-light [class*="text-slate-400"] { color: var(--text-secondary) !important; }
+.theme-light [class*="text-slate-500"],
+.theme-light [class*="text-slate-600"] { color: var(--text-muted) !important; }
+
+.theme-dark [class~="text-white"],
+.theme-dark [class*="text-slate-100"],
+.theme-dark [class*="text-slate-200"] { color: var(--text-primary) !important; }
+.theme-dark [class*="text-slate-300"],
+.theme-dark [class*="text-slate-400"] { color: var(--text-secondary) !important; }
+.theme-dark [class*="text-slate-500"],
+.theme-dark [class*="text-slate-600"] { color: var(--text-muted) !important; }
+
+/* Google-blue accent replaces the old emerald/amber decorative palette. */
+.theme-light [class*="text-emerald-"],
+.theme-light [class*="text-teal-"] { color: var(--accent) !important; }
+.theme-dark [class*="text-emerald-"],
+.theme-dark [class*="text-teal-"] { color: var(--accent) !important; }
+
+.theme-light [class*="bg-emerald-600"],
+.theme-light [class*="bg-teal-600"] { background-color: var(--accent) !important; }
+.theme-dark [class*="bg-emerald-600"],
+.theme-dark [class*="bg-teal-600"] { background-color: var(--accent) !important; }
+
+.theme-light [class*="border-emerald-"],
+.theme-light [class*="border-teal-"] { border-color: #c6dafc !important; }
+.theme-dark [class*="border-emerald-"],
+.theme-dark [class*="border-teal-"] { border-color: #3f587a !important; }
+
+.theme-light [class*="bg-gradient-to"],
+.theme-dark [class*="bg-gradient-to"] {
+  background-image: none !important;
+  background-color: var(--surface) !important;
+}
+
+.theme-light button[class*="bg-emerald-600"],
+.theme-light button[class*="bg-teal-600"],
+.theme-light button[class*="bg-gradient-to"] {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #ffffff !important;
+}
+
+.theme-dark button[class*="bg-emerald-600"],
+.theme-dark button[class*="bg-teal-600"],
+.theme-dark button[class*="bg-gradient-to"] {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #202124 !important;
+}
+
+.theme-light [class*="shadow-"],
+.theme-dark [class*="shadow-"] {
+  box-shadow: none !important;
+}
+
+.theme-light [class*="rounded-3xl"],
+.theme-dark [class*="rounded-3xl"] { border-radius: 16px !important; }
+.theme-light [class*="rounded-2xl"],
+.theme-dark [class*="rounded-2xl"] { border-radius: 14px !important; }
+
+.theme-light header,
+.theme-dark header {
+  background-color: var(--surface) !important;
+  border-color: var(--border) !important;
+  backdrop-filter: none !important;
+}
+
+.theme-light nav,
+.theme-dark nav {
+  border-color: var(--border) !important;
+}
+
+.theme-light input,
+.theme-light textarea,
+.theme-light select {
+  background-color: var(--surface) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border) !important;
+}
+
+.theme-dark input,
+.theme-dark textarea,
+.theme-dark select {
+  background-color: var(--surface) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border) !important;
+}
+
+.theme-light input::placeholder,
+.theme-light textarea::placeholder { color: var(--text-muted) !important; }
+.theme-dark input::placeholder,
+.theme-dark textarea::placeholder { color: var(--text-muted) !important; }
+
+.app-shell button {
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.app-shell button:focus-visible,
+.app-shell input:focus-visible,
+.app-shell textarea:focus-visible,
+.app-shell select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell,
+  .app-shell button {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
