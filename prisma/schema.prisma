@@ -1,0 +1,79 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions", "fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+enum Role {
+  ADMIN
+  READER
+}
+
+enum Category {
+  COSMOLOGY_PHYSICS
+  BIOLOGY_EMBRYOLOGY
+  HISTORICAL_ETHICS
+  PHILOSOPHY_LOGIC
+  LINGUISTICS_TAFSIR
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String?
+  googleId      String?   @unique
+  image         String?
+  role          Role      @default(READER)
+  posts         Post[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Post {
+  id              String                 @id @default(cuid())
+  title           String
+  slug            String                 @unique
+  claimAddressed  String                 @db.Text
+  excerpt         String                 @db.Text
+  content         String                 @db.Text
+  blocks          Json?
+  category        Category
+  difficulty      Difficulty             @default(INTERMEDIATE)
+  tags            String[]
+  authorName      String                 @default("Masud Rana")
+  authorRole      String                 @default("B.Sc. in Engineering Physics & Researcher")
+  authorId        String?
+  author          User?                  @relation(fields: [authorId], references: [id])
+  readTimeMinutes Int                    @default(7)
+  views           Int                    @default(0)
+  featured        Boolean                @default(false)
+  published       Boolean                @default(true)
+  keyTakeaways    String[]
+  references      Json
+  embedding       Unsupported("vector(768)")?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  @@index([category, published])
+  @@index([slug])
+}
+
+model AiChatSession {
+  id        String   @id @default(cuid())
+  query     String   @db.Text
+  response  String   @db.Text
+  citedIds  String[]
+  createdAt DateTime @default(now())
+}
