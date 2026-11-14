@@ -386,3 +386,48 @@ body {
   .theme-light .post-card { transition: none !important; }
   .theme-light .post-card:hover { transform: none !important; }
 }
+
+/* AL-BURHAN account pages and responsive refinements */
+.auth-page {
+  background: var(--app-bg, #f8f9fa);
+  color: var(--text-primary, #202124);
+}
+.auth-panel {
+  background: var(--surface, #fff);
+  border-color: var(--border, #e4e8ed);
+  box-shadow: 0 8px 32px rgba(60,64,67,.07);
+}
+.auth-logo { background: var(--accent-soft, #e8f0fe); color: var(--accent, #1a73e8); }
+.auth-muted { color: var(--text-secondary, #5f6368); }
+.auth-back,.auth-link { color: var(--accent, #1a73e8); }
+.auth-input-wrap { background: var(--surface, #fff); border-color: var(--border, #dadce0); color: var(--text-secondary, #5f6368); }
+.auth-input-wrap input { color: var(--text-primary, #202124); min-width:0; }
+.auth-primary { background:#1a73e8; color:#fff; transition:background .15s ease; }
+.auth-primary:hover { background:#1765cc; }
+.auth-google { background:var(--surface, #fff); border-color:var(--border, #dadce0); color:var(--text-primary, #202124); }
+.auth-google:hover { background:var(--surface-muted, #f1f3f4); }
+.auth-divider span:first-child,.auth-divider span:last-child { background:var(--border, #dadce0); }
+.auth-error { background:#fce8e6; color:#b3261e; border:1px solid #f5c6c2; }
+.auth-admin { border-color:var(--border, #dadce0); }
+.theme-dark .auth-panel { background:#292a2d; border-color:#45474b; box-shadow:none; }
+.theme-dark .auth-input-wrap,.theme-dark .auth-google { background:#202124; border-color:#45474b; }
+.theme-dark .auth-error { background:#3c2525; border-color:#67413e; color:#f2b8b5; }
+.theme-dark .auth-divider span:first-child,.theme-dark .auth-divider span:last-child { background:#45474b; }
+
+@media (max-width: 640px) {
+  .app-shell header > div { gap:10px; padding-top:10px; padding-bottom:10px; }
+  .app-shell header nav.main-nav {
+    width:100%; max-width:100%; flex-wrap:nowrap; overflow-x:auto;
+    overscroll-behavior-x:contain; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+  }
+  .app-shell header nav.main-nav::-webkit-scrollbar { display:none; }
+  .app-shell header nav.main-nav button { flex:0 0 auto; white-space:nowrap; }
+  .app-shell header > div > div:last-child { width:100%; justify-content:flex-end; }
+  .app-shell main { padding-top:20px; padding-bottom:28px; }
+  .app-shell main .post-card { padding:18px !important; border-radius:18px !important; }
+  .app-shell main .post-card-title { font-size:1.08rem; line-height:1.45; letter-spacing:-.015em; }
+  .app-shell main .post-excerpt { font-size:.94rem; line-height:1.72; }
+  .app-shell main .reader-card { padding:20px !important; border-radius:18px !important; }
+  .app-shell main .reader-title { font-size:clamp(1.55rem,6vw,2rem); line-height:1.32; letter-spacing:-.02em; }
+  .app-shell main .reader-card p { overflow-wrap:anywhere; }
+}
