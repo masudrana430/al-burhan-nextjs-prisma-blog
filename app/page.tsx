@@ -1425,7 +1425,7 @@ export default function App() {
 
     setIsAuthLoading(true);
     try {
-      const result = await signIn('credentials', {
+      const result = await signIn('admin-credentials', {
         email: emailClean,
         password: authPassword,
         redirect: false
@@ -1937,6 +1937,9 @@ export default function App() {
                 {isAuthLoading ? 'Verifying securely…' : 'Sign In to Admin Dashboard'}
               </button>
             </form>
+            <div className="mt-5 pt-4 border-t border-slate-800 text-center text-xs text-slate-400">
+              Reader account? <a href="/login" className="font-semibold text-sky-500 hover:underline">Sign in or create an account</a>
+            </div>
           </div>
         </div>
       )}
