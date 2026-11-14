@@ -1971,7 +1971,7 @@ export default function App() {
           </div>
 
           {/* Navigation Tabs */}
-          <nav className="flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+          <nav className="main-nav flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
             <button
               onClick={() => {
                 setSelectedPostId(null);
@@ -2171,7 +2171,7 @@ export default function App() {
               </div>
             </div>
 
-            <article className="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-6 sm:p-10 shadow-2xl">
+            <article className="reader-card bg-slate-900/80 border border-slate-800/90 rounded-2xl p-6 sm:p-10 shadow-2xl">
               {/* Category & Metadata */}
               <div className="flex flex-wrap items-center gap-2 mb-4">
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
@@ -2189,12 +2189,12 @@ export default function App() {
               </div>
 
               {/* Title */}
-              <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight mb-5">
+              <h1 className="reader-title text-2xl sm:text-3xl font-bold text-white leading-tight mb-5">
                 {activePost.title}
               </h1>
 
               {/* Critic's Claim Callout Box */}
-              <div className="mb-6 p-4 rounded-xl bg-rose-950/30 border border-rose-500/30">
+              <div className="reader-claim mb-6 p-4 rounded-xl bg-rose-950/30 border border-rose-500/30">
                 <div className="text-xs font-bold uppercase tracking-wider text-rose-300 mb-1">
                   Allegation / Critique Addressed
                 </div>
@@ -2202,7 +2202,7 @@ export default function App() {
               </div>
 
               {/* Executive Key Takeaways */}
-              <div className="mb-8 p-5 rounded-xl bg-emerald-950/25 border border-emerald-500/30">
+              <div className="reader-takeaways mb-8 p-5 rounded-xl bg-emerald-950/25 border border-emerald-500/30">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-300 mb-3">
                   <ShieldCheck className="w-4 h-4" />
                   <span>Key Refutation Takeaways</span>
@@ -3409,7 +3409,7 @@ export default function App() {
                     <article
                       key={post.id}
                       onClick={() => handleOpenPost(post.id)}
-                      className="group bg-slate-900/85 hover:bg-slate-900 border border-slate-800/90 hover:border-emerald-500/40 rounded-2xl p-6 flex flex-col justify-between transition-all duration-200 cursor-pointer shadow-lg hover:shadow-emerald-950/30"
+                      className="post-card group bg-slate-900/85 hover:bg-slate-900 border border-slate-800/90 hover:border-emerald-500/40 rounded-2xl p-6 flex flex-col justify-between transition-all duration-200 cursor-pointer shadow-lg hover:shadow-emerald-950/30"
                     >
                       <div>
                         {/* Top Meta Row */}
@@ -3452,19 +3452,19 @@ export default function App() {
                         </div>
 
                         {/* Title */}
-                        <h2 className="text-lg sm:text-xl font-bold text-white group-hover:text-emerald-300 transition-colors leading-snug mb-2.5">
+                        <h2 className="post-card-title text-lg sm:text-xl font-bold text-white group-hover:text-emerald-300 transition-colors leading-snug mb-2.5">
                           {post.title}
                         </h2>
 
                         {/* Critic Claim Box */}
-                        <div className="p-3 rounded-xl bg-rose-950/25 border border-rose-500/25 mb-3">
+                        <div className="post-claim p-3 rounded-xl bg-rose-950/25 border border-rose-500/25 mb-3">
                           <p className="text-xs text-rose-200/90 line-clamp-2 italic">
                             {post.claimAddressed}
                           </p>
                         </div>
 
                         {/* Excerpt */}
-                        <p className="text-sm text-slate-300 line-clamp-3 leading-relaxed mb-4">
+                        <p className="post-excerpt text-sm text-slate-300 line-clamp-3 leading-relaxed mb-4">
                           {post.excerpt}
                         </p>
 
@@ -3494,7 +3494,7 @@ export default function App() {
                                 e.stopPropagation();
                                 setSelectedTag(tag);
                               }}
-                              className="text-[11px] px-2 py-0.5 rounded-md bg-slate-950 border border-slate-800 text-slate-400 hover:text-emerald-300 hover:border-emerald-500/40"
+                              className="post-tag text-[11px] px-2 py-0.5 rounded-md bg-slate-950 border border-slate-800 text-slate-400 hover:text-emerald-300 hover:border-emerald-500/40"
                             >
                               #{tag}
                             </span>
