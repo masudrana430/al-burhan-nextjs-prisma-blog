@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 
 const ADMIN_EMAILS = ['masud040502@gmail.com', 'admin@alburhan.dev'];
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt' },
   providers: [
     GoogleProvider({
