@@ -2050,7 +2050,7 @@ export default function App() {
                     </span>
                   </div>
                   <div className="text-[10px] text-slate-400">
-                    via {currentUser.provider === 'google' ? 'Google OAuth' : 'Credentials'}
+                    via Secure Credentials
                   </div>
                 </div>
                 <button
