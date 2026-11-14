@@ -1,8 +1,8 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
+import { getProviders, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, BookOpen, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
 
@@ -13,6 +13,11 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [googleEnabled, setGoogleEnabled] = useState(false);
+
+  useEffect(() => {
+    getProviders().then((providers) => setGoogleEnabled(Boolean(providers?.google))).catch(() => setGoogleEnabled(false));
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -52,10 +57,12 @@ export default function LoginPage() {
           </label>
           <button disabled={loading} className="auth-primary w-full rounded-xl py-3 font-semibold disabled:opacity-60">{loading?'Signing in…':'Sign in'}</button>
         </form>
-        <div className="auth-divider flex items-center gap-3 my-5"><span className="h-px flex-1"/><span className="text-xs auth-muted">OR</span><span className="h-px flex-1"/></div>
-        <button onClick={()=>signIn('google',{callbackUrl:'/'})} className="auth-google w-full rounded-xl border py-3 font-medium flex items-center justify-center gap-3"><GoogleMark/> Continue with Google</button>
+        {googleEnabled && <>
+          <div className="auth-divider flex items-center gap-3 my-5"><span className="h-px flex-1"/><span className="text-xs auth-muted">OR</span><span className="h-px flex-1"/></div>
+          <button type="button" onClick={()=>signIn('google',{callbackUrl:'/'})} className="auth-google w-full rounded-xl border py-3 font-medium flex items-center justify-center gap-3"><GoogleMark/> Continue with Google</button>
+        </>}
         <p className="text-sm text-center auth-muted mt-6">New to AL-BURHAN? <Link className="auth-link font-semibold" href="/register">Create an account</Link></p>
-        <div className="auth-admin mt-6 pt-5 border-t text-xs auth-muted">Administrator? <Link href="/?admin=1" className="auth-link font-semibold">Use secure admin login</Link></div>
+        <div className="auth-admin mt-6 pt-5 border-t text-xs auth-muted">Administrator? <Link href="/" className="auth-link font-semibold">Return home and choose Login / Admin</Link></div>
       </section>
     </main>
   );
