@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { signIn, signOut, useSession } from 'next-auth/react';
 import {
   Search,
   Sparkles,
@@ -104,7 +105,7 @@ interface AuthUser {
   name: string;
   email: string;
   role: 'ADMIN' | 'READER';
-  provider: 'credentials' | 'google';
+  provider: 'credentials';
   avatarUrl?: string;
 }
 
@@ -1257,43 +1258,27 @@ export default function App() {
     }
   }, [posts]);
 
-  // State: Authentication (Credential Login + Google OAuth + Admin Role)
-  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
-    try {
-      const savedUser = localStorage.getItem('al_burhan_auth_user_v2');
-      if (savedUser) return JSON.parse(savedUser);
-    } catch {
-      // Ignore
-    }
-    return {
-      id: 'admin-masud',
-      name: 'Masud Rana',
-      email: 'masud040502@gmail.com',
-      role: 'ADMIN',
-      provider: 'credentials'
-    };
-  });
-
-  useEffect(() => {
-    try {
-      if (currentUser) {
-        localStorage.setItem('al_burhan_auth_user_v2', JSON.stringify(currentUser));
-      } else {
-        localStorage.removeItem('al_burhan_auth_user_v2');
+  // Authentication comes only from the signed, HTTP-only NextAuth session.
+  const { data: session, status: authStatus, update: updateSession } = useSession();
+  const sessionUser = session?.user as
+    | (typeof session.user & { id?: string; role?: 'ADMIN' | 'READER' })
+    | undefined;
+  const currentUser: AuthUser | null = sessionUser
+    ? {
+        id: sessionUser.id || sessionUser.email || 'admin',
+        name: sessionUser.name || 'Administrator',
+        email: sessionUser.email || '',
+        role: sessionUser.role === 'ADMIN' ? 'ADMIN' : 'READER',
+        provider: 'credentials'
       }
-    } catch {
-      // Ignore
-    }
-  }, [currentUser]);
+    : null;
 
-  // Auth Modal State
+  // Admin credentials are submitted to the server; no browser-stored login state.
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'admin_login' | 'user_login' | 'register'>('admin_login');
-  const [authEmail, setAuthEmail] = useState('masud040502@gmail.com');
-  const [authPassword, setAuthPassword] = useState('admin123');
-  const [authName, setAuthName] = useState('');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [googleAccountPickerOpen, setGoogleAccountPickerOpen] = useState(false);
 
   // Navigation & Active View
   const [activeTab, setActiveTab] = useState<'explore' | 'admin' | 'editor' | 'saved' | 'stack'>('explore');
@@ -1449,62 +1434,44 @@ export default function App() {
     [posts, selectedPostId]
   );
 
-  // --- AUTHENTICATION HANDLERS ---
-  const handleCredentialAuth = (e: React.FormEvent) => {
+  // --- SERVER-VERIFIED ADMIN AUTHENTICATION ---
+  const handleCredentialAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     const emailClean = authEmail.trim().toLowerCase();
-    if (!emailClean || !authPassword.trim()) {
-      triggerToast('Please enter your email and password.', 'info');
+    if (!emailClean || !authPassword) {
+      triggerToast('Enter your administrator email and password.', 'info');
       return;
     }
 
-    const isAdminAccount =
-      authMode === 'admin_login' ||
-      emailClean === 'masud040502@gmail.com' ||
-      emailClean === 'admin@alburhan.dev';
+    setIsAuthLoading(true);
+    try {
+      const result = await signIn('credentials', {
+        email: emailClean,
+        password: authPassword,
+        redirect: false
+      });
 
-    const loggedInUser: AuthUser = {
-      id: `usr-${Date.now()}`,
-      name:
-        authName.trim() ||
-        (emailClean.includes('masud') ? 'Masud Rana' : emailClean.split('@')[0]),
-      email: emailClean,
-      role: isAdminAccount ? 'ADMIN' : 'READER',
-      provider: 'credentials'
-    };
+      if (!result || result.error) {
+        triggerToast('Invalid administrator email or password.', 'info');
+        return;
+      }
 
-    setCurrentUser(loggedInUser);
-    setIsAuthModalOpen(false);
-    triggerToast(
-      `Signed in as ${loggedInUser.name} (${loggedInUser.role}) via Credentials!`,
-      'success'
-    );
-    if (loggedInUser.role === 'ADMIN') {
+      await updateSession();
+      setAuthPassword('');
+      setIsAuthModalOpen(false);
       setActiveTab('admin');
       setSelectedPostId(null);
+      triggerToast('Administrator sign-in successful.', 'success');
+    } catch {
+      triggerToast('Sign-in failed. Please try again.', 'info');
+    } finally {
+      setIsAuthLoading(false);
     }
   };
 
-  const handleGoogleLoginSelect = (account: { name: string; email: string; role: 'ADMIN' | 'READER' }) => {
-    const googleUser: AuthUser = {
-      id: `google-${Date.now()}`,
-      name: account.name,
-      email: account.email,
-      role: account.role,
-      provider: 'google'
-    };
-    setCurrentUser(googleUser);
-    setGoogleAccountPickerOpen(false);
-    setIsAuthModalOpen(false);
-    triggerToast(`Signed in with Google as ${googleUser.name} (${googleUser.role})!`, 'success');
-    if (googleUser.role === 'ADMIN') {
-      setActiveTab('admin');
-      setSelectedPostId(null);
-    }
-  };
-
-  const handleLogout = () => {
-    setCurrentUser(null);
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
+    setAuthPassword('');
     if (activeTab === 'admin' || activeTab === 'editor') {
       setActiveTab('explore');
     }
@@ -1916,7 +1883,7 @@ export default function App() {
             <button
               onClick={() => {
                 setIsAuthModalOpen(false);
-                setGoogleAccountPickerOpen(false);
+                setAuthPassword('');
               }}
               className="absolute top-4 right-4 p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white"
             >
@@ -1928,169 +1895,19 @@ export default function App() {
                 <Lock className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">
-                  {authMode === 'admin_login'
-                    ? 'Admin Portal Authentication'
-                    : authMode === 'user_login'
-                    ? 'Reader Sign In'
-                    : 'Create Account'}
-                </h3>
+                <h3 className="text-lg font-bold text-white">Secure Administrator Login</h3>
                 <p className="text-xs text-slate-400">
-                  Supports Credentials (Email/Password) & Google OAuth 2.0
+                  Credentials are verified on the server using private Vercel environment variables.
                 </p>
               </div>
             </div>
 
-            {/* Auth Mode Switcher Tabs */}
-            <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800 mb-5 text-xs font-semibold">
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthMode('admin_login');
-                  setAuthEmail('masud040502@gmail.com');
-                  setAuthPassword('admin123');
-                }}
-                className={`py-2 rounded-lg transition-all ${
-                  authMode === 'admin_login'
-                    ? 'bg-emerald-600 text-white'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Admin Login
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthMode('user_login');
-                  setAuthEmail('reader@example.com');
-                  setAuthPassword('reader123');
-                }}
-                className={`py-2 rounded-lg transition-all ${
-                  authMode === 'user_login'
-                    ? 'bg-emerald-600 text-white'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                User Login
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthMode('register');
-                  setAuthEmail('');
-                  setAuthPassword('');
-                }}
-                className={`py-2 rounded-lg transition-all ${
-                  authMode === 'register'
-                    ? 'bg-emerald-600 text-white'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Register
-              </button>
-            </div>
-
-            {/* Google OAuth Button & Account Selector */}
-            <div className="mb-5">
-              <button
-                type="button"
-                onClick={() => setGoogleAccountPickerOpen((prev) => !prev)}
-                className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-semibold text-sm flex items-center justify-center gap-2.5 shadow transition-all"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
-                  <path
-                    fill="#EA4335"
-                    d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.8C6.2 7.2 8.9 5 12 5z"
-                  />
-                  <path
-                    fill="#4285F4"
-                    d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.6l3.7 2.9c2.2-2 3.7-5 3.7-8.7z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.3 14.8c-.2-.8-.4-1.6-.4-2.5s.2-1.7.4-2.5L1.6 7C.6 9 0 11.2 0 13.5s.6 4.5 1.6 6.5l3.7-2.9z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 24c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.1-6.7-5l-3.7 2.8C3.5 21.4 7.4 24 12 24z"
-                  />
-                </svg>
-                <span>Continue with Google</span>
-              </button>
-
-              {googleAccountPickerOpen && (
-                <div className="mt-2.5 p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-                  <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 px-1">
-                    Select Google Account (OAuth 2.0 Simulation):
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleGoogleLoginSelect({
-                        name: 'Masud Rana (Admin)',
-                        email: 'masud040502@gmail.com',
-                        role: 'ADMIN'
-                      })
-                    }
-                    className="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-emerald-950/50 border border-slate-800 hover:border-emerald-500/40 flex items-center justify-between text-left transition-all"
-                  >
-                    <div>
-                      <div className="text-xs font-bold text-white">Masud Rana</div>
-                      <div className="text-[11px] text-slate-400">masud040502@gmail.com</div>
-                    </div>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      ADMIN ROLE
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleGoogleLoginSelect({
-                        name: 'Guest Researcher',
-                        email: 'researcher@gmail.com',
-                        role: 'READER'
-                      })
-                    }
-                    className="w-full p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 flex items-center justify-between text-left transition-all"
-                  >
-                    <div>
-                      <div className="text-xs font-bold text-white">Guest Researcher</div>
-                      <div className="text-[11px] text-slate-400">researcher@gmail.com</div>
-                    </div>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800 text-slate-300">
-                      READER ROLE
-                    </span>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="relative flex py-1 items-center mb-4">
-              <div className="flex-grow border-t border-slate-800" />
-              <span className="flex-shrink mx-3 text-[11px] uppercase tracking-wider text-slate-500">
-                Or with Credentials
-              </span>
-              <div className="flex-grow border-t border-slate-800" />
+            <div className="mb-4 rounded-xl border border-emerald-500/20 bg-emerald-950/20 px-3 py-2 text-xs text-emerald-100">
+              Admin access is restricted to the account configured in Vercel. Demo and simulated Google logins are disabled.
             </div>
 
             {/* Credentials Form */}
             <form onSubmit={handleCredentialAuth} className="space-y-3.5">
-              {authMode === 'register' && (
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={authName}
-                    onChange={(e) => setAuthName(e.target.value)}
-                    placeholder="Masud Rana"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-              )}
-
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Email Address
@@ -2102,7 +1919,7 @@ export default function App() {
                     required
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
-                    placeholder="masud040502@gmail.com"
+                    placeholder="Administrator email"
                     className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
@@ -2132,22 +1949,12 @@ export default function App() {
                 </div>
               </div>
 
-              {authMode === 'admin_login' && (
-                <div className="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-[11px] text-emerald-200 flex items-center justify-between">
-                  <span>Demo Admin: `masud040502@gmail.com` / `admin123`</span>
-                  <span className="font-bold text-emerald-400">Pre-filled</span>
-                </div>
-              )}
-
               <button
                 type="submit"
-                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-950/60 transition-all"
+                disabled={isAuthLoading || authStatus === 'loading'}
+                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold text-sm shadow-lg shadow-emerald-950/60 transition-all"
               >
-                {authMode === 'admin_login'
-                  ? 'Sign In to Admin Dashboard'
-                  : authMode === 'user_login'
-                  ? 'Sign In with Credentials'
-                  : 'Create Account & Sign In'}
+                {isAuthLoading ? 'Verifying securely…' : 'Sign In to Admin Dashboard'}
               </button>
             </form>
           </div>
@@ -2300,7 +2107,6 @@ export default function App() {
             ) : (
               <button
                 onClick={() => {
-                  setAuthMode('admin_login');
                   setIsAuthModalOpen(true);
                 }}
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-100 text-xs sm:text-sm font-semibold transition-all"
@@ -2484,7 +2290,6 @@ export default function App() {
                 <div className="mt-6 flex items-center justify-center gap-3">
                   <button
                     onClick={() => {
-                      setAuthMode('admin_login');
                       setIsAuthModalOpen(true);
                     }}
                     className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold shadow-lg"
