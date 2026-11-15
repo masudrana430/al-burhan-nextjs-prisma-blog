@@ -3,8 +3,8 @@ import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'আল-বুরহান | গবেষণা ও জ্ঞানভিত্তিক পাঠাগার',
-  description: 'বাংলা ভাষায় গবেষণা, জ্ঞানচর্চা, প্রবন্ধ ও পাঠাগার।',
+  title: 'AL-BURHAN | Research & Knowledge Library',
+  description: 'বাংলা ও English-এ research, articles এবং knowledge library।',
 };
 
 export default function RootLayout({
