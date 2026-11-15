@@ -1372,3 +1372,90 @@ body {
     transition: none !important;
   }
 }
+
+
+/* Islamic geometric identity for login and registration screens */
+.auth-page {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: var(--app-bg, #f8f9fa);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='112' viewBox='0 0 112 112'%3E%3Cg fill='none' stroke='%23b78f46' stroke-opacity='.13' stroke-width='1'%3E%3Cpath d='M56 4 67 34 97 45 67 56 56 86 45 56 15 45 45 34Z'/%3E%3Cpath d='M56 15 64 37 86 45 64 53 56 75 48 53 26 45 48 37Z'/%3E%3Cpath d='M0 0 28 28M112 0 84 28M0 112 28 84M112 112 84 84'/%3E%3Ccircle cx='56' cy='45' r='4'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 112px 112px;
+}
+.auth-page::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: min(78vw, 620px);
+  aspect-ratio: 1;
+  top: -290px;
+  right: -230px;
+  opacity: .17;
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Cg fill='none' stroke='%23b78f46' stroke-width='1.5'%3E%3Cpath d='M150 8 179 92 263 121 179 150 150 234 121 150 37 121 121 92Z'/%3E%3Cpath d='M150 8 208 92 292 150 208 208 150 292 92 208 8 150 92 92Z'/%3E%3Cpath d='M150 35 190 110 265 150 190 190 150 265 110 190 35 150 110 110Z'/%3E%3Cpath d='M150 8V292M8 150H292M49 49 251 251M251 49 49 251'/%3E%3Ccircle cx='150' cy='150' r='43'/%3E%3Ccircle cx='150' cy='150' r='78'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+}
+.auth-page::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: min(56vw, 430px);
+  aspect-ratio: 1;
+  bottom: -240px;
+  left: -190px;
+  opacity: .10;
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Cg fill='none' stroke='%23245b43' stroke-width='2'%3E%3Cpath d='M150 8 179 92 263 121 179 150 150 234 121 150 37 121 121 92Z'/%3E%3Cpath d='M150 8 208 92 292 150 208 208 150 292 92 208 8 150 92 92Z'/%3E%3Cpath d='M150 35 190 110 265 150 190 190 150 265 110 190 35 150 110 110Z'/%3E%3Ccircle cx='150' cy='150' r='78'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+}
+.auth-panel {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+  overflow: hidden;
+  background-image: linear-gradient(135deg, rgba(255,255,255,.96), rgba(255,255,255,.985));
+}
+.auth-panel::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 190px;
+  aspect-ratio: 1;
+  top: -105px;
+  right: -85px;
+  opacity: .12;
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Cg fill='none' stroke='%23b78f46' stroke-width='2'%3E%3Cpath d='M150 8 179 92 263 121 179 150 150 234 121 150 37 121 121 92Z'/%3E%3Cpath d='M150 8 208 92 292 150 208 208 150 292 92 208 8 150 92 92Z'/%3E%3Cpath d='M150 35 190 110 265 150 190 190 150 265 110 190 35 150 110 110Z'/%3E%3Ccircle cx='150' cy='150' r='43'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+}
+.auth-panel > * { position: relative; }
+.auth-logo {
+  border: 1px solid rgba(183,143,70,.24);
+  box-shadow: inset 0 0 0 4px rgba(183,143,70,.045);
+}
+.auth-panel .auth-primary {
+  box-shadow: 0 2px 5px rgba(26,115,232,.16);
+}
+.theme-dark .auth-page {
+  background-color: #202124;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='112' viewBox='0 0 112 112'%3E%3Cg fill='none' stroke='%23d4b16a' stroke-opacity='.13' stroke-width='1'%3E%3Cpath d='M56 4 67 34 97 45 67 56 56 86 45 56 15 45 45 34Z'/%3E%3Cpath d='M56 15 64 37 86 45 64 53 56 75 48 53 26 45 48 37Z'/%3E%3C/g%3E%3C/svg%3E");
+}
+.theme-dark .auth-panel {
+  background-color: #292a2d;
+  background-image: linear-gradient(135deg, rgba(41,42,45,.97), rgba(41,42,45,.99));
+}
+.theme-dark .auth-page::before,
+.theme-dark .auth-panel::before { opacity: .10; }
+.theme-dark .auth-page::after { opacity: .07; }
+
+@media (max-width: 640px) {
+  .auth-page { padding-left: 14px; padding-right: 14px; }
+  .auth-page::before { width: 340px; top: -170px; right: -185px; }
+  .auth-page::after { width: 260px; bottom: -160px; left: -155px; }
+  .auth-panel { border-radius: 22px !important; }
+  .auth-panel::before { width: 140px; top: -78px; right: -68px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-panel, .auth-primary { transition: none !important; }
+}
