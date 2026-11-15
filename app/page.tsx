@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import {
   Search,
@@ -1314,6 +1315,16 @@ export default function App() {
 
   // Responsive navigation and database-backed topic directory
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const mobileMenuPanelRef = useRef<HTMLElement | null>(null);
+  const mobileMenuLayersRef = useRef<HTMLDivElement | null>(null);
+  const mobileMenuBackdropRef = useRef<HTMLButtonElement | null>(null);
+  const mobileMenuTopLineRef = useRef<HTMLSpanElement | null>(null);
+  const mobileMenuMiddleLineRef = useRef<HTMLSpanElement | null>(null);
+  const mobileMenuBottomLineRef = useRef<HTMLSpanElement | null>(null);
+  const mobileMenuOpenTimelineRef = useRef<gsap.core.Timeline | null>(null);
+  const mobileMenuCloseTimelineRef = useRef<gsap.core.Timeline | null>(null);
+  const mobileMenuIconTimelineRef = useRef<gsap.core.Timeline | null>(null);
+  const mobileMenuHasOpenedRef = useRef(false);
 
   useEffect(() => {
     if (!isMobileMenuOpen) return;
@@ -1328,7 +1339,163 @@ export default function App() {
       window.removeEventListener('keydown', closeOnEscape);
     };
   }, [isMobileMenuOpen]);
-  const [directoryTopics, setDirectoryTopics] = useState<Array<{ id: string; name: string; description?: string | null }>>([]);
+
+  // Ported from the previous DevAssess GSAP menu:
+  // staggered colour layers -> panel reveal -> staggered links -> footer actions.
+  useEffect(() => {
+    const panel = mobileMenuPanelRef.current;
+    const layerRoot = mobileMenuLayersRef.current;
+    const backdrop = mobileMenuBackdropRef.current;
+    if (!panel || !layerRoot) return;
+
+    const layers = Array.from(layerRoot.querySelectorAll<HTMLElement>('.mobile-menu-layer'));
+    const items = Array.from(panel.querySelectorAll<HTMLElement>('.mobile-menu-item'));
+    const footerLabel = panel.querySelector<HTMLElement>('.mobile-menu-footer-label');
+    const footerActions = Array.from(panel.querySelectorAll<HTMLElement>('.mobile-menu-footer-action'));
+    const topLine = mobileMenuTopLineRef.current;
+    const middleLine = mobileMenuMiddleLineRef.current;
+    const bottomLine = mobileMenuBottomLineRef.current;
+
+    gsap.set([panel, ...layers], { xPercent: 100 });
+    if (backdrop) gsap.set(backdrop, { autoAlpha: 0 });
+    gsap.set(items, { yPercent: 140, rotation: 10, '--menu-number-opacity': 0 });
+    if (footerLabel) gsap.set(footerLabel, { opacity: 0 });
+    if (footerActions.length) gsap.set(footerActions, { y: 25, opacity: 0 });
+    if (topLine) gsap.set(topLine, { transformOrigin: '50% 50%', x: 0, y: 0, rotation: 0 });
+    if (middleLine) gsap.set(middleLine, { transformOrigin: '50% 50%', scaleX: 1, opacity: 1 });
+    if (bottomLine) gsap.set(bottomLine, { transformOrigin: '50% 50%', x: 0, y: 0, rotation: 0 });
+
+    return () => {
+      mobileMenuOpenTimelineRef.current?.kill();
+      mobileMenuCloseTimelineRef.current?.kill();
+      mobileMenuIconTimelineRef.current?.kill();
+      gsap.killTweensOf([panel, ...layers, ...(backdrop ? [backdrop] : []), ...items, ...footerActions]);
+    };
+  }, []);
+
+  useEffect(() => {
+    const panel = mobileMenuPanelRef.current;
+    const layerRoot = mobileMenuLayersRef.current;
+    const backdrop = mobileMenuBackdropRef.current;
+    if (!panel || !layerRoot) return;
+
+    const layers = Array.from(layerRoot.querySelectorAll<HTMLElement>('.mobile-menu-layer'));
+    const items = Array.from(panel.querySelectorAll<HTMLElement>('.mobile-menu-item'));
+    const footerLabel = panel.querySelector<HTMLElement>('.mobile-menu-footer-label');
+    const footerActions = Array.from(panel.querySelectorAll<HTMLElement>('.mobile-menu-footer-action'));
+    const topLine = mobileMenuTopLineRef.current;
+    const middleLine = mobileMenuMiddleLineRef.current;
+    const bottomLine = mobileMenuBottomLineRef.current;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const duration = (value: number) => reducedMotion ? 0.01 : value;
+
+    mobileMenuOpenTimelineRef.current?.kill();
+    mobileMenuCloseTimelineRef.current?.kill();
+    mobileMenuIconTimelineRef.current?.kill();
+
+    if (isMobileMenuOpen) {
+      mobileMenuHasOpenedRef.current = true;
+      const timeline = gsap.timeline({ paused: true });
+
+      layers.forEach((layer, index) => {
+        timeline.fromTo(
+          layer,
+          { xPercent: 100 },
+          { xPercent: 0, duration: duration(0.5), ease: reducedMotion ? 'none' : 'power4.out' },
+          index * (reducedMotion ? 0 : 0.07),
+        );
+      });
+
+      const lastLayerTime = layers.length ? (layers.length - 1) * (reducedMotion ? 0 : 0.07) : 0;
+      const panelInsertTime = lastLayerTime + (layers.length ? (reducedMotion ? 0 : 0.08) : 0);
+      const panelDuration = duration(0.65);
+
+      timeline.fromTo(
+        panel,
+        { xPercent: 100 },
+        { xPercent: 0, duration: panelDuration, ease: reducedMotion ? 'none' : 'power4.out' },
+        panelInsertTime,
+      );
+
+      if (backdrop) {
+        timeline.fromTo(backdrop, { autoAlpha: 0 }, { autoAlpha: 1, duration: duration(0.3), ease: 'power1.out' }, 0);
+      }
+
+      if (items.length) {
+        const itemsStart = panelInsertTime + panelDuration * 0.15;
+        timeline.to(
+          items,
+          {
+            yPercent: 0,
+            rotation: 0,
+            duration: duration(1),
+            ease: reducedMotion ? 'none' : 'power4.out',
+            stagger: { each: reducedMotion ? 0 : 0.1, from: 'start' },
+          },
+          itemsStart,
+        );
+
+        timeline.to(
+          items,
+          {
+            '--menu-number-opacity': 1,
+            duration: duration(0.6),
+            ease: 'power2.out',
+            stagger: { each: reducedMotion ? 0 : 0.08, from: 'start' },
+          },
+          itemsStart + (reducedMotion ? 0 : 0.1),
+        );
+      }
+
+      const footerStart = panelInsertTime + panelDuration * 0.4;
+      if (footerLabel) {
+        timeline.to(footerLabel, { opacity: 1, duration: duration(0.5), ease: 'power2.out' }, footerStart);
+      }
+      if (footerActions.length) {
+        timeline.to(
+          footerActions,
+          {
+            y: 0,
+            opacity: 1,
+            duration: duration(0.55),
+            ease: reducedMotion ? 'none' : 'power3.out',
+            stagger: { each: reducedMotion ? 0 : 0.08, from: 'start' },
+          },
+          footerStart + (reducedMotion ? 0 : 0.04),
+        );
+      }
+
+      mobileMenuOpenTimelineRef.current = timeline;
+      timeline.play(0);
+
+      const iconTimeline = gsap.timeline();
+      if (topLine) iconTimeline.to(topLine, { y: 5, rotation: 45, duration: duration(0.55), ease: 'power4.out' }, 0);
+      if (middleLine) iconTimeline.to(middleLine, { scaleX: 0, opacity: 0, duration: duration(0.22), ease: 'power2.inOut' }, 0);
+      if (bottomLine) iconTimeline.to(bottomLine, { y: -5, rotation: -45, duration: duration(0.55), ease: 'power4.out' }, 0);
+      mobileMenuIconTimelineRef.current = iconTimeline;
+    } else if (mobileMenuHasOpenedRef.current) {
+      const closeTimeline = gsap.timeline({
+        onComplete: () => {
+          gsap.set(items, { yPercent: 140, rotation: 10, '--menu-number-opacity': 0 });
+          if (footerLabel) gsap.set(footerLabel, { opacity: 0 });
+          if (footerActions.length) gsap.set(footerActions, { y: 25, opacity: 0 });
+          mobileMenuHasOpenedRef.current = false;
+        },
+      });
+
+      closeTimeline.to(
+        [...layers, panel],
+        { xPercent: 100, duration: duration(0.32), ease: reducedMotion ? 'none' : 'power3.in' },
+        0,
+      );
+      if (backdrop) closeTimeline.to(backdrop, { autoAlpha: 0, duration: duration(0.22), ease: 'power1.out' }, 0);
+      if (topLine) closeTimeline.to(topLine, { y: 0, rotation: 0, duration: duration(0.32), ease: 'power3.inOut' }, 0);
+      if (middleLine) closeTimeline.to(middleLine, { scaleX: 1, opacity: 1, duration: duration(0.22), ease: 'power2.out' }, 0.04);
+      if (bottomLine) closeTimeline.to(bottomLine, { y: 0, rotation: 0, duration: duration(0.32), ease: 'power3.inOut' }, 0);
+      mobileMenuCloseTimelineRef.current = closeTimeline;
+    }
+  }, [isMobileMenuOpen]);
+  const [directoryTopics, setDirectoryTopics]] = useState<Array<{ id: string; name: string; description?: string | null }>>([]);
 
   useEffect(() => {
     let active = true;
@@ -2163,21 +2330,21 @@ export default function App() {
           </div>
 
           {/* Navigation Tabs */}
-          <nav id="al-burhan-mobile-menu" aria-label="Main navigation" className={`main-nav flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800 ${isMobileMenuOpen ? 'is-open' : ''}`}>
+          <nav ref={mobileMenuPanelRef} id="al-burhan-mobile-menu" aria-label="Main navigation" className={`main-nav flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800 ${isMobileMenuOpen ? 'is-open' : ''}`}>
             <button
               onClick={() => {
                 setSelectedPostId(null);
                 setActiveTab('explore');
                 setIsMobileMenuOpen(false);
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+              className={`mobile-menu-item flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'explore' && !selectedPostId
                   ? 'bg-emerald-600 text-white shadow-sm'
                   : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
               }`}
             >
               <Compass className="w-4 h-4" />
-              <span>প্রবন্ধ ({posts.length.toLocaleString('bn-BD')})</span>
+              <span className="mobile-menu-item-label">প্রবন্ধ ({posts.length.toLocaleString('bn-BD')})</span>
             </button>
 
             <button
@@ -2186,14 +2353,14 @@ export default function App() {
                 setActiveTab('admin');
                 setIsMobileMenuOpen(false);
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+              className={`mobile-menu-item flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'admin'
                   ? 'bg-emerald-600 text-white shadow-sm'
                   : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
               }`}
             >
               <LayoutDashboard className="w-4 h-4" />
-              <span>প্রশাসক ড্যাশবোর্ড</span>
+              <span className="mobile-menu-item-label">প্রশাসক ড্যাশবোর্ড</span>
             </button>
 
             <button
@@ -2201,14 +2368,14 @@ export default function App() {
                 setIsMobileMenuOpen(false);
                 window.location.assign('/admin/editor');
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+              className={`mobile-menu-item flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'editor'
                   ? 'bg-emerald-600 text-white shadow-sm'
                   : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
               }`}
             >
               <Plus className="w-4 h-4" />
-              <span>নতুন পোস্ট লিখুন</span>
+              <span className="mobile-menu-item-label">নতুন পোস্ট লিখুন</span>
             </button>
 
             <button
@@ -2217,15 +2384,15 @@ export default function App() {
                 setActiveTab('saved');
                 setIsMobileMenuOpen(false);
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+              className={`mobile-menu-item flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'saved'
                   ? 'bg-emerald-600 text-white shadow-sm'
                   : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
               }`}
             >
               <Bookmark className="w-4 h-4" />
-              <span className="hidden md:inline">সংরক্ষিত</span>
-              <span className="text-xs px-1.5 py-0.2 rounded bg-slate-800 text-emerald-300">
+              <span className="mobile-menu-item-label">সংরক্ষিত</span>
+              <span className="mobile-menu-count text-xs px-1.5 py-0.2 rounded bg-slate-800 text-emerald-300">
                 {posts.filter((p) => p.bookmarked).length}
               </span>
             </button>
@@ -2236,18 +2403,40 @@ export default function App() {
                 setActiveTab('stack');
                 setIsMobileMenuOpen(false);
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+              className={`mobile-menu-item flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'stack'
                   ? 'bg-amber-600 text-white shadow-sm'
                   : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
               }`}
             >
               <Database className="w-4 h-4" />
-              <span className="hidden sm:inline">প্রযুক্তি</span>
+              <span className="mobile-menu-item-label">প্রযুক্তি</span>
             </button>
+            <p className="mobile-menu-eyebrow">AL-BURHAN <span>/</span> Explore</p>
+            <div className="mobile-menu-footer">
+              <p className="mobile-menu-footer-label">Quick actions <span>· দ্রুত ব্যবহার</span></p>
+              <div className="mobile-menu-footer-actions">
+                <button type="button" className="mobile-menu-footer-action" onClick={() => setTheme((current) => current === 'light' ? 'sepia' : current === 'sepia' ? 'dark' : current === 'dark' ? 'system' : 'light')}>
+                  {theme === 'dark' ? <Sun className="w-4 h-4" /> : theme === 'sepia' ? <BookOpen className="w-4 h-4" /> : theme === 'system' ? <Database className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  <span>Theme</span>
+                </button>
+                {currentUser ? (
+                  <button type="button" className="mobile-menu-footer-action" onClick={() => { setIsMobileMenuOpen(false); handleLogout(); }}>
+                    <LogOut className="w-4 h-4" /><span>Logout</span>
+                  </button>
+                ) : (
+                  <button type="button" className="mobile-menu-footer-action" onClick={() => { setIsMobileMenuOpen(false); setIsAuthModalOpen(true); }}>
+                    <LogIn className="w-4 h-4" /><span>Login / Admin</span>
+                  </button>
+                )}
+                <button type="button" className="mobile-menu-footer-action" onClick={() => { setIsMobileMenuOpen(false); setIsChatOpen((prev) => !prev); }}>
+                  <Sparkles className="w-4 h-4" /><span>AI Assistant</span>
+                </button>
+              </div>
+            </div>
           </nav>
 
-          {/* Right Action Controls: Theme, Auth Status + AI Chatbot */}
+          {/* Desktop action controls; mobile actions live inside the GSAP menu. */}
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -2267,7 +2456,11 @@ export default function App() {
               aria-label={isMobileMenuOpen ? 'মেনু বন্ধ করুন' : 'মেনু খুলুন'}
               onClick={() => setIsMobileMenuOpen(open => !open)}
             >
-              {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              <span className="mobile-menu-toggle-icon" aria-hidden="true">
+                <span ref={mobileMenuTopLineRef} className="mobile-menu-toggle-line mobile-menu-toggle-line--top" />
+                <span ref={mobileMenuMiddleLineRef} className="mobile-menu-toggle-line mobile-menu-toggle-line--middle" />
+                <span ref={mobileMenuBottomLineRef} className="mobile-menu-toggle-line mobile-menu-toggle-line--bottom" />
+              </span>
             </button>
             {currentUser ? (
               <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5">
@@ -2320,9 +2513,9 @@ export default function App() {
             </button>
           </div>
         </div>
-        <button type="button" className="mobile-menu-backdrop" aria-label="মেনু বন্ধ করুন"
+        <button ref={mobileMenuBackdropRef} type="button" className={`mobile-menu-backdrop ${isMobileMenuOpen ? 'is-open' : ''}`} aria-label="মেনু বন্ধ করুন"
           tabIndex={isMobileMenuOpen ? 0 : -1} onClick={() => setIsMobileMenuOpen(false)} />
-        <div className="mobile-menu-layers" aria-hidden="true"><span /><span /><span /></div>
+        <div ref={mobileMenuLayersRef} className="mobile-menu-layers" aria-hidden="true"><span className="mobile-menu-layer" /><span className="mobile-menu-layer" /><span className="mobile-menu-layer" /></div>
       </header>
 
       {/* MAIN CONTENT CONTAINER */}
