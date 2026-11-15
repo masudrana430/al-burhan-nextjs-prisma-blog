@@ -1876,6 +1876,8 @@ body {
     letter-spacing: -.045em !important; line-height: 1.2 !important; text-align: left !important;
     opacity: 1 !important; transform: translateY(140%) rotate(10deg); will-change: transform;
   }
+  /* GSAP owns item transforms; disable Tailwind transition-all to avoid competing transforms. */
+  .site-header .main-nav button.mobile-menu-item { transition: none !important; }
   .site-header .main-nav .mobile-menu-item-label { display: inline !important; color: inherit !important; }
   .site-header .main-nav .mobile-menu-item svg {
     width: 19px !important; height: 19px !important; flex: 0 0 19px !important; color: var(--accent) !important;
