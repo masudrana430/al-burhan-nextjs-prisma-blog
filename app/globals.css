@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -433,7 +434,6 @@ body {
 }
 
 /* Bengali-first typography and calm editorial layout */
-@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
 .app-shell, .auth-page, .admin-editor-bn {
   font-family: "Hind Siliguri", "Noto Sans Bengali", "Nirmala UI", sans-serif;
   letter-spacing: 0;
