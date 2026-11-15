@@ -1314,6 +1314,20 @@ export default function App() {
 
   // Responsive navigation and database-backed topic directory
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsMobileMenuOpen(false);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [isMobileMenuOpen]);
   const [directoryTopics, setDirectoryTopics] = useState<Array<{ id: string; name: string; description?: string | null }>>([]);
 
   useEffect(() => {
@@ -2149,7 +2163,7 @@ export default function App() {
           </div>
 
           {/* Navigation Tabs */}
-          <nav className={`main-nav flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800 ${isMobileMenuOpen ? 'is-open' : ''}`}>
+          <nav id="al-burhan-mobile-menu" aria-label="Main navigation" className={`main-nav flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800 ${isMobileMenuOpen ? 'is-open' : ''}`}>
             <button
               onClick={() => {
                 setSelectedPostId(null);
@@ -2249,6 +2263,7 @@ export default function App() {
               type="button"
               className="mobile-menu-toggle inline-flex items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-slate-200"
               aria-expanded={isMobileMenuOpen}
+              aria-controls="al-burhan-mobile-menu"
               aria-label={isMobileMenuOpen ? 'মেনু বন্ধ করুন' : 'মেনু খুলুন'}
               onClick={() => setIsMobileMenuOpen(open => !open)}
             >
@@ -2305,6 +2320,9 @@ export default function App() {
             </button>
           </div>
         </div>
+        <button type="button" className="mobile-menu-backdrop" aria-label="মেনু বন্ধ করুন"
+          tabIndex={isMobileMenuOpen ? 0 : -1} onClick={() => setIsMobileMenuOpen(false)} />
+        <div className="mobile-menu-layers" aria-hidden="true"><span /><span /><span /></div>
       </header>
 
       {/* MAIN CONTENT CONTAINER */}
