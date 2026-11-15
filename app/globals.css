@@ -1216,3 +1216,159 @@ body {
   .directory-card { align-items: center; }
   .directory-copy strong { font-size: 13px; }
 }
+
+
+/* =========================================================
+   Islamic architectural ornament layer for AL-BURHAN.
+   Original, lightweight SVG geometry inspired by traditional
+   girih / eight-point star vocabulary. No external image request.
+   ========================================================= */
+:root {
+  --ornament-line: rgba(183, 143, 70, .16);
+  --ornament-strong: rgba(183, 143, 70, .28);
+  --ornament-green: rgba(31, 91, 65, .075);
+}
+
+/* Fine geometric watermark on the page canvas: deliberately low contrast. */
+.app-shell {
+  background-color: var(--app-bg) !important;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='112' viewBox='0 0 112 112'%3E%3Cg fill='none' stroke='%23b78f46' stroke-opacity='.10' stroke-width='1'%3E%3Cpath d='M56 4 67 34 97 45 67 56 56 86 45 56 15 45 45 34Z'/%3E%3Cpath d='M56 15 64 37 86 45 64 53 56 75 48 53 26 45 48 37Z'/%3E%3Cpath d='M0 0 28 28M112 0 84 28M0 112 28 84M112 112 84 84'/%3E%3Ccircle cx='56' cy='45' r='4'/%3E%3C/g%3E%3C/svg%3E") !important;
+  background-repeat: repeat !important;
+  background-size: 112px 112px !important;
+  background-attachment: fixed !important;
+}
+
+/* The header gets a quiet ornamental lower rule, not a large illustration. */
+.site-header {
+  position: sticky;
+  isolation: isolate;
+}
+.site-header::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 4px;
+  opacity: .72;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='4' viewBox='0 0 48 4'%3E%3Cpath d='M0 2H14L16 0 18 2 20 4 22 2H26L28 0 30 2 32 4 34 2H48' fill='none' stroke='%23b78f46' stroke-opacity='.65' stroke-width='.7'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  pointer-events: none;
+}
+
+/* Restrained eight-point star watermark in the hero corner. */
+.home-search-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.home-search-panel::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: clamp(190px, 30vw, 340px);
+  aspect-ratio: 1;
+  right: -54px;
+  top: -95px;
+  opacity: .20;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Cg fill='none' stroke='%23e6c77e' stroke-width='2'%3E%3Cpath d='M150 8 179 92 263 121 179 150 150 234 121 150 37 121 121 92Z'/%3E%3Cpath d='M150 8 208 92 292 150 208 208 150 292 92 208 8 150 92 92Z'/%3E%3Cpath d='M150 35 190 110 265 150 190 190 150 265 110 190 35 150 110 110Z'/%3E%3Cpath d='M150 8V292M8 150H292M49 49 251 251M251 49 49 251'/%3E%3Ccircle cx='150' cy='150' r='43'/%3E%3Ccircle cx='150' cy='150' r='78'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+.home-search-panel > * { position: relative; z-index: 1; }
+
+/* Small decorative divider above section titles. */
+.library-section-heading {
+  position: relative;
+}
+.library-section-heading::before {
+  content: "";
+  display: block;
+  width: 44px;
+  height: 3px;
+  margin-bottom: 9px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--library-gold) 0 55%, transparent 55% 65%, var(--accent) 65% 100%);
+}
+
+/* Category tiles use a tiny geometric seal instead of emoji decoration. */
+.directory-icon {
+  position: relative;
+  overflow: hidden;
+}
+.directory-icon::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid currentColor;
+  opacity: .13;
+  transform: rotate(45deg);
+  border-radius: 5px;
+  pointer-events: none;
+}
+
+/* Reading page: gold geometric top marker and paper-like surface. */
+.site-main .reader-card {
+  position: relative;
+  overflow: hidden;
+}
+.site-main .reader-card::before {
+  content: "";
+  display: block;
+  height: 5px;
+  margin: calc(clamp(20px, 4vw, 42px) * -1) calc(clamp(20px, 4vw, 42px) * -1) 24px;
+  background-color: var(--library-gold);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34' height='5' viewBox='0 0 34 5'%3E%3Cpath d='M0 2.5 4 0 8 2.5 4 5ZM17 2.5 21 0 25 2.5 21 5Z' fill='none' stroke='%23fff8e7' stroke-opacity='.72' stroke-width='.8'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+}
+.site-main .reader-card .reader-title {
+  text-wrap: pretty;
+}
+
+/* Footer: subtle tiled ornament, with text remaining fully readable. */
+.site-footer {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.site-footer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .15;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%23e7d19b' stroke-width='1'%3E%3Cpath d='M48 3 60 36 93 48 60 60 48 93 36 60 3 48 36 36Z'/%3E%3Cpath d='M48 17 57 39 79 48 57 57 48 79 39 57 17 48 39 39Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 96px 96px;
+}
+.theme-dark .app-shell,
+.theme-dark {
+  --ornament-line: rgba(212, 177, 106, .14);
+}
+.theme-dark .app-shell {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='112' viewBox='0 0 112 112'%3E%3Cg fill='none' stroke='%23d4b16a' stroke-opacity='.10' stroke-width='1'%3E%3Cpath d='M56 4 67 34 97 45 67 56 56 86 45 56 15 45 45 34Z'/%3E%3Cpath d='M56 15 64 37 86 45 64 53 56 75 48 53 26 45 48 37Z'/%3E%3C/g%3E%3C/svg%3E") !important;
+  background-size: 112px 112px !important;
+}
+.theme-dark .home-search-panel::after { opacity: .13; }
+.theme-dark .site-footer::before { opacity: .12; }
+.theme-sepia .app-shell {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='112' viewBox='0 0 112 112'%3E%3Cg fill='none' stroke='%23a7772e' stroke-opacity='.12' stroke-width='1'%3E%3Cpath d='M56 4 67 34 97 45 67 56 56 86 45 56 15 45 45 34Z'/%3E%3Cpath d='M56 15 64 37 86 45 64 53 56 75 48 53 26 45 48 37Z'/%3E%3C/g%3E%3C/svg%3E") !important;
+  background-size: 112px 112px !important;
+}
+@media (max-width: 760px) {
+  .app-shell { background-attachment: scroll !important; }
+  .home-search-panel::after { width: 180px; right: -78px; top: -56px; opacity: .13; }
+  .site-main .reader-card::before {
+    margin: -18px -18px 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .directory-card, .spotlight-card, .latest-mini-item, .site-main .post-card {
+    transition: none !important;
+  }
+}
