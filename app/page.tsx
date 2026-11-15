@@ -95,6 +95,18 @@ interface BlogPost {
   keyTakeaways: string[];
 }
 
+
+function categoryLabel(category: string): string {
+  const labels: Record<string, string> = {
+    'Cosmology & Physics': 'মহাবিশ্ববিদ্যা ও পদার্থবিজ্ঞান',
+    'Biology & Embryology': 'জীববিজ্ঞান ও ভ্রূণতত্ত্ব',
+    'Historical & Ethics': 'ইতিহাস ও নৈতিকতা',
+    'Philosophy & Logic': 'দর্শন ও যুক্তিবিদ্যা',
+    'Linguistics & Tafsir': 'ভাষাতত্ত্ব ও তাফসির',
+  };
+  return labels[category] || category;
+}
+
 interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -1998,11 +2010,11 @@ export default function App() {
                   AL-BURHAN
                 </span>
                 <span className="text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-800">
-                  Research Library
+                  গবেষণা পাঠাগার
                 </span>
               </div>
               <p className="text-xs text-slate-400 hidden sm:block">
-                Intellectual Apologetics, Scientific Refutations & Critical Research Archive
+                বাংলা ভাষায় গবেষণা, বিশ্লেষণ, যুক্তি ও জ্ঞানচর্চার সংগ্রহশালা
               </p>
             </div>
           </div>
@@ -2331,13 +2343,13 @@ export default function App() {
                     <div>
                       <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">
                         <LayoutDashboard className="w-4 h-4" />
-                        <span>Administrator Control Center</span>
+                        <span>প্রশাসক নিয়ন্ত্রণকেন্দ্র</span>
                       </div>
                       <h2 className="text-2xl font-bold text-white">
-                        Manage Apologetics Articles & Media Blocks
+                        প্রবন্ধ ও মিডিয়া পরিচালনা
                       </h2>
                       <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-                        Signed in as <strong>{currentUser.name}</strong> ({currentUser.email}) • Full CRUD & Smart Block Privileges Active
+                        লগইন করেছেন <strong>{currentUser.name}</strong> ({currentUser.email}) • Full CRUD & Smart Block Privileges Active
                       </p>
                     </div>
 
@@ -2367,7 +2379,7 @@ export default function App() {
                       <div className="text-[11px] text-emerald-400 mt-1">Indexed in AI Search</div>
                     </div>
                     <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800">
-                      <div className="text-xs text-slate-400">Total Article Views</div>
+                      <div className="text-xs text-slate-400">Total Article পাঠসংখ্যা</div>
                       <div className="text-2xl font-extrabold text-emerald-400 mt-1">
                         {posts.reduce((acc, p) => acc + p.views, 0).toLocaleString()}
                       </div>
@@ -2401,7 +2413,7 @@ export default function App() {
                 <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
                   <div className="p-4 bg-slate-950/70 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
                     <div className="text-sm font-bold text-white">
-                      All Stored Database Articles ({adminFilteredPosts.length})
+                      সংরক্ষিত সব প্রবন্ধ ({adminFilteredPosts.length})
                     </div>
                     <div className="relative w-full sm:w-72">
                       <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -2419,9 +2431,9 @@ export default function App() {
                     <table className="w-full text-left border-collapse">
                       <thead>
                         <tr className="border-b border-slate-800 text-[11px] uppercase tracking-wider text-slate-400 bg-slate-950/40">
-                          <th className="py-3 px-4">Article Title & Claim</th>
+                          <th className="py-3 px-4">প্রবন্ধের শিরোনাম ও বিষয়</th>
                           <th className="py-3 px-4">Category</th>
-                          <th className="py-3 px-4">Media Blocks</th>
+                          <th className="py-3 px-4">মিডিয়া</th>
                           <th className="py-3 px-4">Views</th>
                           <th className="py-3 px-4">Published</th>
                           <th className="py-3 px-4 text-right">Admin Actions</th>
@@ -2449,7 +2461,7 @@ export default function App() {
                               </td>
                               <td className="py-3.5 px-4 whitespace-nowrap">
                                 <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                                  {post.category}
+                                  {categoryLabel(post.category)}
                                 </span>
                               </td>
                               <td className="py-3.5 px-4 whitespace-nowrap">
@@ -2965,9 +2977,9 @@ export default function App() {
                         onChange={(e) => setFormDifficulty(e.target.value as BlogPost['difficulty'])}
                         className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500"
                       >
-                        <option value="Beginner">Beginner</option>
-                        <option value="Intermediate">Intermediate</option>
-                        <option value="Advanced">Advanced</option>
+                        <option value="Beginner">প্রাথমিক</option>
+                        <option value="Intermediate">মধ্যবর্তী</option>
+                        <option value="Advanced">উন্নত</option>
                       </select>
                     </div>
 
@@ -3329,13 +3341,13 @@ export default function App() {
               <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
                 <div className="flex flex-wrap items-center gap-2.5">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-slate-400">Level:</span>
+                    <span className="text-xs text-slate-400">স্তর:</span>
                     <select
                       value={selectedDifficulty}
                       onChange={(e) => setSelectedDifficulty(e.target.value)}
                       className="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
                     >
-                      <option value="ALL">All Levels</option>
+                      <option value="ALL">সব স্তর</option>
                       <option value="Beginner">Beginner</option>
                       <option value="Intermediate">Intermediate</option>
                       <option value="Advanced">Advanced</option>
@@ -3555,9 +3567,9 @@ export default function App() {
               /* Empty State */
               <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-10 text-center">
                 <BookOpen className="w-10 h-10 text-slate-500 mx-auto mb-3" />
-                <h3 className="text-lg font-bold text-white">No Matching Articles Found</h3>
+                <h3 className="text-lg font-bold text-white">কোনো প্রবন্ধ পাওয়া যায়নি</h3>
                 <p className="text-sm text-slate-400 max-w-md mx-auto mt-1">
-                  Try clearing your filters, enabling AI Smart Search, or writing a new refutation post in the Smart Builder.
+                  ফিল্টার পরিবর্তন করুন, স্মার্ট সার্চ ব্যবহার করুন অথবা নতুন পোস্ট লিখুন।
                 </p>
                 <div className="flex items-center justify-center gap-3 mt-5">
                   <button
