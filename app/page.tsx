@@ -56,7 +56,7 @@ import {
   EyeOff,
   Sun,
   Moon,
-  Menu
+
 } from 'lucide-react';
 
 // --- TYPES ---
@@ -1495,7 +1495,7 @@ export default function App() {
       mobileMenuCloseTimelineRef.current = closeTimeline;
     }
   }, [isMobileMenuOpen]);
-  const [directoryTopics, setDirectoryTopics]] = useState<Array<{ id: string; name: string; description?: string | null }>>([]);
+  const [directoryTopics, setDirectoryTopics] = useState<Array<{ id: string; name: string; description?: string | null }>>([]);
 
   useEffect(() => {
     let active = true;
