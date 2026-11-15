@@ -2538,7 +2538,7 @@ export default function App() {
                     <span>Smart Interleaved Content Builder</span>
                   </div>
                   <h2 className="text-xl sm:text-2xl font-bold text-white">
-                    {editingPostId ? 'Edit Refutation Article & Media Blocks' : 'Create Smart Post (Text + Images + YouTube Video Previews)'}
+                    {editingPostId ? 'Edit Refutation Article & Media Blocks' : 'নতুন পোস্ট তৈরি করুন (Text + Images + YouTube Video Previews)'}
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-400 mt-1">
                     Insert **Smart Text**, **Images (URL or Local Upload)**, and **YouTube Video Link Previews** in any order between paragraphs.
@@ -2616,7 +2616,7 @@ export default function App() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="sm:col-span-2">
                       <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                        Article Title *
+                        প্রবন্ধের শিরোনাম *
                       </label>
                       <input
                         type="text"
@@ -2648,7 +2648,7 @@ export default function App() {
 
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-rose-300 mb-1.5">
-                      Anti-Islamic Claim / Objection Being Refuted
+                      আলোচ্য প্রশ্ন / আপত্তি
                     </label>
                     <input
                       type="text"
@@ -2665,7 +2665,7 @@ export default function App() {
                       <label className="text-xs font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-2">
                         <Layers className="w-4 h-4" />
                         <span>
-                          Smart Interleaved Content Blocks ({formBlocks.length} blocks — Add Text, Image, or YouTube Between Any Section)
+                          স্মার্ট কনটেন্ট ব্লক ({formBlocks.length} blocks — Add Text, Image, or YouTube Between Any Section)
                         </span>
                       </label>
                     </div>
@@ -3086,7 +3086,7 @@ export default function App() {
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
-                    Full-Stack Production Blueprint
+                    পূর্ণাঙ্গ প্রযুক্তিগত কাঠামো
                   </span>
                   <h2 className="text-xl sm:text-2xl font-bold text-white mt-1">
                     Next.js 15 + TypeScript + PostgreSQL (`pgvector`) + Prisma + NextAuth (Google & Credentials)
@@ -3100,7 +3100,7 @@ export default function App() {
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs sm:text-sm font-medium transition-colors"
                 >
                   <Download className="w-4 h-4 text-emerald-400" />
-                  <span>Export Current Blog Posts (.json)</span>
+                  <span>সব প্রবন্ধ ডাউনলোড করুন (.json)</span>
                 </button>
               </div>
 
@@ -3141,7 +3141,7 @@ export default function App() {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition-colors"
                   >
                     <Copy className="w-3.5 h-3.5" />
-                    <span>Copy Code</span>
+                    <span>কোড কপি করুন</span>
                   </button>
                 </div>
                 <pre className="p-5 text-xs sm:text-sm font-mono text-emerald-100/90 overflow-x-auto leading-relaxed">
@@ -3158,16 +3158,16 @@ export default function App() {
               <div className="max-w-3xl">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-3">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>AI-Powered Apologetics & Counter-Critique Knowledge Base</span>
+                  <span>এআই-সমর্থিত গবেষণা ও জ্ঞানভিত্তিক সংগ্রহশালা</span>
                 </div>
                 <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-                  Store, Search & Synthesize{' '}
+                  জ্ঞান সংরক্ষণ, অনুসন্ধান ও বিশ্লেষণ{' '}
                   <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300 bg-clip-text text-transparent">
-                    Evidence-Based Refutations
+                    তথ্যপ্রমাণভিত্তিক বিশ্লেষণ
                   </span>
                 </h1>
                 <p className="text-sm sm:text-base text-slate-300 mt-2.5 leading-relaxed">
-                  Featuring smart interleaved **Text, Visual Diagrams, and YouTube Video Previews**, instant semantic AI auto-search, and an Admin Dashboard with Google & Credential Authentication.
+                  প্রবন্ধ, ছবি, চিত্র, ভিডিও ও তথ্যসূত্রসহ গবেষণার লেখা প্রকাশ করুন। এআই-সহায়তায় প্রয়োজনীয় বিষয় ও প্রবন্ধ দ্রুত খুঁজে নিন।
                 </p>
               </div>
 
@@ -3212,7 +3212,7 @@ export default function App() {
                     title="Expands queries with apologetics, physics, and Qur'anic concept synonyms"
                   >
                     <Sparkles className={`w-4 h-4 ${aiSemanticMode ? 'text-amber-300' : 'text-slate-500'}`} />
-                    <span>AI Smart Search: {aiSemanticMode ? 'ON' : 'OFF'}</span>
+                    <span>স্মার্ট এআই অনুসন্ধান: {aiSemanticMode ? 'ON' : 'OFF'}</span>
                   </button>
 
                   {/* Ask AI Direct Button */}
@@ -3592,7 +3592,7 @@ export default function App() {
                     onClick={handleStartNewPost}
                     className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs sm:text-sm text-white font-semibold"
                   >
-                    + Create Smart Post
+                    + নতুন পোস্ট তৈরি করুন
                   </button>
                 </div>
               </div>
