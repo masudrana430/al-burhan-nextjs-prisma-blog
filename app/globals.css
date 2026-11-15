@@ -2005,3 +2005,79 @@ body {
   .site-header .mobile-menu-toggle[aria-expanded="true"] .mobile-menu-toggle-line--middle { opacity: 0 !important; transform: scaleX(0) !important; }
   .site-header .mobile-menu-toggle[aria-expanded="true"] .mobile-menu-toggle-line--bottom { transform: translateY(-7px) rotate(-45deg) !important; }
 }
+
+
+/* Honors project original staggered mobile menu — adapted to AL-BURHAN theme tokens. */
+.honors-mobile-nav { position: relative; z-index: 60; display: none; }
+.honors-mobile-nav__bar {
+  height: 68px; display:flex; align-items:center; justify-content:space-between; padding:0 16px;
+  background:var(--surface); border-bottom:1px solid var(--border); position:relative; z-index:5;
+}
+.honors-mobile-nav__brand { display:flex; align-items:center; gap:10px; border:0; background:transparent; color:var(--text-primary); text-align:left; }
+.honors-mobile-nav__brand-icon { width:38px; height:38px; border-radius:13px; background:var(--surface-muted); display:grid; place-items:center; border:1px solid var(--border); }
+.honors-mobile-nav__brand strong,.honors-mobile-nav__brand small { display:block; }
+.honors-mobile-nav__brand strong { font-size:14px; line-height:1.2; font-weight:900; letter-spacing:.02em; }
+.honors-mobile-nav__brand small { font-size:10px; color:var(--text-secondary); margin-top:3px; }
+.honors-mobile-nav__toggle {
+  height:42px; min-width:100px; padding:0 12px; border:1px solid var(--border); border-radius:13px;
+  background:var(--surface-muted); color:var(--text-primary); display:flex; align-items:center; justify-content:center;
+  gap:10px; font-size:12px; font-weight:850; box-shadow:0 5px 16px rgba(15,23,42,.06); position:relative; z-index:8;
+}
+.honors-mobile-nav__toggle-icon { width:20px; height:20px; display:grid; place-items:center; transition:transform .55s cubic-bezier(.2,.8,.2,1); }
+.honors-mobile-nav[data-open=true] .honors-mobile-nav__toggle-icon { transform:rotate(180deg); }
+.honors-mobile-nav__hamburger { width:18px; display:grid; gap:4px; }
+.honors-mobile-nav__hamburger i { height:2px; width:18px; border-radius:4px; background:currentColor; display:block; transition:transform .35s,opacity .25s; }
+.honors-mobile-nav[data-open=true] .honors-mobile-nav__hamburger i:first-child { transform:translateY(6px) rotate(45deg); }
+.honors-mobile-nav[data-open=true] .honors-mobile-nav__hamburger i:nth-child(2) { opacity:0; }
+.honors-mobile-nav[data-open=true] .honors-mobile-nav__hamburger i:last-child { transform:translateY(-6px) rotate(-45deg); }
+.honors-mobile-nav__toggle-label { display:block; overflow:hidden; height:1em; }
+.honors-mobile-nav__toggle-words { display:flex; flex-direction:column; line-height:1; transition:transform .55s cubic-bezier(.2,.8,.2,1); }
+.honors-mobile-nav__toggle-words span { height:1em; display:block; }
+.honors-mobile-nav[data-open=true] .honors-mobile-nav__toggle-words { transform:translateY(-1em); }
+.honors-mobile-nav__backdrop { position:fixed; inset:68px 0 0; background:rgba(2,6,23,.46); opacity:0; visibility:hidden; pointer-events:none; transition:opacity .35s,visibility .35s; z-index:1; border:0; width:100%; }
+.honors-mobile-nav[data-open=true] .honors-mobile-nav__backdrop { opacity:1; visibility:visible; pointer-events:auto; }
+.honors-mobile-nav__layers { position:fixed; inset:68px 0 0; z-index:2; pointer-events:none; overflow:hidden; }
+.honors-mobile-nav__layers span { position:absolute; inset:0; transform:translateX(102%); transition:transform .62s cubic-bezier(.77,0,.18,1); }
+.honors-mobile-nav__layers span:nth-child(1) { background:color-mix(in srgb,var(--library-gold) 46%,var(--surface)); transition-delay:0s; }
+.honors-mobile-nav__layers span:nth-child(2) { background:color-mix(in srgb,var(--accent) 34%,var(--surface)); transition-delay:.07s; }
+.honors-mobile-nav__layers span:nth-child(3) { background:var(--surface); transition-delay:.14s; }
+.honors-mobile-nav[data-open=true] .honors-mobile-nav__layers span { transform:translateX(0); }
+.honors-mobile-nav__panel {
+  position:fixed; inset:68px 0 0; z-index:3; background:var(--surface); color:var(--text-primary);
+  padding:clamp(42px,10vh,84px) 25px 28px; transform:translateX(102%);
+  transition:transform .7s cubic-bezier(.77,0,.18,1); transition-delay:.16s;
+  display:flex; flex-direction:column; overflow-y:auto; overscroll-behavior:contain;
+}
+.honors-mobile-nav[data-open=true] .honors-mobile-nav__panel { transform:translateX(0); }
+.honors-mobile-nav__eyebrow { font-size:11px; font-weight:900; letter-spacing:.2em; text-transform:uppercase; color:var(--accent); margin:0 0 26px; }
+.honors-mobile-nav__panel ul { list-style:none; margin:0; padding:0; display:grid; gap:12px; }
+.honors-mobile-nav__panel li { overflow:hidden; }
+.honors-mobile-nav__panel li button {
+  width:100%; display:flex; align-items:center; gap:15px; border:0; padding:0; background:transparent;
+  color:inherit; text-align:left; font-size:clamp(25px,7.2vw,39px); font-weight:850; letter-spacing:-.045em;
+  line-height:1.2; transform:translateY(125%) rotate(5deg); opacity:.35;
+  transition:transform .8s cubic-bezier(.2,.8,.2,1),opacity .55s,color .2s; transition-delay:0s;
+}
+.honors-mobile-nav[data-open=true] .honors-mobile-nav__panel li button {
+  transform:translateY(0) rotate(0); opacity:1; transition-delay:calc(.34s + var(--menu-index)*.09s);
+}
+.honors-mobile-nav__panel li button:active { color:var(--accent); }
+.honors-mobile-nav__number { font-size:11px; letter-spacing:.08em; color:var(--accent); min-width:22px; }
+.honors-mobile-nav__panel li button svg { margin-left:auto; flex:0 0 auto; color:var(--accent); }
+.honors-mobile-nav__footer { margin-top:auto; padding-top:36px; }
+.honors-mobile-nav__footer-label { margin:0 0 14px; color:var(--accent); font-size:10px; font-weight:900; letter-spacing:.13em; text-transform:uppercase; }
+.honors-mobile-nav__footer-label span { color:var(--text-muted); font-weight:600; letter-spacing:0; text-transform:none; }
+.honors-mobile-nav__actions { display:flex; flex-wrap:wrap; gap:8px; }
+.honors-mobile-nav__actions button { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:42px; padding:9px 12px; border:1px solid var(--border); border-radius:11px; background:var(--surface-muted); color:var(--text-primary); font-size:12px; font-weight:750; }
+.honors-mobile-nav__actions button svg { color:var(--accent); }
+.honors-mobile-nav__tagline { margin:24px 0 0; color:var(--text-muted); font-size:11px; }
+@media(max-width:767px) {
+  .honors-mobile-nav { display:block; }
+  .site-header-inner > .main-nav { display:none !important; }
+  .site-header-inner > .hidden.lg\\:flex { display:none !important; }
+  .site-header-inner > div:last-child { display:none !important; }
+}
+@media(min-width:768px) { .honors-mobile-nav { display:none !important; } }
+@media(prefers-reduced-motion:reduce) {
+  .honors-mobile-nav * { transition-duration:.01ms !important; transition-delay:0ms !important; }
+}
