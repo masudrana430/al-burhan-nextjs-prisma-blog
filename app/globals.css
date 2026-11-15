@@ -1505,3 +1505,93 @@ body {
   .auth-page { padding-top: 24px !important; padding-bottom: 24px !important; }
   .auth-page > .auth-panel { padding: 22px !important; }
 }
+
+
+/* AL-BURHAN login route: consistent card visibility with responsive ornament. */
+.auth-page {
+  position: relative !important;
+  isolation: isolate !important;
+  min-height: 100svh !important;
+  overflow: hidden !important;
+  background-color: #f7f8f6 !important;
+  background-image:
+    radial-gradient(circle at 88% 10%, rgba(183,143,70,.10), transparent 30%),
+    radial-gradient(circle at 10% 90%, rgba(36,91,67,.08), transparent 28%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='112' viewBox='0 0 112 112'%3E%3Cg fill='none' stroke='%23b78f46' stroke-opacity='.18' stroke-width='1'%3E%3Cpath d='M56 4 67 34 97 45 67 56 56 86 45 56 15 45 45 34Z'/%3E%3Cpath d='M56 15 64 37 86 45 64 53 56 75 48 53 26 45 48 37Z'/%3E%3C/g%3E%3C/svg%3E") !important;
+  background-size: auto, auto, 112px 112px !important;
+  background-repeat: no-repeat, no-repeat, repeat !important;
+}
+.auth-page::before {
+  z-index: 0 !important;
+  width: min(76vw, 570px) !important;
+  top: -230px !important;
+  right: -185px !important;
+  opacity: .20 !important;
+}
+.auth-page::after {
+  z-index: 0 !important;
+  opacity: .14 !important;
+}
+.auth-page .auth-panel {
+  position: relative !important;
+  z-index: 2 !important;
+  width: min(100%, 448px) !important;
+  border: 1px solid rgba(183,143,70,.42) !important;
+  border-radius: 26px !important;
+  background: rgba(255,255,252,.975) !important;
+  color: #202a22 !important;
+  box-shadow: 0 20px 60px rgba(33,50,38,.13), inset 0 0 0 5px rgba(183,143,70,.05) !important;
+}
+.auth-page .auth-panel::before { z-index: 0 !important; opacity: .14 !important; }
+.auth-page .auth-panel > * { position: relative; z-index: 1; }
+.auth-page .auth-logo {
+  color: #8b692d !important;
+  border: 1px solid rgba(183,143,70,.32);
+  background: linear-gradient(145deg, #fffaf0, #f4ead4) !important;
+}
+.auth-page .auth-primary {
+  color: #fff !important;
+  border: 0 !important;
+  background: linear-gradient(135deg, #286448, #174832) !important;
+  box-shadow: 0 7px 16px rgba(31,84,57,.18);
+}
+.auth-page .auth-primary:hover { background: linear-gradient(135deg, #1e593d, #123d2a) !important; }
+.auth-page .auth-input-wrap {
+  border-color: #d8e0d7 !important;
+  background: #fff !important;
+  color: #68776c !important;
+}
+.auth-page .auth-input-wrap:focus-within {
+  border-color: #507b5d !important;
+  box-shadow: 0 0 0 3px rgba(36,91,67,.10);
+}
+.auth-page .auth-input-wrap input { color: #202a22 !important; }
+.auth-page .auth-muted { color: #657469 !important; }
+.auth-page .auth-link { color: #245b43 !important; }
+.auth-page .auth-back { color: #52665a !important; }
+.auth-page .auth-google { color: #202a22 !important; border-color: #d8e0d7 !important; background: #fff !important; }
+.auth-page .auth-divider span { background: #dfe6dc; }
+.auth-page .auth-admin { border-color: #e4e9df !important; }
+.theme-dark .auth-page {
+  background-color: #1d2420 !important;
+  background-image:
+    radial-gradient(circle at 88% 10%, rgba(212,177,106,.10), transparent 30%),
+    radial-gradient(circle at 10% 90%, rgba(62,130,88,.10), transparent 28%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='112' viewBox='0 0 112 112'%3E%3Cg fill='none' stroke='%23d4b16a' stroke-opacity='.13' stroke-width='1'%3E%3Cpath d='M56 4 67 34 97 45 67 56 56 86 45 56 15 45 45 34Z'/%3E%3Cpath d='M56 15 64 37 86 45 64 53 56 75 48 53 26 45 48 37Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: auto, auto, 112px 112px !important;
+  background-repeat: no-repeat, no-repeat, repeat !important;
+}
+.theme-dark .auth-page .auth-panel {
+  color: #edf1ed !important;
+  border-color: rgba(212,177,106,.32) !important;
+  background: rgba(38,43,39,.98) !important;
+}
+.theme-dark .auth-page .auth-input-wrap,
+.theme-dark .auth-page .auth-google { background: #303832 !important; color: #edf1ed !important; border-color: #4a554d !important; }
+.theme-dark .auth-page .auth-input-wrap input { color: #edf1ed !important; }
+.theme-dark .auth-page .auth-muted { color: #b8c2ba !important; }
+.theme-dark .auth-page .auth-link { color: #d4bd85 !important; }
+@media (max-width: 640px) {
+  .auth-page { padding: 22px 14px !important; }
+  .auth-page .auth-panel { padding: 22px !important; border-radius: 22px !important; }
+}
