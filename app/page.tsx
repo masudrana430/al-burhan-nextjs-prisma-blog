@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import {
   Search,
@@ -1315,16 +1314,6 @@ export default function App() {
 
   // Responsive navigation and database-backed topic directory
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const mobileMenuPanelRef = useRef<HTMLElement | null>(null);
-  const mobileMenuLayersRef = useRef<HTMLDivElement | null>(null);
-  const mobileMenuBackdropRef = useRef<HTMLButtonElement | null>(null);
-  const mobileMenuTopLineRef = useRef<HTMLSpanElement | null>(null);
-  const mobileMenuMiddleLineRef = useRef<HTMLSpanElement | null>(null);
-  const mobileMenuBottomLineRef = useRef<HTMLSpanElement | null>(null);
-  const mobileMenuOpenTimelineRef = useRef<gsap.core.Timeline | null>(null);
-  const mobileMenuCloseTimelineRef = useRef<gsap.core.Timeline | null>(null);
-  const mobileMenuIconTimelineRef = useRef<gsap.core.Timeline | null>(null);
-  const mobileMenuHasOpenedRef = useRef(false);
 
   useEffect(() => {
     if (!isMobileMenuOpen) return;
@@ -2160,15 +2149,57 @@ export default function App() {
       )}
 
       {/* TOP NAVIGATION HEADER */}
+      {/* Original Honors-project staggered mobile navigation, adapted for AL-BURHAN actions */}
       <header className="site-header sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
+        <div className="honors-mobile-nav lg:hidden" data-open={isMobileMenuOpen ? 'true' : 'false'}>
+          <div className="honors-mobile-nav__bar">
+            <button type="button" className="honors-mobile-nav__brand" onClick={() => { setSelectedPostId(null); setActiveTab('explore'); setIsMobileMenuOpen(false); }}>
+              <span className="honors-mobile-nav__brand-icon"><ShieldCheck className="w-5 h-5 text-emerald-400" /></span>
+              <span><strong>AL-BURHAN</strong><small>গবেষণা পাঠাগার · Research Library</small></span>
+            </button>
+            <button type="button" className="honors-mobile-nav__toggle" onClick={() => setIsMobileMenuOpen(value => !value)}
+              aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={isMobileMenuOpen} aria-controls="al-burhan-mobile-menu">
+              <span className="honors-mobile-nav__toggle-label"><span className="honors-mobile-nav__toggle-words"><span>Menu</span><span>Close</span></span></span>
+              <span className="honors-mobile-nav__toggle-icon" aria-hidden="true">
+                <span className="honors-mobile-nav__hamburger"><i /><i /><i /></span>
+              </span>
+            </button>
+          </div>
+          <button type="button" aria-label="Close navigation menu" tabIndex={isMobileMenuOpen ? 0 : -1}
+            className="honors-mobile-nav__backdrop" onClick={() => setIsMobileMenuOpen(false)} />
+          <div className="honors-mobile-nav__layers" aria-hidden="true"><span /><span /><span /></div>
+          <nav id="al-burhan-mobile-menu" className="honors-mobile-nav__panel" aria-label="Mobile navigation"
+            aria-hidden={!isMobileMenuOpen} inert={!isMobileMenuOpen}>
+            <p className="honors-mobile-nav__eyebrow">Explore AL-BURHAN</p>
+            <ul>
+              <li style={{'--menu-index':0} as React.CSSProperties}><button type="button" onClick={() => { setSelectedPostId(null); setActiveTab('explore'); setIsMobileMenuOpen(false); }}><span className="honors-mobile-nav__number">01</span><span>প্রবন্ধ ও গবেষণা</span><Compass size={19}/></button></li>
+              <li style={{'--menu-index':1} as React.CSSProperties}><button type="button" onClick={() => { setSelectedPostId(null); setActiveTab('admin'); setIsMobileMenuOpen(false); }}><span className="honors-mobile-nav__number">02</span><span>প্রশাসক ড্যাশবোর্ড</span><LayoutDashboard size={19}/></button></li>
+              <li style={{'--menu-index':2} as React.CSSProperties}><button type="button" onClick={() => { setIsMobileMenuOpen(false); window.location.assign('/admin/editor'); }}><span className="honors-mobile-nav__number">03</span><span>নতুন পোস্ট লিখুন</span><Plus size={19}/></button></li>
+              <li style={{'--menu-index':3} as React.CSSProperties}><button type="button" onClick={() => { setSelectedPostId(null); setActiveTab('saved'); setIsMobileMenuOpen(false); }}><span className="honors-mobile-nav__number">04</span><span>সংরক্ষিত প্রবন্ধ</span><Bookmark size={19}/></button></li>
+              <li style={{'--menu-index':4} as React.CSSProperties}><button type="button" onClick={() => { setSelectedPostId(null); setActiveTab('stack'); setIsMobileMenuOpen(false); }}><span className="honors-mobile-nav__number">05</span><span>প্রযুক্তি ও Stack</span><Database size={19}/></button></li>
+            </ul>
+            <div className="honors-mobile-nav__footer">
+              <p className="honors-mobile-nav__footer-label">Quick actions <span>· দ্রুত ব্যবহার</span></p>
+              <div className="honors-mobile-nav__actions">
+                <button type="button" onClick={() => setTheme(current => current === 'light' ? 'sepia' : current === 'sepia' ? 'dark' : current === 'dark' ? 'system' : 'light')}>
+                  {theme === 'dark' ? <Sun size={16}/> : theme === 'sepia' ? <BookOpen size={16}/> : theme === 'system' ? <Database size={16}/> : <Moon size={16}/>}<span>Theme</span>
+                </button>
+                {currentUser ? <button type="button" onClick={() => { setIsMobileMenuOpen(false); handleLogout(); }}><LogOut size={16}/><span>Logout</span></button>
+                  : <button type="button" onClick={() => { setIsMobileMenuOpen(false); setIsAuthModalOpen(true); }}><LogIn size={16}/><span>Login / Admin</span></button>}
+                <button type="button" onClick={() => { setIsMobileMenuOpen(false); setIsChatOpen(value => !value); }}><Sparkles size={16}/><span>AI Assistant</span></button>
+              </div>
+              <p className="honors-mobile-nav__tagline">যুক্তি, জ্ঞান ও গবেষণার নির্ভরযোগ্য পাঠাগার</p>
+            </div>
+          </nav>
+        </div>
         <div className="site-header-inner max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
-          {/* Brand Logo */}
-          <div
+          {/* Desktop brand */}
+          <div className="hidden lg:flex items-center gap-3 cursor-pointer group"
             onClick={() => {
               setSelectedPostId(null);
               setActiveTab('explore');
             }}
-            className="flex items-center gap-3 cursor-pointer group"
           >
             <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center">
               <ShieldCheck className="w-5 h-5 text-emerald-400" />
@@ -2189,7 +2220,7 @@ export default function App() {
           </div>
 
           {/* Navigation Tabs */}
-          <nav ref={mobileMenuPanelRef} id="al-burhan-mobile-menu" aria-label="Main navigation" className={`main-nav flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800 ${isMobileMenuOpen ? 'is-open' : ''}`}>
+          <nav aria-label="Main navigation" className="main-nav hidden lg:flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
             <button
               onClick={() => {
                 setSelectedPostId(null);
@@ -2295,8 +2326,8 @@ export default function App() {
             </div>
           </nav>
 
-          {/* Desktop action controls; mobile actions live inside the GSAP menu. */}
-          <div className="flex items-center gap-2">
+          {/* Desktop action controls; mobile actions live inside the staggered menu. */}
+          <div className="hidden lg:flex items-center gap-2">
             <button
               type="button"
               onClick={() => setTheme((current) => current === 'light' ? 'sepia' : current === 'sepia' ? 'dark' : current === 'dark' ? 'system' : 'light')}
@@ -2306,20 +2337,6 @@ export default function App() {
             >
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : theme === 'sepia' ? <BookOpen className="w-4 h-4" /> : theme === 'system' ? <Database className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               <span className="hidden sm:inline">{theme === 'light' ? 'সেপিয়া' : theme === 'sepia' ? 'ডার্ক' : theme === 'dark' ? 'সিস্টেম' : 'লাইট'}</span>
-            </button>
-            <button
-              type="button"
-              className="mobile-menu-toggle inline-flex items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-slate-200"
-              aria-expanded={isMobileMenuOpen}
-              aria-controls="al-burhan-mobile-menu"
-              aria-label={isMobileMenuOpen ? 'মেনু বন্ধ করুন' : 'মেনু খুলুন'}
-              onClick={() => setIsMobileMenuOpen(open => !open)}
-            >
-              <span className="mobile-menu-toggle-icon" aria-hidden="true">
-                <span ref={mobileMenuTopLineRef} className="mobile-menu-toggle-line mobile-menu-toggle-line--top" />
-                <span ref={mobileMenuMiddleLineRef} className="mobile-menu-toggle-line mobile-menu-toggle-line--middle" />
-                <span ref={mobileMenuBottomLineRef} className="mobile-menu-toggle-line mobile-menu-toggle-line--bottom" />
-              </span>
             </button>
             {currentUser ? (
               <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5">
@@ -2372,9 +2389,7 @@ export default function App() {
             </button>
           </div>
         </div>
-        <button ref={mobileMenuBackdropRef} type="button" className={`mobile-menu-backdrop ${isMobileMenuOpen ? 'is-open' : ''}`} aria-label="মেনু বন্ধ করুন"
-          tabIndex={isMobileMenuOpen ? 0 : -1} onClick={() => setIsMobileMenuOpen(false)} />
-        <div ref={mobileMenuLayersRef} className="mobile-menu-layers" aria-hidden="true"><span className="mobile-menu-layer" /><span className="mobile-menu-layer" /><span className="mobile-menu-layer" /></div>
+
       </header>
 
       {/* MAIN CONTENT CONTAINER */}
