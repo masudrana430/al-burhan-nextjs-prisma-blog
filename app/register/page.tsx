@@ -50,28 +50,28 @@ export default function RegisterPage() {
         <Link href="/" className="auth-back inline-flex items-center gap-2 text-sm mb-8"><ArrowLeft size={16}/> আল-বুরহানে ফিরে যান</Link>
         <div className="flex items-center gap-3 mb-6">
           <div className="auth-logo h-12 w-12 rounded-2xl flex items-center justify-center"><BookOpen size={22}/></div>
-          <div><p className="text-xs uppercase tracking-widest auth-muted">গবেষণা পাঠাগার</p><h1 className="text-2xl font-semibold tracking-tight">অ্যাকাউন্ট তৈরি করুন</h1></div>
+          <div><p className="text-xs uppercase tracking-widest auth-muted">গবেষণা পাঠাগার</p><h1 className="text-2xl font-semibold tracking-tight">Create your account</h1></div>
         </div>
-        <p className="auth-muted text-sm mb-6">আপনার পাঠ ও গবেষণার অভিজ্ঞতা সংরক্ষণ করতে আল-বুরহানে যুক্ত হোন।</p>
-        {googleEnabled && <button type="button" onClick={() => signIn('google', { callbackUrl: '/' })} className="auth-google w-full rounded-xl border py-3 font-medium mb-5">Google দিয়ে অ্যাকাউন্ট তৈরি করুন</button>}
+        <p className="auth-muted text-sm mb-6">আপনার reading ও research experience সংরক্ষণ করতে AL-BURHAN-এ join করুন।</p>
+        {googleEnabled && <button type="button" onClick={() => signIn('google', { callbackUrl: '/' })} className="auth-google w-full rounded-xl border py-3 font-medium mb-5">Sign up with Google</button>}
         {error && <p role="alert" className="auth-error rounded-xl px-3 py-2.5 text-sm mb-4">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <label className="block text-sm font-medium">পূর্ণ নাম
+          <label className="block text-sm font-medium">Full name
             <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><UserRound size={17}/><input required minLength={2} maxLength={80} autoComplete="name" value={name} onChange={e=>setName(e.target.value)} placeholder="আপনার নাম" className="w-full py-3 bg-transparent outline-none"/></span>
           </label>
-          <label className="block text-sm font-medium">ইমেইল ঠিকানা
+          <label className="block text-sm font-medium">Email address
             <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><Mail size={17}/><input required type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" className="w-full py-3 bg-transparent outline-none"/></span>
           </label>
           <label className="block text-sm font-medium">পাসওয়ার্ড
-            <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><LockKeyhole size={17}/><input required minLength={10} maxLength={128} type={showPassword?'text':'password'} autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="কমপক্ষে ১০ অক্ষর" className="w-full py-3 bg-transparent outline-none"/><button type="button" aria-label={showPassword?'পাসওয়ার্ড লুকান':'পাসওয়ার্ড দেখুন'} onClick={()=>setShowPassword(v=>!v)}>{showPassword?<EyeOff size={17}/>:<Eye size={17}/>}</button></span>
+            <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><LockKeyhole size={17}/><input required minLength={10} maxLength={128} type={showPassword?'text':'password'} autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="At least 10 characters" className="w-full py-3 bg-transparent outline-none"/><button type="button" aria-label={showPassword?'পাসওয়ার্ড লুকান':'পাসওয়ার্ড দেখুন'} onClick={()=>setShowPassword(v=>!v)}>{showPassword?<EyeOff size={17}/>:<Eye size={17}/>}</button></span>
           </label>
-          <label className="block text-sm font-medium">পাসওয়ার্ড নিশ্চিত করুন
-            <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><LockKeyhole size={17}/><input required type="password" autoComplete="new-password" value={confirm} onChange={e=>setConfirm(e.target.value)} placeholder="আবার পাসওয়ার্ড লিখুন" className="w-full py-3 bg-transparent outline-none"/></span>
+          <label className="block text-sm font-medium">Confirm password
+            <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><LockKeyhole size={17}/><input required type="password" autoComplete="new-password" value={confirm} onChange={e=>setConfirm(e.target.value)} placeholder="Re-enter your password" className="w-full py-3 bg-transparent outline-none"/></span>
           </label>
-          <button disabled={loading} className="auth-primary w-full rounded-xl py-3 font-semibold disabled:opacity-60">{loading?'অ্যাকাউন্ট তৈরি হচ্ছে…':'অ্যাকাউন্ট তৈরি করুন'}</button>
+          <button disabled={loading} className="auth-primary w-full rounded-xl py-3 font-semibold disabled:opacity-60">{loading?'Creating account…':'অ্যাকাউন্ট তৈরি করুন'}</button>
         </form>
-        <p className="text-sm text-center auth-muted mt-6">আগে থেকেই অ্যাকাউন্ট আছে? <Link className="auth-link font-semibold" href="/login">লগইন করুন</Link></p>
-        <p className="auth-terms text-xs auth-muted text-center mt-5">অ্যাকাউন্ট তৈরি করার মাধ্যমে আপনি এই গবেষণা পাঠাগার দায়িত্বশীলভাবে ব্যবহারে সম্মত হচ্ছেন।</p>
+        <p className="text-sm text-center auth-muted mt-6">Already have an account? <Link className="auth-link font-semibold" href="/login">Sign in</Link></p>
+        <p className="auth-terms text-xs auth-muted text-center mt-5">By creating an account, আপনি AL-BURHAN responsibly ব্যবহার করতে সম্মত হচ্ছেন।</p>
       </section>
     </main>
   );
