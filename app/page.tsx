@@ -3295,7 +3295,7 @@ export default function App() {
 
                 {/* Quick Concept Chips */}
                 <div className="flex flex-wrap items-center gap-2 mt-3.5 text-xs">
-                  <span className="text-slate-400 font-medium">দ্রুত অনুসন্ধান:span>
+                  <span className="text-slate-400 font-medium">দ্রুত অনুসন্ধান:</span>
                   {[
                     'Kalam & Quantum Vacuum',
                     'Surah Yasin 36:36 Zawj',
