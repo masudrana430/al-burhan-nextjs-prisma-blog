@@ -1402,9 +1402,12 @@ export default function App() {
                 if (!context) throw new Error('Canvas is unavailable');
                 context.drawImage(image, 0, 0, canvas.width, canvas.height);
                 context.globalCompositeOperation = 'destination-out';
+                // Keep the center artwork partially visible: remove only 55% opacity.
+                context.globalAlpha = 0.55;
                 context.beginPath();
                 context.arc(canvas.width / 2, canvas.height * (455 / 804), canvas.width * (125 / 720), 0, Math.PI * 2);
                 context.fill();
+                context.globalAlpha = 1;
                 asset.p = canvas.toDataURL('image/png');
                 resolve();
               } catch (error) {
