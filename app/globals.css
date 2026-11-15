@@ -2074,7 +2074,6 @@ body {
 @media(max-width:767px) {
   .honors-mobile-nav { display:block; }
   .site-header-inner > .main-nav { display:none !important; }
-  .site-header-inner > .hidden.lg\\:flex { display:none !important; }
   .site-header-inner > div:last-child { display:none !important; }
 }
 @media(min-width:768px) { .honors-mobile-nav { display:none !important; } }
