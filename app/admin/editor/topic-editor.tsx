@@ -30,7 +30,7 @@ export default function TopicEditor({ initialTopics }: Props) {
   const [newDescription, setNewDescription] = useState('');
   const [topicBusy, setTopicBusy] = useState(false);
 
-  const wordCount = useMemo(() => content.trim() ? content.trim().split(/\\s+/).length : 0, [content]);
+  const wordCount = useMemo(() => content.trim() ? content.trim().split(/\s+/).length : 0, [content]);
   const readTime = Math.max(1, Math.ceil(wordCount / 180));
 
   async function createTopic(event: FormEvent) {
