@@ -8,7 +8,8 @@ export const runtime = 'nodejs';
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
-  return (session?.user as { role?: string } | undefined)?.role === 'ADMIN';
+  const user = (session as { user?: { role?: string } } | null)?.user;
+  return user?.role === 'ADMIN';
 }
 
 function makeSlug(value: string) {
