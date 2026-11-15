@@ -431,3 +431,14 @@ body {
   .app-shell main .reader-title { font-size:clamp(1.55rem,6vw,2rem); line-height:1.32; letter-spacing:-.02em; }
   .app-shell main .reader-card p { overflow-wrap:anywhere; }
 }
+
+/* Bengali-first typography and calm editorial layout */
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
+.app-shell, .auth-page, .admin-editor-bn {
+  font-family: "Hind Siliguri", "Noto Sans Bengali", "Nirmala UI", sans-serif;
+  letter-spacing: 0;
+}
+.app-shell button, .app-shell input, .app-shell textarea, .app-shell select {
+  font-family: inherit;
+}
+.admin-editor-bn textarea { font-family: inherit; }
