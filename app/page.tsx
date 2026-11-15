@@ -80,7 +80,8 @@ interface BlogPost {
   excerpt: string;
   content: string;
   blocks?: ContentBlock[];
-  category: 'Cosmology & Physics' | 'Biology & Embryology' | 'Historical & Ethics' | 'Philosophy & Logic' | 'Linguistics & Tafsir';
+  category: string;
+  topicId?: string;
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
   tags: string[];
   author: string;
@@ -1238,6 +1239,39 @@ export default function App() {
     }
   }, [posts]);
 
+  useEffect(() => {
+    let mounted = true;
+    fetch('/api/posts?page=1&pageSize=20', { cache: 'no-store' })
+      .then(response => response.ok ? response.json() : Promise.reject(new Error('post-load-failed')))
+      .then(data => {
+        if (!mounted || !Array.isArray(data.posts) || data.posts.length === 0) return;
+        const categoryLabels: Record<string, string> = {
+          COSMOLOGY_PHYSICS: 'মহাবিশ্ববিদ্যা ও পদার্থবিজ্ঞান',
+          BIOLOGY_EMBRYOLOGY: 'জীববিজ্ঞান ও ভ্রূণতত্ত্ব',
+          HISTORICAL_ETHICS: 'ইতিহাস ও নৈতিকতা',
+          PHILOSOPHY_LOGIC: 'দর্শন ও যুক্তিবিদ্যা',
+          LINGUISTICS_TAFSIR: 'ভাষাতত্ত্ব ও তাফসির',
+        };
+        const difficultyLabels: Record<string, string> = { BEGINNER: 'Beginner', INTERMEDIATE: 'Intermediate', ADVANCED: 'Advanced' };
+        const loaded: BlogPost[] = data.posts.map((item: any) => ({
+          id: item.id, title: item.title, slug: item.slug,
+          claimAddressed: item.claimAddressed || '', excerpt: item.excerpt || '', content: item.content || '',
+          blocks: Array.isArray(item.blocks) ? item.blocks : undefined,
+          category: item.topic?.name || categoryLabels[item.category] || 'অন্যান্য', topicId: item.topicId || undefined,
+          difficulty: difficultyLabels[item.difficulty] || 'Intermediate',
+          tags: Array.isArray(item.tags) ? item.tags : [], author: item.authorName || 'আল-বুরহান',
+          authorRole: item.authorRole || 'সম্পাদক', readTimeMinutes: item.readTimeMinutes || 5,
+          views: item.views || 0, publishedAt: item.createdAt ? new Date(item.createdAt).toISOString().slice(0,10) : '',
+          featured: Boolean(item.featured), bookmarked: false,
+          references: Array.isArray(item.references) ? item.references : [],
+          keyTakeaways: Array.isArray(item.keyTakeaways) ? item.keyTakeaways : [],
+        }));
+        setPosts(loaded);
+      })
+      .catch(() => { /* Keep the offline reading cache when the database is unavailable. */ });
+    return () => { mounted = false; };
+  }, []);
+
   // Authentication comes only from the signed, HTTP-only NextAuth session.
   const { data: session, status: authStatus, update: updateSession } = useSession();
   const sessionUser = session?.user as
@@ -1987,7 +2021,7 @@ export default function App() {
               }`}
             >
               <Compass className="w-4 h-4" />
-              <span>Articles ({posts.length})</span>
+              <span>প্রবন্ধ ({posts.length.toLocaleString('bn-BD')})</span>
             </button>
 
             <button
@@ -2002,12 +2036,12 @@ export default function App() {
               }`}
             >
               <LayoutDashboard className="w-4 h-4" />
-              <span>Admin Dashboard</span>
+              <span>প্রশাসক ড্যাশবোর্ড</span>
             </button>
 
             <button
               onClick={() => {
-                handleStartNewPost();
+                window.location.assign('/admin/editor');
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'editor'
@@ -2016,7 +2050,7 @@ export default function App() {
               }`}
             >
               <Plus className="w-4 h-4" />
-              <span>Write / Store Post</span>
+              <span>নতুন পোস্ট লিখুন</span>
             </button>
 
             <button
@@ -2031,7 +2065,7 @@ export default function App() {
               }`}
             >
               <Bookmark className="w-4 h-4" />
-              <span className="hidden md:inline">Saved</span>
+              <span className="hidden md:inline">সংরক্ষিত</span>
               <span className="text-xs px-1.5 py-0.2 rounded bg-slate-800 text-emerald-300">
                 {posts.filter((p) => p.bookmarked).length}
               </span>
@@ -2103,7 +2137,7 @@ export default function App() {
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-100 text-xs sm:text-sm font-semibold transition-all"
               >
                 <LogIn className="w-4 h-4 text-emerald-400" />
-                <span>Login / Admin</span>
+                <span>লগইন / প্রশাসক</span>
               </button>
             )}
 
@@ -3276,14 +3310,7 @@ export default function App() {
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1 mr-1">
                   <Filter className="w-3.5 h-3.5 text-emerald-400" /> Category:
                 </span>
-                {[
-                  'ALL',
-                  'Cosmology & Physics',
-                  'Biology & Embryology',
-                  'Historical & Ethics',
-                  'Philosophy & Logic',
-                  'Linguistics & Tafsir'
-                ].map((cat) => (
+                {['ALL', ...Array.from(new Set(posts.map((post) => post.category)))].map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
@@ -3293,7 +3320,7 @@ export default function App() {
                         : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
                     }`}
                   >
-                    {cat === 'ALL' ? 'All Categories' : cat}
+                    {cat === 'ALL' ? 'সব বিষয়' : cat}
                   </button>
                 ))}
               </div>
