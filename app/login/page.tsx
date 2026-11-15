@@ -26,7 +26,7 @@ export default function LoginPage() {
     try {
       const result = await signIn('user-credentials', { email, password, redirect: false });
       if (!result || result.error) {
-        setError('ইমেইল OR Password সঠিক নয়।');
+        setError('Email অথবা Password সঠিক নয়। আবার চেষ্টা করুন।');
         return;
       }
       router.replace('/');
@@ -41,19 +41,19 @@ export default function LoginPage() {
   return (
     <main className="auth-page min-h-screen flex items-center justify-center px-4 py-10">
       <section className="auth-panel w-full max-w-md rounded-3xl border p-6 sm:p-8">
-        <Link href="/" className="auth-back inline-flex items-center gap-2 text-sm mb-8"><ArrowLeft size={16}/> আল-বুরহানে ফিরে যান</Link>
+        <Link href="/" className="auth-back inline-flex items-center gap-2 text-sm mb-8"><ArrowLeft size={16}/> Back to AL-BURHAN</Link>
         <div className="flex items-center gap-3 mb-6">
           <div className="auth-logo h-12 w-12 rounded-2xl flex items-center justify-center"><BookOpen size={22}/></div>
-          <div><p className="text-xs uppercase tracking-widest auth-muted">গবেষণা পাঠাগার</p><h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1></div>
+          <div><p className="text-xs uppercase tracking-widest auth-muted">RESEARCH & KNOWLEDGE LIBRARY</p><h1 className="text-2xl font-semibold tracking-tight">আবার স্বাগতম</h1></div>
         </div>
-        <p className="auth-muted text-sm mb-6">আপনার AL-BURHAN account-এ sign in করুন।</p>
+        <p className="auth-muted text-sm mb-6">আপনার AL-BURHAN account-এ sign in করে reading ও research চালিয়ে যান।</p>
         {error && <p role="alert" className="auth-error rounded-xl px-3 py-2.5 text-sm mb-4">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block text-sm font-medium">Email address
             <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><Mail size={17}/><input required type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" className="w-full py-3 bg-transparent outline-none"/></span>
           </label>
-          <label className="block text-sm font-medium">পাসওয়ার্ড
-            <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><LockKeyhole size={17}/><input required type={showPassword?'text':'password'} autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="আপনার পাসওয়ার্ড" className="w-full py-3 bg-transparent outline-none"/><button type="button" aria-label={showPassword?'পাসওয়ার্ড লুকান':'পাসওয়ার্ড দেখুন'} onClick={()=>setShowPassword(v=>!v)}>{showPassword?<EyeOff size={17}/>:<Eye size={17}/>}</button></span>
+          <label className="block text-sm font-medium">Password
+            <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><LockKeyhole size={17}/><input required type={showPassword?'text':'password'} autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password" className="w-full py-3 bg-transparent outline-none"/><button type="button" aria-label={showPassword?'পাসওয়ার্ড লুকান':'পাসওয়ার্ড দেখুন'} onClick={()=>setShowPassword(v=>!v)}>{showPassword?<EyeOff size={17}/>:<Eye size={17}/>}</button></span>
           </label>
           <button disabled={loading} className="auth-primary w-full rounded-xl py-3 font-semibold disabled:opacity-60">{loading?'Signing in…':'Sign in'}</button>
         </form>
