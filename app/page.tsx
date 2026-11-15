@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { Lottie } from 'lottie-react';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import {
   Search,
@@ -1372,6 +1373,72 @@ export default function App() {
 
   // AI Chatbot Drawer State
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [aiLauncherPosition, setAiLauncherPosition] = useState<{ x: number; y: number } | null>(null);
+  const [aiScrollShift, setAiScrollShift] = useState(0);
+  const aiLauncherDragRef = useRef({
+    pointerId: null as number | null,
+    startX: 0,
+    startY: 0,
+    originX: 0,
+    originY: 0,
+    x: 0,
+    y: 0,
+    moved: false,
+  });
+
+  // Restore a previously dragged launcher position and keep it inside the viewport.
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem('al-burhan-ai-launcher-position');
+      if (!saved) return;
+      const parsed = JSON.parse(saved) as { x?: number; y?: number };
+      if (typeof parsed.x !== 'number' || typeof parsed.y !== 'number') return;
+      const size = window.innerWidth <= 640 ? 82 : 94;
+      setAiLauncherPosition({
+        x: Math.max(8, Math.min(parsed.x, window.innerWidth - size - 8)),
+        y: Math.max(8, Math.min(parsed.y, window.innerHeight - size - 8)),
+      });
+    } catch {
+      window.localStorage.removeItem('al-burhan-ai-launcher-position');
+    }
+  }, []);
+
+  // The floating assistant gently travels upward as the reader scrolls down.
+  useEffect(() => {
+    let frame = 0;
+    const updateScrollPosition = () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        const fallbackTop = window.innerHeight - (window.innerWidth <= 640 ? 104 : 116);
+        const currentTop = aiLauncherPosition?.y ?? fallbackTop;
+        const availableTravel = Math.max(0, currentTop - 8);
+        setAiScrollShift(Math.min(52, availableTravel, Math.max(0, window.scrollY * 0.035)));
+      });
+    };
+    window.addEventListener('scroll', updateScrollPosition, { passive: true });
+    window.addEventListener('resize', updateScrollPosition);
+    updateScrollPosition();
+    return () => {
+      window.removeEventListener('scroll', updateScrollPosition);
+      window.removeEventListener('resize', updateScrollPosition);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [aiLauncherPosition]);
+
+  // Keep the page still while the AI drawer is open and support Escape to close it.
+  useEffect(() => {
+    if (!isChatOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsChatOpen(false);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [isChatOpen]);
   const [chatInput, setChatInput] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
@@ -3937,129 +4004,180 @@ export default function App() {
         )}
       </main>
 
-      {/* AI APOLOGETICS CHATBOT DRAWER */}
-      {isChatOpen && (
-        <div className="fixed inset-y-0 right-0 z-40 w-full sm:w-[430px] bg-slate-950 border-l border-slate-800 shadow-2xl flex flex-col">
-          <div className="p-4 bg-gradient-to-r from-emerald-950/90 via-slate-900 to-slate-950 border-b border-slate-800 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
-                <Bot className="w-5 h-5 text-emerald-400" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                  <span>আল-বুরহান গবেষণা সহকারী</span>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                </h3>
-                <p className="text-[11px] text-slate-400">
-                  Auto-searches your {posts.length} stored blog posts & citations
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setIsChatOpen(false)}
-              className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="px-4 py-2.5 bg-slate-900/70 border-b border-slate-800/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            {[
-              'Quantum vacuum & Kalam',
-              'Surah Yasin 36:36 pairs',
-              'Backbone & ribs 86:7',
-              'Solar orbit & 18:86',
-              'Slavery abolition'
-            ].map((prompt) => (
-              <button
-                key={prompt}
-                onClick={() => handleSendChat(prompt)}
-                className="px-2.5 py-1 rounded-full bg-slate-950 hover:bg-emerald-950/80 border border-slate-800 hover:border-emerald-500/40 text-[11px] text-slate-300 hover:text-emerald-200 whitespace-nowrap shrink-0 transition-colors"
-              >
-                {prompt}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex-1 p-4 overflow-y-auto space-y-4">
-            {chatMessages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
-              >
-                <div className="flex items-center gap-1.5 mb-1 px-1">
-                  {msg.role === 'assistant' ? (
-                    <Sparkles className="w-3 h-3 text-emerald-400" />
-                  ) : (
-                    <User className="w-3 h-3 text-amber-400" />
-                  )}
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                    {msg.role === 'assistant' ? 'Al-Burhan AI' : 'You'} • {msg.timestamp}
-                  </span>
-                </div>
-
-                <div
-                  className={`max-w-[90%] rounded-2xl p-3.5 text-xs sm:text-sm leading-relaxed whitespace-pre-line ${
-                    msg.role === 'user'
-                      ? 'bg-emerald-600 text-white rounded-br-none'
-                      : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-bl-none'
-                  }`}
-                >
-                  {msg.text}
-
-                  {msg.matchedPostIds && msg.matchedPostIds.length > 0 && (
-                    <div className="mt-3 pt-2.5 border-t border-slate-800 space-y-1.5">
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-                        Matched Database Articles (Click to Read):
-                      </div>
-                      {msg.matchedPostIds.map((pid) => {
-                        const found = posts.find((p) => p.id === pid);
-                        if (!found) return null;
-                        return (
-                          <button
-                            key={pid}
-                            onClick={() => {
-                              handleOpenPost(found.id);
-                              setIsChatOpen(false);
-                            }}
-                            className="w-full text-left p-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800/90 flex items-center justify-between gap-2 transition-colors"
-                          >
-                            <span className="text-xs font-medium text-emerald-300 line-clamp-1">
-                              {found.title}
-                            </span>
-                            <ExternalLink className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-            <div ref={chatEndRef} />
-          </div>
-
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSendChat();
+      {/* DRAGGABLE LOTTIE AI LAUNCHER */}
+      {!isChatOpen && (
+        <div
+          className="alburhan-ai-float-wrap"
+          style={{
+            ...(aiLauncherPosition
+              ? { left: aiLauncherPosition.x, top: aiLauncherPosition.y }
+              : { right: 20, bottom: 18 }),
+            transform: `translate3d(0, -${aiScrollShift}px, 0)`,
+          }}
+        >
+          <button
+            ref={undefined}
+            type="button"
+            className="alburhan-ai-float-button"
+            aria-label="Open Al-Burhan AI assistant. Drag to move."
+            title="AI Assistant — drag to move, click to chat"
+            onPointerDown={(event) => {
+              if (event.pointerType === 'mouse' && event.button !== 0) return;
+              const rect = event.currentTarget.getBoundingClientRect();
+              aiLauncherDragRef.current = {
+                pointerId: event.pointerId,
+                startX: event.clientX,
+                startY: event.clientY,
+                originX: rect.left,
+                originY: rect.top,
+                x: rect.left,
+                y: rect.top,
+                moved: false,
+              };
+              setAiLauncherPosition({ x: rect.left, y: rect.top });
+              event.currentTarget.setPointerCapture(event.pointerId);
             }}
-            className="p-3.5 bg-slate-900 border-t border-slate-800 flex items-center gap-2"
+            onPointerMove={(event) => {
+              const drag = aiLauncherDragRef.current;
+              if (drag.pointerId !== event.pointerId) return;
+              const deltaX = event.clientX - drag.startX;
+              const deltaY = event.clientY - drag.startY;
+              if (!drag.moved && Math.hypot(deltaX, deltaY) > 4) drag.moved = true;
+              if (!drag.moved) return;
+              const rect = event.currentTarget.getBoundingClientRect();
+              const next = {
+                x: Math.max(8, Math.min(drag.originX + deltaX, window.innerWidth - rect.width - 8)),
+                y: Math.max(8, Math.min(drag.originY + deltaY, window.innerHeight - rect.height - 8)),
+              };
+              drag.x = next.x;
+              drag.y = next.y;
+              setAiLauncherPosition(next);
+            }}
+            onPointerUp={(event) => {
+              const drag = aiLauncherDragRef.current;
+              if (drag.pointerId !== event.pointerId) return;
+              drag.pointerId = null;
+              if (drag.moved) {
+                try {
+                  window.localStorage.setItem('al-burhan-ai-launcher-position', JSON.stringify({ x: drag.x, y: drag.y }));
+                } catch {
+                  // The launcher remains draggable even when storage is unavailable.
+                }
+              }
+            }}
+            onPointerCancel={() => {
+              aiLauncherDragRef.current.pointerId = null;
+              aiLauncherDragRef.current.moved = false;
+            }}
+            onClick={() => {
+              if (aiLauncherDragRef.current.moved) {
+                aiLauncherDragRef.current.moved = false;
+                return;
+              }
+              setIsMobileMenuOpen(false);
+              setIsChatOpen(true);
+            }}
           >
-            <input
-              type="text"
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              placeholder="Ask about a critique, verse, or scientific topic..."
-              className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500"
-            />
-            <button
-              type="submit"
-              className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+            <Lottie src="/ai.json" autoplay loop className="alburhan-ai-lottie" />
+            <span className="alburhan-ai-float-halo" aria-hidden="true" />
+          </button>
+          <span className="alburhan-ai-float-label" aria-hidden="true">Ask Al-Burhan AI</span>
+        </div>
+      )}
+
+      {/* AL-BURHAN AI CHAT DRAWER */}
+      {isChatOpen && (
+        <div
+          className="alburhan-ai-overlay"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setIsChatOpen(false);
+          }}
+        >
+          <section className="alburhan-ai-drawer" role="dialog" aria-modal="true" aria-label="Al-Burhan AI research assistant">
+            <header className="alburhan-ai-header">
+              <div className="alburhan-ai-brand">
+                <div className="alburhan-ai-brand-icon"><Bot size={21} /></div>
+                <div className="alburhan-ai-brand-copy">
+                  <h3>আল-বুরহান গবেষণা সহকারী <span className="alburhan-ai-online-dot" /></h3>
+                  <p>Research assistant <span>·</span> {posts.length} library articles</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setIsChatOpen(false)} className="alburhan-ai-close" aria-label="Close AI assistant">
+                <X size={19} />
+              </button>
+            </header>
+
+            <div className="alburhan-ai-suggestions" aria-label="Suggested questions">
+              <span className="alburhan-ai-suggestions-label">Try asking</span>
+              {[
+                'Quantum vacuum & Kalam',
+                'Surah Yasin 36:36 pairs',
+                'Backbone & ribs 86:7',
+                'Solar orbit & 18:86',
+                'Slavery abolition'
+              ].map((prompt) => (
+                <button key={prompt} type="button" onClick={() => handleSendChat(prompt)}>{prompt}</button>
+              ))}
+            </div>
+
+            <div className="alburhan-ai-messages" aria-live="polite">
+              {chatMessages.map((msg) => (
+                <div key={msg.id} className={`alburhan-ai-message ${msg.role === 'user' ? 'is-user' : 'is-assistant'}`}>
+                  <div className="alburhan-ai-message-meta">
+                    {msg.role === 'assistant' ? <Sparkles size={13} /> : <User size={13} />}
+                    <span>{msg.role === 'assistant' ? 'AL-BURHAN AI' : 'YOU'} <i>·</i> {msg.timestamp}</span>
+                  </div>
+                  <div className={`alburhan-ai-bubble ${msg.role === 'user' ? 'alburhan-ai-bubble-user' : 'alburhan-ai-bubble-assistant'}`}>
+                    <div className="alburhan-ai-message-text">{msg.text}</div>
+                    {msg.matchedPostIds && msg.matchedPostIds.length > 0 && (
+                      <div className="alburhan-ai-article-list">
+                        <div className="alburhan-ai-article-heading">Matched library articles</div>
+                        {msg.matchedPostIds.map((pid) => {
+                          const found = posts.find((post) => post.id === pid);
+                          if (!found) return null;
+                          return (
+                            <button
+                              key={pid}
+                              type="button"
+                              onClick={() => {
+                                handleOpenPost(found.id);
+                                setIsChatOpen(false);
+                              }}
+                              className="alburhan-ai-article-link"
+                            >
+                              <span>{found.title}</span>
+                              <ExternalLink size={14} />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              <div ref={chatEndRef} />
+            </div>
+
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                handleSendChat();
+              }}
+              className="alburhan-ai-composer"
             >
-              <Send className="w-4 h-4" />
-            </button>
-          </form>
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(event) => setChatInput(event.target.value)}
+                placeholder="Ask about a verse, research topic, or scientific question..."
+                aria-label="Ask Al-Burhan AI"
+              />
+              <button type="submit" aria-label="Send message" disabled={!chatInput.trim()}>
+                <Send size={17} />
+              </button>
+              <p>Answers are matched against the AL-BURHAN research library.</p>
+            </form>
+          </section>
         </div>
       )}
 
