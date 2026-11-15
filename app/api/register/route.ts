@@ -12,18 +12,18 @@ export async function POST(request: NextRequest) {
     const password = typeof body.password === 'string' ? body.password : '';
 
     if (name.length < 2 || name.length > 80) {
-      return NextResponse.json({ error: 'Please enter a name between 2 and 80 characters.' }, { status: 400 });
+      return NextResponse.json({ error: '২ থেকে ৮০ অক্ষরের মধ্যে নাম লিখুন।' }, { status: 400 });
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
-      return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 });
+      return NextResponse.json({ error: 'সঠিক ইমেইল ঠিকানা লিখুন।' }, { status: 400 });
     }
     if (password.length < 10 || password.length > 128) {
-      return NextResponse.json({ error: 'Password must be 10–128 characters long.' }, { status: 400 });
+      return NextResponse.json({ error: 'পাসওয়ার্ড ১০–১২৮ অক্ষরের হতে হবে।' }, { status: 400 });
     }
 
     const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
     if (existing) {
-      return NextResponse.json({ error: 'An account with this email already exists. Please sign in.' }, { status: 409 });
+      return NextResponse.json({ error: 'এই ইমেইল দিয়ে আগে থেকেই অ্যাকাউন্ট আছে। লগইন করুন।' }, { status: 409 });
     }
 
     const passwordHash = await hashPassword(password);
@@ -35,6 +35,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ user }, { status: 201 });
   } catch (error) {
     console.error('[POST /api/register]', error);
-    return NextResponse.json({ error: 'Registration is temporarily unavailable. Please try again.' }, { status: 500 });
+    return NextResponse.json({ error: 'এই মুহূর্তে নিবন্ধন করা যাচ্ছে না। আবার চেষ্টা করুন।' }, { status: 500 });
   }
 }
