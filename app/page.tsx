@@ -1347,6 +1347,8 @@ export default function App() {
     const layerRoot = mobileMenuLayersRef.current;
     const backdrop = mobileMenuBackdropRef.current;
     if (!panel || !layerRoot) return;
+    // Keep desktop navigation untouched; this animation is mobile-only.
+    if (!window.matchMedia('(max-width: 767px)').matches) return;
 
     const layers = Array.from(layerRoot.querySelectorAll<HTMLElement>('.mobile-menu-layer'));
     const items = Array.from(panel.querySelectorAll<HTMLElement>('.mobile-menu-item'));
