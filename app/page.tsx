@@ -1836,7 +1836,7 @@ export default function App() {
       matchedIds = topMatches.map((m) => m.post.id);
 
       reply = `**আল-বুরহান জ্ঞানভান্ডার** থেকে আপনার প্রশ্নের সঙ্গে সম্পর্কিত তথ্যগুলো নিচে সাজানো হলো:\n\n` +
-        `1. **Core Argument (${primary.title}):**\n` +
+        `১. **মূল আলোচনা (${primary.title}):**\n` +
         `${primary.excerpt}\n\n` +
         `২. **গুরুত্বপূর্ণ প্রমাণ ও মূল বিষয়:**\n` +
         primary.keyTakeaways.map((k) => `• ${k}`).join('\n') +
@@ -1849,10 +1849,10 @@ export default function App() {
     } else {
       matchedIds = posts.slice(0, 2).map((p) => p.id);
       reply =
-        `I searched all **${posts.length} articles** in your repository. While no exact keyword match was found for *"${queryText}"*, here is the core methodological framework from our database:\n\n` +
+        `আমি পাঠাগারের **${posts.length}টি প্রবন্ধে** অনুসন্ধান করেছি। *${queryText}* বিষয়ে সরাসরি মিল পাওয়া যায়নি। তবে নিচের বিষয়গুলো বিবেচনা করতে পারেন:\n\n` +
         `• **ভাষাতাত্ত্বিক যাচাই:** কোনো অনুবাদ গ্রহণের আগে নির্ভরযোগ্য অভিধান ও মূল ভাষার ব্যবহার যাচাই করুন।\n` +
-        `• **Contextual & Empirical Check:** Distinguish between observational phenomenology (like "sunrise/sunset") and physical cosmology.\n` +
-        `• **পরামর্শ:** প্রশাসক ড্যাশবোর্ড থেকে এ বিষয়ে নতুন প্রবন্ধ প্রকাশ করলে তা পাঠাগারে যুক্ত হবে।`;
+        `• **প্রাসঙ্গিকতা ও প্রমাণ যাচাই:** পর্যবেক্ষণভিত্তিক বর্ণনা এবং পদার্থবিজ্ঞানের ব্যাখ্যার পার্থক্য বিবেচনা করুন।\n` +
+        `• **পরামর্শ:** প্রশাসক ড্যাশবোর্ড থেকে এ বিষয়ে নতুন প্রবন্ধ প্রকাশ করলে তা পাঠাগারে যুক্ত হবে.`
     }
 
     const botMsg: ChatMessage = {
@@ -1882,7 +1882,7 @@ export default function App() {
       document.execCommand('copy');
       document.body.removeChild(ta);
     }
-    triggerToast('Copied TypeScript / Prisma code to clipboard!', 'success');
+    triggerToast('কোড কপি করা হয়েছে!', 'success');
   };
 
   // Admin filtered list
