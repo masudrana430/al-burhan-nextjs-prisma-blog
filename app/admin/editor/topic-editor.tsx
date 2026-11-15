@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, BookOpen, Eye, FileText, FolderPlus, Loader2, Plus, Send, Trash2 } from 'lucide-react';
@@ -29,6 +29,20 @@ export default function TopicEditor({ initialTopics }: Props) {
   const [newTopic, setNewTopic] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [topicBusy, setTopicBusy] = useState(false);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+
+  function insertMarkdown(prefix: string, suffix: string = prefix) {
+    const element = contentRef.current;
+    if (!element) return;
+    const start = element.selectionStart;
+    const end = element.selectionEnd;
+    const selected = content.slice(start, end);
+    setContent(content.slice(0, start) + prefix + selected + suffix + content.slice(end));
+    window.requestAnimationFrame(() => {
+      element.focus();
+      element.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+    });
+  }
 
   const wordCount = useMemo(() => content.trim() ? content.trim().split(/\s+/).length : 0, [content]);
   const readTime = Math.max(1, Math.ceil(wordCount / 180));
@@ -127,7 +141,14 @@ export default function TopicEditor({ initialTopics }: Props) {
                 <label className={label}>যে প্রশ্ন বা বিষয়টি আলোচনা করবেন</label>
                 <input className={field + ' mb-5'} value={claim} onChange={event => setClaim(event.target.value)} placeholder="প্রশ্ন, সমস্যা বা আলোচ্য বিষয় (ঐচ্ছিক)"/>
                 <div className="mb-2 flex items-center justify-between gap-2"><label className={label + ' mb-0'}>মূল লেখা <span className="text-red-500">*</span></label><span className="text-xs text-[#80868b]">{wordCount.toLocaleString('bn-BD')} শব্দ · প্রায় {readTime.toLocaleString('bn-BD')} মিনিট</span></div>
-                <textarea className={field + ' min-h-[420px] resize-y leading-8'} value={content} onChange={event => setContent(event.target.value)} placeholder={'আপনার লেখা এখানে লিখুন…\n\nশিরোনাম দিতে চাইলে # ব্যবহার করতে পারেন।\n\nপ্রতিটি অনুচ্ছেদের মাঝে একটি খালি লাইন রাখুন।'} required/>
+                <div className="mb-2 flex flex-wrap items-center gap-1 rounded-xl border border-[#e4e8ed] bg-[#f8f9fa] p-2">
+                  <button type="button" onClick={() => insertMarkdown('## ', '')} className="rounded-lg px-3 py-2 text-sm font-semibold text-[#3c4043] hover:bg-white">শিরোনাম</button>
+                  <button type="button" onClick={() => insertMarkdown('**')} className="rounded-lg px-3 py-2 text-sm font-bold text-[#3c4043] hover:bg-white">B</button>
+                  <button type="button" onClick={() => insertMarkdown('*')} className="rounded-lg px-3 py-2 text-sm italic text-[#3c4043] hover:bg-white">I</button>
+                  <button type="button" onClick={() => insertMarkdown('> ', '')} className="rounded-lg px-3 py-2 text-sm text-[#3c4043] hover:bg-white">উদ্ধৃতি</button>
+                  <button type="button" onClick={() => insertMarkdown('- ', '')} className="rounded-lg px-3 py-2 text-sm text-[#3c4043] hover:bg-white">তালিকা</button>
+                </div>
+                <textarea ref={contentRef} className={field + ' min-h-[420px] resize-y leading-8'} value={content} onChange={event => setContent(event.target.value)} placeholder={'আপনার লেখা এখানে লিখুন…\n\nশিরোনাম দিতে চাইলে # ব্যবহার করতে পারেন।\n\nপ্রতিটি অনুচ্ছেদের মাঝে একটি খালি লাইন রাখুন।'} required/>
                 <p className="mt-2 text-xs leading-6 text-[#80868b]">পরামর্শ: লেখা সাজাতে Markdown ব্যবহার করতে পারেন—# শিরোনাম, **গুরুত্বপূর্ণ লেখা**, - তালিকা।</p>
               </> : <article className="max-w-none">
                 <p className="mb-2 text-sm text-[#80868b]">{topics.find(topic => topic.id === topicId)?.name || 'বিষয় নির্বাচন করুন'}</p>
