@@ -26,7 +26,7 @@ export default function LoginPage() {
     try {
       const result = await signIn('user-credentials', { email, password, redirect: false });
       if (!result || result.error) {
-        setError('ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।');
+        setError('ইমেইল OR Password সঠিক নয়।');
         return;
       }
       router.replace('/');
@@ -44,25 +44,25 @@ export default function LoginPage() {
         <Link href="/" className="auth-back inline-flex items-center gap-2 text-sm mb-8"><ArrowLeft size={16}/> আল-বুরহানে ফিরে যান</Link>
         <div className="flex items-center gap-3 mb-6">
           <div className="auth-logo h-12 w-12 rounded-2xl flex items-center justify-center"><BookOpen size={22}/></div>
-          <div><p className="text-xs uppercase tracking-widest auth-muted">গবেষণা পাঠাগার</p><h1 className="text-2xl font-semibold tracking-tight">আবার স্বাগতম</h1></div>
+          <div><p className="text-xs uppercase tracking-widest auth-muted">গবেষণা পাঠাগার</p><h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1></div>
         </div>
-        <p className="auth-muted text-sm mb-6">আপনার আল-বুরহান অ্যাকাউন্টে প্রবেশ করুন।</p>
+        <p className="auth-muted text-sm mb-6">আপনার AL-BURHAN account-এ sign in করুন।</p>
         {error && <p role="alert" className="auth-error rounded-xl px-3 py-2.5 text-sm mb-4">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <label className="block text-sm font-medium">ইমেইল ঠিকানা
+          <label className="block text-sm font-medium">Email address
             <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><Mail size={17}/><input required type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" className="w-full py-3 bg-transparent outline-none"/></span>
           </label>
           <label className="block text-sm font-medium">পাসওয়ার্ড
             <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><LockKeyhole size={17}/><input required type={showPassword?'text':'password'} autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="আপনার পাসওয়ার্ড" className="w-full py-3 bg-transparent outline-none"/><button type="button" aria-label={showPassword?'পাসওয়ার্ড লুকান':'পাসওয়ার্ড দেখুন'} onClick={()=>setShowPassword(v=>!v)}>{showPassword?<EyeOff size={17}/>:<Eye size={17}/>}</button></span>
           </label>
-          <button disabled={loading} className="auth-primary w-full rounded-xl py-3 font-semibold disabled:opacity-60">{loading?'প্রবেশ করা হচ্ছে…':'লগইন করুন'}</button>
+          <button disabled={loading} className="auth-primary w-full rounded-xl py-3 font-semibold disabled:opacity-60">{loading?'Signing in…':'Sign in'}</button>
         </form>
         {googleEnabled && <>
           <div className="auth-divider flex items-center gap-3 my-5"><span className="h-px flex-1"/><span className="text-xs auth-muted">অথবা</span><span className="h-px flex-1"/></div>
-          <button type="button" onClick={()=>signIn('google',{callbackUrl:'/'})} className="auth-google w-full rounded-xl border py-3 font-medium flex items-center justify-center gap-3"><GoogleMark/> Google দিয়ে চালিয়ে যান</button>
+          <button type="button" onClick={()=>signIn('google',{callbackUrl:'/'})} className="auth-google w-full rounded-xl border py-3 font-medium flex items-center justify-center gap-3"><GoogleMark/> Continue with Google</button>
         </>}
-        <p className="text-sm text-center auth-muted mt-6">আল-বুরহানে নতুন? <Link className="auth-link font-semibold" href="/register">নতুন অ্যাকাউন্ট খুলুন</Link></p>
-        <div className="auth-admin mt-6 pt-5 border-t text-xs auth-muted">আপনি কি প্রশাসক? <Link href="/" className="auth-link font-semibold">হোমে ফিরে গিয়ে প্রশাসক লগইন নির্বাচন করুন</Link></div>
+        <p className="text-sm text-center auth-muted mt-6">AL-BURHAN-এ নতুন? <Link className="auth-link font-semibold" href="/register">Create account</Link></p>
+        <div className="auth-admin mt-6 pt-5 border-t text-xs auth-muted">Admin? <Link href="/" className="auth-link font-semibold">Go to Home and choose Admin Login</Link></div>
       </section>
     </main>
   );
