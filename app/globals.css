@@ -2455,3 +2455,150 @@ body {
   .alburhan-ai-drawer { animation: none !important; }
 }
 
+
+
+/* AL-BURHAN AI — fixed light-mode palette and Islamic geometric atmosphere.
+   These scoped rules intentionally override global theme/text utilities so the
+   assistant remains legible and visually consistent in every site theme. */
+.alburhan-ai-drawer {
+  --burhan-chat-ink: #17392d;
+  --burhan-chat-muted: #63766a;
+  --burhan-chat-green: #15563d;
+  --burhan-chat-gold: #b58a3b;
+  --burhan-chat-paper: #fbf8ef;
+  --burhan-chat-line: #e4dcc8;
+  background: #fbf8ef !important;
+  color: var(--burhan-chat-ink) !important;
+  border: 1px solid #d8cba9 !important;
+}
+.alburhan-ai-drawer .alburhan-ai-header {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #123d2d !important;
+  background-image:
+    radial-gradient(circle at 12px 12px, rgba(220,190,120,.13) 1.4px, transparent 1.7px),
+    repeating-linear-gradient(45deg, transparent 0 17px, rgba(226,198,137,.075) 17px 18px, transparent 18px 35px),
+    repeating-linear-gradient(-45deg, transparent 0 17px, rgba(226,198,137,.075) 17px 18px, transparent 18px 35px),
+    linear-gradient(115deg, #103b2b, #1b5940 58%, #174531) !important;
+  background-size: 24px 24px, 36px 36px, 36px 36px, auto !important;
+  border-bottom: 1px solid rgba(218,190,130,.42) !important;
+  color: #fffdf5 !important;
+}
+.alburhan-ai-drawer .alburhan-ai-header::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: 64px;
+  top: -42px;
+  width: 150px;
+  height: 150px;
+  border: 1px solid rgba(231,204,143,.18);
+  border-radius: 50% 50% 8px 8px;
+  box-shadow: 0 0 0 10px rgba(231,204,143,.035), 0 0 0 21px rgba(231,204,143,.025);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+.alburhan-ai-drawer .alburhan-ai-brand-copy h3 { color: #fffdf5 !important; }
+.alburhan-ai-drawer .alburhan-ai-brand-copy p { color: #d8e6d9 !important; }
+.alburhan-ai-drawer .alburhan-ai-brand-copy p span { color: #f0d69a !important; }
+.alburhan-ai-drawer .alburhan-ai-brand-icon {
+  color: #f3d99e !important;
+  border-color: rgba(239,213,157,.58) !important;
+  background: rgba(255,255,255,.10) !important;
+}
+.alburhan-ai-drawer .alburhan-ai-close {
+  color: #fffdf5 !important;
+  background: #285b43 !important;
+  border: 1px solid #d9bd7e !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+}
+.alburhan-ai-drawer .alburhan-ai-close:hover,
+.alburhan-ai-drawer .alburhan-ai-close:focus-visible {
+  color: #17392d !important;
+  background: #f1d99e !important;
+  border-color: #f1d99e !important;
+  outline: 2px solid rgba(241,217,158,.4);
+  outline-offset: 2px;
+}
+.alburhan-ai-drawer .alburhan-ai-suggestions {
+  background: #f7f1e3 !important;
+  border-color: #e4d8bd !important;
+}
+.alburhan-ai-drawer .alburhan-ai-suggestions-label { color: #6f654f !important; }
+.alburhan-ai-drawer .alburhan-ai-suggestions button {
+  color: #244a37 !important;
+  background: #fffdf7 !important;
+  border-color: #d8c79e !important;
+}
+.alburhan-ai-drawer .alburhan-ai-suggestions button:hover {
+  color: #fffdf5 !important;
+  background: #1b6044 !important;
+  border-color: #1b6044 !important;
+}
+.alburhan-ai-drawer .alburhan-ai-messages {
+  background-color: #f5f0e4 !important;
+  background-image:
+    radial-gradient(circle at 12px 12px, rgba(154,119,55,.12) 1px, transparent 1.5px),
+    repeating-linear-gradient(45deg, transparent 0 25px, rgba(28,91,62,.035) 25px 26px, transparent 26px 50px),
+    repeating-linear-gradient(-45deg, transparent 0 25px, rgba(28,91,62,.035) 25px 26px, transparent 26px 50px),
+    radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.8), transparent 70%) !important;
+  background-size: 24px 24px, 52px 52px, 52px 52px, auto !important;
+}
+.alburhan-ai-drawer .alburhan-ai-message-meta { color: #647466 !important; }
+.alburhan-ai-drawer .alburhan-ai-message.is-assistant .alburhan-ai-message-meta svg { color: #a77a2d !important; }
+.alburhan-ai-drawer .alburhan-ai-message.is-user .alburhan-ai-message-meta svg { color: #1b6044 !important; }
+.alburhan-ai-drawer .alburhan-ai-bubble-assistant {
+  color: #263b2f !important;
+  background: rgba(255,253,247,.96) !important;
+  border: 1px solid #e2d7bd !important;
+  box-shadow: 0 3px 12px rgba(67,54,29,.07) !important;
+}
+.alburhan-ai-drawer .alburhan-ai-bubble-user {
+  color: #fff !important;
+  background: #1b6044 !important;
+  border: 1px solid #155238 !important;
+  box-shadow: 0 4px 13px rgba(21,82,56,.18) !important;
+}
+.alburhan-ai-drawer .alburhan-ai-article-list { border-color: #e4d8bd !important; }
+.alburhan-ai-drawer .alburhan-ai-article-heading { color: #946d27 !important; }
+.alburhan-ai-drawer .alburhan-ai-article-link {
+  color: #174b35 !important;
+  background: #f6f0e2 !important;
+  border-color: #dfd0ad !important;
+}
+.alburhan-ai-drawer .alburhan-ai-article-link:hover {
+  color: #fff !important;
+  background: #1b6044 !important;
+  border-color: #1b6044 !important;
+}
+.alburhan-ai-drawer .alburhan-ai-article-link svg { color: #8c7448 !important; }
+.alburhan-ai-drawer .alburhan-ai-composer {
+  background: #fbf8ef !important;
+  border-top: 1px solid #dfd3b8 !important;
+}
+.alburhan-ai-drawer .alburhan-ai-composer input {
+  color: #203a2d !important;
+  background: #fffdf8 !important;
+  border: 1px solid #d8c9a5 !important;
+}
+.alburhan-ai-drawer .alburhan-ai-composer input::placeholder { color: #7b806f !important; }
+.alburhan-ai-drawer .alburhan-ai-composer input:focus {
+  border-color: #1b6044 !important;
+  box-shadow: 0 0 0 3px rgba(27,96,68,.13) !important;
+}
+.alburhan-ai-drawer .alburhan-ai-composer button {
+  color: #fff !important;
+  background: #1b6044 !important;
+  border-color: #155238 !important;
+}
+.alburhan-ai-drawer .alburhan-ai-composer button:hover:not(:disabled) { background: #12452f !important; }
+.alburhan-ai-drawer .alburhan-ai-composer button:disabled { color: #e7eee8 !important; opacity: .58; }
+.alburhan-ai-drawer .alburhan-ai-composer p { color: #6c7567 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .alburhan-ai-drawer *, .alburhan-ai-drawer *::before, .alburhan-ai-drawer *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
