@@ -1595,3 +1595,16 @@ body {
   .auth-page { padding: 22px 14px !important; }
   .auth-page .auth-panel { padding: 22px !important; border-radius: 22px !important; }
 }
+
+
+/* Keep modal ornament above its surface and the dismiss button anchored. */
+.admin-auth-panel::before { z-index: 0 !important; }
+.admin-auth-panel .admin-auth-close {
+  position: absolute !important;
+  top: 16px;
+  right: 16px;
+}
+.admin-auth-panel .admin-auth-mark,
+.admin-auth-panel .admin-auth-eyebrow,
+.admin-auth-panel h3,
+.admin-auth-panel .admin-auth-subtitle { position: relative; z-index: 1; }
