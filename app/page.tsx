@@ -2031,39 +2031,41 @@ export default function App() {
 
       {/* AUTHENTICATION MODAL (CREDENTIAL LOGIN + GOOGLE OAUTH + ADMIN LOGIN) */}
       {isAuthModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative">
+        <div className="admin-auth-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="admin-auth-panel relative w-full max-w-md rounded-3xl p-6 sm:p-8">
             <button
               onClick={() => {
                 setIsAuthModalOpen(false);
                 setAuthপাসওয়ার্ড('');
               }}
-              className="absolute top-4 right-4 p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white"
+              className="admin-auth-close absolute right-4 top-4 rounded-xl p-2"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-                <Lock className="w-5 h-5 text-emerald-400" />
+              <div className="admin-auth-mark flex h-12 w-12 items-center justify-center rounded-2xl">
+                <Lock className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">নিরাপদ প্রশাসক লগইন</h3>
+                <p className="admin-auth-eyebrow text-[10px] font-bold uppercase tracking-[.2em]">AL-BURHAN • ADMIN PORTAL</p>
+                <h3 className="mt-1 text-xl font-bold">নিরাপদ প্রশাসক লগইন</h3>
+                <p className="admin-auth-subtitle mt-1 text-xs">Secure administrator access</p>
                 <p className="text-xs text-slate-400">
                   আপনার লগইন তথ্য সার্ভারে নিরাপদভাবে যাচাই করা হয়।
                 </p>
               </div>
             </div>
 
-            <div className="mb-4 rounded-xl border border-emerald-500/20 bg-emerald-950/20 px-3 py-2 text-xs text-emerald-100">
-              শুধু Vercel-এ নির্ধারিত প্রশাসক অ্যাকাউন্ট প্রবেশ করতে পারবে।
+            <div className="admin-auth-note mb-5 rounded-xl px-3.5 py-3 text-xs leading-relaxed">
+              শুধু authorized administrator account এই portal-এ access পাবে। আপনার credentials নিরাপদে server-side যাচাই করা হয়।
             </div>
 
             {/* Credentials Form */}
             <form onSubmit={handleCredentialAuth} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  ইমেইল ঠিকানা
+                <label className="admin-auth-label mb-1.5 block text-xs font-semibold">
+                  Email address
                 </label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -2072,15 +2074,15 @@ export default function App() {
                     required
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
-                    placeholder="প্রশাসকের ইমেইল"
-                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    placeholder="admin@example.com"
+                    className="admin-auth-input w-full rounded-xl py-3 pl-10 pr-3.5 text-sm outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  পাসওয়ার্ড
+                <label className="admin-auth-label mb-1.5 block text-xs font-semibold">
+                  Password
                 </label>
                 <div className="relative">
                   <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -2089,13 +2091,13 @@ export default function App() {
                     required
                     value={authপাসওয়ার্ড}
                     onChange={(e) => setAuthপাসওয়ার্ড(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    placeholder="আপনার secure password"
+                    className="admin-auth-input w-full rounded-xl py-3 pl-10 pr-10 text-sm outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => setShowপাসওয়ার্ড((p) => !p)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                    className="admin-auth-eye absolute right-3 top-1/2 -translate-y-1/2"
                   >
                     {showপাসওয়ার্ড ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -2105,13 +2107,13 @@ export default function App() {
               <button
                 type="submit"
                 disabled={isAuthLoading || authStatus === 'loading'}
-                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold text-sm shadow-lg shadow-emerald-950/60 transition-all"
+                className="admin-auth-submit w-full rounded-xl py-3 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isAuthLoading ? 'নিরাপদভাবে যাচাই করা হচ্ছে…' : 'প্রশাসক হিসেবে লগইন করুন'}
+                {isAuthLoading ? 'Verifying securely…' : 'Secure login'}
               </button>
             </form>
-            <div className="mt-5 pt-4 border-t border-slate-800 text-center text-xs text-slate-400">
-              পাঠক অ্যাকাউন্ট আছে? <a href="/login" className="font-semibold text-sky-500 hover:underline">লগইন করুন অথবা নতুন অ্যাকাউন্ট খুলুন</a>
+            <div className="admin-auth-footer mt-5 border-t pt-4 text-center text-xs">
+              পাঠক অ্যাকাউন্ট আছে? <a href="/login" className="font-semibold hover:underline">Sign in</a> অথবা <a href="/register" className="font-semibold hover:underline">Create account</a>
             </div>
           </div>
         </div>
