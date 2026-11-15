@@ -2090,8 +2090,8 @@ body {
 .alburhan-ai-float-wrap {
   position: fixed;
   z-index: 68;
-  width: 96px;
-  height: 96px;
+  width: 160px;
+  height: 160px;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
@@ -2121,8 +2121,8 @@ body {
   left: 50%;
   top: 50%;
   display: block;
-  width: 128px;
-  height: 128px;
+  width: 224px;
+  height: 224px;
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
@@ -2430,7 +2430,8 @@ body {
 @keyframes alburhan-ai-drawer-in { from { opacity: .7; transform: translateX(22px) scale(.99); } to { opacity: 1; transform: translateX(0) scale(1); } }
 
 @media (max-width: 640px) {
-  .alburhan-ai-float-wrap { width: 82px; height: 82px; }
+  .alburhan-ai-float-wrap { width: 144px; height: 144px; }
+  .alburhan-ai-lottie { width: 200px; height: 200px; }
   .alburhan-ai-float-label { display: none; }
   .alburhan-ai-overlay { padding: 0; }
   .alburhan-ai-drawer {
