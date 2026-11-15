@@ -1,8 +1,8 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
+import { getProviders, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, BookOpen, Eye, EyeOff, LockKeyhole, Mail, UserRound } from 'lucide-react';
 
@@ -15,6 +15,11 @@ export default function RegisterPage() {
   const [showপাসওয়ার্ড,setShowপাসওয়ার্ড] = useState(false);
   const [loading,setLoading] = useState(false);
   const [error,setError] = useState('');
+  const [googleEnabled, setGoogleEnabled] = useState(false);
+
+  useEffect(() => {
+    getProviders().then(providers => setGoogleEnabled(Boolean(providers?.google))).catch(() => setGoogleEnabled(false));
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -48,6 +53,7 @@ export default function RegisterPage() {
           <div><p className="text-xs uppercase tracking-widest auth-muted">গবেষণা পাঠাগার</p><h1 className="text-2xl font-semibold tracking-tight">অ্যাকাউন্ট তৈরি করুন</h1></div>
         </div>
         <p className="auth-muted text-sm mb-6">আপনার পাঠ ও গবেষণার অভিজ্ঞতা সংরক্ষণ করতে আল-বুরহানে যুক্ত হোন।</p>
+        {googleEnabled && <button type="button" onClick={() => signIn('google', { callbackUrl: '/' })} className="auth-google w-full rounded-xl border py-3 font-medium mb-5">Google দিয়ে অ্যাকাউন্ট তৈরি করুন</button>}
         {error && <p role="alert" className="auth-error rounded-xl px-3 py-2.5 text-sm mb-4">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block text-sm font-medium">পূর্ণ নাম
