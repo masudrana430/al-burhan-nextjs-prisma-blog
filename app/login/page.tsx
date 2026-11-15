@@ -9,8 +9,8 @@ import { ArrowLeft, BookOpen, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-reac
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [password, setপাসওয়ার্ড] = useState('');
+  const [showপাসওয়ার্ড, setShowপাসওয়ার্ড] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [googleEnabled, setGoogleEnabled] = useState(false);
@@ -26,13 +26,13 @@ export default function LoginPage() {
     try {
       const result = await signIn('user-credentials', { email, password, redirect: false });
       if (!result || result.error) {
-        setError('Email or password is incorrect.');
+        setError('ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।');
         return;
       }
       router.replace('/');
       router.refresh();
     } catch {
-      setError('Unable to sign in right now. Please try again.');
+      setError('এই মুহূর্তে লগইন করা যাচ্ছে না। আবার চেষ্টা করুন।');
     } finally {
       setLoading(false);
     }
@@ -41,28 +41,28 @@ export default function LoginPage() {
   return (
     <main className="auth-page min-h-screen flex items-center justify-center px-4 py-10">
       <section className="auth-panel w-full max-w-md rounded-3xl border p-6 sm:p-8">
-        <Link href="/" className="auth-back inline-flex items-center gap-2 text-sm mb-8"><ArrowLeft size={16}/> Back to AL-BURHAN</Link>
+        <Link href="/" className="auth-back inline-flex items-center gap-2 text-sm mb-8"><ArrowLeft size={16}/> আল-বুরহানে ফিরে যান</Link>
         <div className="flex items-center gap-3 mb-6">
           <div className="auth-logo h-12 w-12 rounded-2xl flex items-center justify-center"><BookOpen size={22}/></div>
-          <div><p className="text-xs uppercase tracking-widest auth-muted">Research Library</p><h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1></div>
+          <div><p className="text-xs uppercase tracking-widest auth-muted">গবেষণা পাঠাগার</p><h1 className="text-2xl font-semibold tracking-tight">আবার স্বাগতম</h1></div>
         </div>
-        <p className="auth-muted text-sm mb-6">Sign in to your AL-BURHAN reader account.</p>
+        <p className="auth-muted text-sm mb-6">আপনার আল-বুরহান অ্যাকাউন্টে প্রবেশ করুন।</p>
         {error && <p role="alert" className="auth-error rounded-xl px-3 py-2.5 text-sm mb-4">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <label className="block text-sm font-medium">Email address
+          <label className="block text-sm font-medium">ইমেইল ঠিকানা
             <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><Mail size={17}/><input required type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" className="w-full py-3 bg-transparent outline-none"/></span>
           </label>
-          <label className="block text-sm font-medium">Password
-            <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><LockKeyhole size={17}/><input required type={showPassword?'text':'password'} autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Your password" className="w-full py-3 bg-transparent outline-none"/><button type="button" aria-label={showPassword?'Hide password':'Show password'} onClick={()=>setShowPassword(v=>!v)}>{showPassword?<EyeOff size={17}/>:<Eye size={17}/>}</button></span>
+          <label className="block text-sm font-medium">পাসওয়ার্ড
+            <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><LockKeyhole size={17}/><input required type={showপাসওয়ার্ড?'text':'password'} autoComplete="current-password" value={password} onChange={e=>setপাসওয়ার্ড(e.target.value)} placeholder="আপনার পাসওয়ার্ড" className="w-full py-3 bg-transparent outline-none"/><button type="button" aria-label={showপাসওয়ার্ড?'পাসওয়ার্ড লুকান':'পাসওয়ার্ড দেখুন'} onClick={()=>setShowপাসওয়ার্ড(v=>!v)}>{showপাসওয়ার্ড?<EyeOff size={17}/>:<Eye size={17}/>}</button></span>
           </label>
-          <button disabled={loading} className="auth-primary w-full rounded-xl py-3 font-semibold disabled:opacity-60">{loading?'Signing in…':'Sign in'}</button>
+          <button disabled={loading} className="auth-primary w-full rounded-xl py-3 font-semibold disabled:opacity-60">{loading?'প্রবেশ করা হচ্ছে…':'লগইন করুন'}</button>
         </form>
         {googleEnabled && <>
-          <div className="auth-divider flex items-center gap-3 my-5"><span className="h-px flex-1"/><span className="text-xs auth-muted">OR</span><span className="h-px flex-1"/></div>
-          <button type="button" onClick={()=>signIn('google',{callbackUrl:'/'})} className="auth-google w-full rounded-xl border py-3 font-medium flex items-center justify-center gap-3"><GoogleMark/> Continue with Google</button>
+          <div className="auth-divider flex items-center gap-3 my-5"><span className="h-px flex-1"/><span className="text-xs auth-muted">অথবা</span><span className="h-px flex-1"/></div>
+          <button type="button" onClick={()=>signIn('google',{callbackUrl:'/'})} className="auth-google w-full rounded-xl border py-3 font-medium flex items-center justify-center gap-3"><GoogleMark/> Google দিয়ে চালিয়ে যান</button>
         </>}
-        <p className="text-sm text-center auth-muted mt-6">New to AL-BURHAN? <Link className="auth-link font-semibold" href="/register">Create an account</Link></p>
-        <div className="auth-admin mt-6 pt-5 border-t text-xs auth-muted">Administrator? <Link href="/" className="auth-link font-semibold">Return home and choose Login / Admin</Link></div>
+        <p className="text-sm text-center auth-muted mt-6">আল-বুরহানে নতুন? <Link className="auth-link font-semibold" href="/register">নতুন অ্যাকাউন্ট খুলুন</Link></p>
+        <div className="auth-admin mt-6 pt-5 border-t text-xs auth-muted">আপনি কি প্রশাসক? <Link href="/" className="auth-link font-semibold">হোমে ফিরে গিয়ে প্রশাসক লগইন নির্বাচন করুন</Link></div>
       </section>
     </main>
   );
