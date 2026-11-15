@@ -1346,40 +1346,7 @@ export default function App() {
     const panel = mobileMenuPanelRef.current;
     const layerRoot = mobileMenuLayersRef.current;
     const backdrop = mobileMenuBackdropRef.current;
-    if (!panel || !layerRoot) return;
-    // Keep desktop navigation untouched; this animation is mobile-only.
-    if (!window.matchMedia('(max-width: 767px)').matches) return;
-
-    const layers = Array.from(layerRoot.querySelectorAll<HTMLElement>('.mobile-menu-layer'));
-    const items = Array.from(panel.querySelectorAll<HTMLElement>('.mobile-menu-item'));
-    const footerLabel = panel.querySelector<HTMLElement>('.mobile-menu-footer-label');
-    const footerActions = Array.from(panel.querySelectorAll<HTMLElement>('.mobile-menu-footer-action'));
-    const topLine = mobileMenuTopLineRef.current;
-    const middleLine = mobileMenuMiddleLineRef.current;
-    const bottomLine = mobileMenuBottomLineRef.current;
-
-    gsap.set([panel, ...layers], { xPercent: 100 });
-    if (backdrop) gsap.set(backdrop, { autoAlpha: 0 });
-    gsap.set(items, { yPercent: 140, rotation: 10, '--menu-number-opacity': 0 });
-    if (footerLabel) gsap.set(footerLabel, { opacity: 0 });
-    if (footerActions.length) gsap.set(footerActions, { y: 25, opacity: 0 });
-    if (topLine) gsap.set(topLine, { transformOrigin: '50% 50%', x: 0, y: 0, rotation: 0 });
-    if (middleLine) gsap.set(middleLine, { transformOrigin: '50% 50%', scaleX: 1, opacity: 1 });
-    if (bottomLine) gsap.set(bottomLine, { transformOrigin: '50% 50%', x: 0, y: 0, rotation: 0 });
-
-    return () => {
-      mobileMenuOpenTimelineRef.current?.kill();
-      mobileMenuCloseTimelineRef.current?.kill();
-      mobileMenuIconTimelineRef.current?.kill();
-      gsap.killTweensOf([panel, ...layers, ...(backdrop ? [backdrop] : []), ...items, ...footerActions]);
-    };
-  }, []);
-
-  useEffect(() => {
-    const panel = mobileMenuPanelRef.current;
-    const layerRoot = mobileMenuLayersRef.current;
-    const backdrop = mobileMenuBackdropRef.current;
-    if (!panel || !layerRoot) return;
+    if (!panel || !layerRoot || !window.matchMedia('(max-width: 767px)').matches) return;
 
     const layers = Array.from(layerRoot.querySelectorAll<HTMLElement>('.mobile-menu-layer'));
     const items = Array.from(panel.querySelectorAll<HTMLElement>('.mobile-menu-item'));
@@ -1389,111 +1356,74 @@ export default function App() {
     const middleLine = mobileMenuMiddleLineRef.current;
     const bottomLine = mobileMenuBottomLineRef.current;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const duration = (value: number) => reducedMotion ? 0.01 : value;
+    const speed = (seconds: number) => reducedMotion ? 0.01 : seconds;
+    const ease = reducedMotion ? 'none' : 'power4.out';
 
+    // Stop any interrupted opening/closing sequence before starting the next one.
     mobileMenuOpenTimelineRef.current?.kill();
     mobileMenuCloseTimelineRef.current?.kill();
     mobileMenuIconTimelineRef.current?.kill();
+    gsap.killTweensOf([panel, ...layers, ...(backdrop ? [backdrop] : []), ...items, ...footerActions]);
 
     if (isMobileMenuOpen) {
       mobileMenuHasOpenedRef.current = true;
-      const timeline = gsap.timeline({ paused: true });
+      gsap.set(panel, { xPercent: 100, autoAlpha: 1, pointerEvents: 'auto' });
+      gsap.set(layers, { xPercent: 100, autoAlpha: 1 });
+      gsap.set(items, { y: 34, autoAlpha: 0, rotation: 0, clearProps: 'transition' });
+      if (backdrop) gsap.set(backdrop, { autoAlpha: 0, pointerEvents: 'auto' });
+      if (footerLabel) gsap.set(footerLabel, { autoAlpha: 0, y: 12 });
+      if (footerActions.length) gsap.set(footerActions, { y: 20, autoAlpha: 0 });
 
+      const timeline = gsap.timeline();
       layers.forEach((layer, index) => {
-        timeline.fromTo(
-          layer,
-          { xPercent: 100 },
-          { xPercent: 0, duration: duration(0.5), ease: reducedMotion ? 'none' : 'power4.out' },
-          index * (reducedMotion ? 0 : 0.07),
-        );
+        timeline.to(layer, { xPercent: 0, duration: speed(0.48), ease }, index * (reducedMotion ? 0 : 0.075));
       });
+      const layersEnd = layers.length ? (layers.length - 1) * (reducedMotion ? 0 : 0.075) + speed(0.48) : 0;
+      const panelStart = layersEnd + (reducedMotion ? 0 : 0.06);
+      timeline.to(panel, { xPercent: 0, duration: speed(0.62), ease }, panelStart);
+      if (backdrop) timeline.to(backdrop, { autoAlpha: 1, duration: speed(0.3), ease: 'power1.out' }, 0);
 
-      const lastLayerTime = layers.length ? (layers.length - 1) * (reducedMotion ? 0 : 0.07) : 0;
-      const panelInsertTime = lastLayerTime + (layers.length ? (reducedMotion ? 0 : 0.08) : 0);
-      const panelDuration = duration(0.65);
-
-      timeline.fromTo(
-        panel,
-        { xPercent: 100 },
-        { xPercent: 0, duration: panelDuration, ease: reducedMotion ? 'none' : 'power4.out' },
-        panelInsertTime,
-      );
-
-      if (backdrop) {
-        timeline.fromTo(backdrop, { autoAlpha: 0 }, { autoAlpha: 1, duration: duration(0.3), ease: 'power1.out' }, 0);
-      }
-
+      const itemsStart = panelStart + speed(0.62) * 0.34;
       if (items.length) {
-        const itemsStart = panelInsertTime + panelDuration * 0.15;
-        timeline.to(
-          items,
-          {
-            yPercent: 0,
-            rotation: 0,
-            duration: duration(1),
-            ease: reducedMotion ? 'none' : 'power4.out',
-            stagger: { each: reducedMotion ? 0 : 0.1, from: 'start' },
-          },
-          itemsStart,
-        );
-
-        timeline.to(
-          items,
-          {
-            '--menu-number-opacity': 1,
-            duration: duration(0.6),
-            ease: 'power2.out',
-            stagger: { each: reducedMotion ? 0 : 0.08, from: 'start' },
-          },
-          itemsStart + (reducedMotion ? 0 : 0.1),
-        );
+        timeline.to(items, {
+          y: 0, autoAlpha: 1, duration: speed(0.62), ease,
+          stagger: { each: reducedMotion ? 0 : 0.095, from: 'start' },
+          clearProps: 'transform',
+        }, itemsStart);
+        timeline.to(items, {
+          '--menu-number-opacity': 1, duration: speed(0.35), ease: 'power2.out',
+          stagger: { each: reducedMotion ? 0 : 0.07, from: 'start' },
+        }, itemsStart + (reducedMotion ? 0 : 0.06));
       }
 
-      const footerStart = panelInsertTime + panelDuration * 0.4;
-      if (footerLabel) {
-        timeline.to(footerLabel, { opacity: 1, duration: duration(0.5), ease: 'power2.out' }, footerStart);
-      }
-      if (footerActions.length) {
-        timeline.to(
-          footerActions,
-          {
-            y: 0,
-            opacity: 1,
-            duration: duration(0.55),
-            ease: reducedMotion ? 'none' : 'power3.out',
-            stagger: { each: reducedMotion ? 0 : 0.08, from: 'start' },
-          },
-          footerStart + (reducedMotion ? 0 : 0.04),
-        );
-      }
+      const footerStart = itemsStart + (reducedMotion ? 0.05 : Math.min(items.length * 0.07, 0.32));
+      if (footerLabel) timeline.to(footerLabel, { autoAlpha: 1, y: 0, duration: speed(0.35), ease: 'power2.out' }, footerStart);
+      if (footerActions.length) timeline.to(footerActions, {
+        y: 0, autoAlpha: 1, duration: speed(0.42), ease: 'power3.out',
+        stagger: { each: reducedMotion ? 0 : 0.07, from: 'start' },
+      }, footerStart + (reducedMotion ? 0 : 0.04));
 
       mobileMenuOpenTimelineRef.current = timeline;
-      timeline.play(0);
 
       const iconTimeline = gsap.timeline();
-      if (topLine) iconTimeline.to(topLine, { y: 7, rotation: 45, duration: duration(0.55), ease: 'power4.out' }, 0);
-      if (middleLine) iconTimeline.to(middleLine, { scaleX: 0, opacity: 0, duration: duration(0.22), ease: 'power2.inOut' }, 0);
-      if (bottomLine) iconTimeline.to(bottomLine, { y: -7, rotation: -45, duration: duration(0.55), ease: 'power4.out' }, 0);
+      if (topLine) iconTimeline.to(topLine, { y: 7, rotation: 45, duration: speed(0.42), ease }, 0);
+      if (middleLine) iconTimeline.to(middleLine, { scaleX: 0, autoAlpha: 0, duration: speed(0.18), ease: 'power2.inOut' }, 0);
+      if (bottomLine) iconTimeline.to(bottomLine, { y: -7, rotation: -45, duration: speed(0.42), ease }, 0);
       mobileMenuIconTimelineRef.current = iconTimeline;
     } else if (mobileMenuHasOpenedRef.current) {
       const closeTimeline = gsap.timeline({
         onComplete: () => {
-          gsap.set(items, { yPercent: 140, rotation: 10, '--menu-number-opacity': 0 });
-          if (footerLabel) gsap.set(footerLabel, { opacity: 0 });
-          if (footerActions.length) gsap.set(footerActions, { y: 25, opacity: 0 });
+          gsap.set(items, { y: 34, autoAlpha: 0, '--menu-number-opacity': 0 });
+          if (footerLabel) gsap.set(footerLabel, { autoAlpha: 0, y: 12 });
+          if (footerActions.length) gsap.set(footerActions, { y: 20, autoAlpha: 0 });
           mobileMenuHasOpenedRef.current = false;
         },
       });
-
-      closeTimeline.to(
-        [...layers, panel],
-        { xPercent: 100, duration: duration(0.32), ease: reducedMotion ? 'none' : 'power3.in' },
-        0,
-      );
-      if (backdrop) closeTimeline.to(backdrop, { autoAlpha: 0, duration: duration(0.22), ease: 'power1.out' }, 0);
-      if (topLine) closeTimeline.to(topLine, { y: 0, rotation: 0, duration: duration(0.32), ease: 'power3.inOut' }, 0);
-      if (middleLine) closeTimeline.to(middleLine, { scaleX: 1, opacity: 1, duration: duration(0.22), ease: 'power2.out' }, 0.04);
-      if (bottomLine) closeTimeline.to(bottomLine, { y: 0, rotation: 0, duration: duration(0.32), ease: 'power3.inOut' }, 0);
+      closeTimeline.to([...layers, panel], { xPercent: 100, duration: speed(0.32), ease: reducedMotion ? 'none' : 'power3.in' }, 0);
+      if (backdrop) closeTimeline.to(backdrop, { autoAlpha: 0, duration: speed(0.2), ease: 'power1.out' }, 0);
+      if (topLine) closeTimeline.to(topLine, { y: 0, rotation: 0, duration: speed(0.32), ease: 'power3.inOut' }, 0);
+      if (middleLine) closeTimeline.to(middleLine, { scaleX: 1, autoAlpha: 1, duration: speed(0.2), ease: 'power2.out' }, 0.04);
+      if (bottomLine) closeTimeline.to(bottomLine, { y: 0, rotation: 0, duration: speed(0.32), ease: 'power3.inOut' }, 0);
       mobileMenuCloseTimelineRef.current = closeTimeline;
     }
   }, [isMobileMenuOpen]);
