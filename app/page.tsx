@@ -1601,10 +1601,23 @@ export default function App() {
   };
 
   // Delete Post
-  const handleDeletePost = (postId: string) => {
+  const handleDeletePost = async (postId: string) => {
+    if (!postId.startsWith('post-')) {
+      try {
+        const response = await fetch('/api/posts?id=' + encodeURIComponent(postId), { method: 'DELETE' });
+        const data = await response.json();
+        if (!response.ok) {
+          triggerToast(data.error || 'পোস্ট মুছে ফেলা যায়নি।', 'info');
+          return;
+        }
+      } catch {
+        triggerToast('সার্ভারের সঙ্গে যোগাযোগ করা যায়নি।', 'info');
+        return;
+      }
+    }
     setPosts((prev) => prev.filter((p) => p.id !== postId));
     if (selectedPostId === postId) setSelectedPostId(null);
-    triggerToast('Refutation article deleted from database', 'info');
+    triggerToast('প্রবন্ধটি মুছে ফেলা হয়েছে।', 'info');
   };
 
   // Start Creating a Blank New Post in Smart Editor
