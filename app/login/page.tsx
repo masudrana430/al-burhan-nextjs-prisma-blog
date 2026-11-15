@@ -9,8 +9,8 @@ import { ArrowLeft, BookOpen, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-reac
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
-  const [password, setপাসওয়ার্ড] = useState('');
-  const [showপাসওয়ার্ড, setShowপাসওয়ার্ড] = useState(false);
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [googleEnabled, setGoogleEnabled] = useState(false);
@@ -53,7 +53,7 @@ export default function LoginPage() {
             <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><Mail size={17}/><input required type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" className="w-full py-3 bg-transparent outline-none"/></span>
           </label>
           <label className="block text-sm font-medium">পাসওয়ার্ড
-            <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><LockKeyhole size={17}/><input required type={showপাসওয়ার্ড?'text':'password'} autoComplete="current-password" value={password} onChange={e=>setপাসওয়ার্ড(e.target.value)} placeholder="আপনার পাসওয়ার্ড" className="w-full py-3 bg-transparent outline-none"/><button type="button" aria-label={showপাসওয়ার্ড?'পাসওয়ার্ড লুকান':'পাসওয়ার্ড দেখুন'} onClick={()=>setShowপাসওয়ার্ড(v=>!v)}>{showপাসওয়ার্ড?<EyeOff size={17}/>:<Eye size={17}/>}</button></span>
+            <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><LockKeyhole size={17}/><input required type={showPassword?'text':'password'} autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="আপনার পাসওয়ার্ড" className="w-full py-3 bg-transparent outline-none"/><button type="button" aria-label={showPassword?'পাসওয়ার্ড লুকান':'পাসওয়ার্ড দেখুন'} onClick={()=>setShowPassword(v=>!v)}>{showPassword?<EyeOff size={17}/>:<Eye size={17}/>}</button></span>
           </label>
           <button disabled={loading} className="auth-primary w-full rounded-xl py-3 font-semibold disabled:opacity-60">{loading?'প্রবেশ করা হচ্ছে…':'লগইন করুন'}</button>
         </form>
