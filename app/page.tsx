@@ -54,7 +54,8 @@ import {
   AlertCircle,
   EyeOff,
   Sun,
-  Moon
+  Moon,
+  Menu
 } from 'lucide-react';
 
 // --- TYPES ---
@@ -1214,12 +1215,12 @@ function RichPostContentRenderer({ post }: { post: BlogPost }) {
 // --- MAIN COMPONENT ---
 export default function App() {
   // Remember the reader's light/dark preference on this device.
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'sepia' | 'dark' | 'system'>('light');
 
   useEffect(() => {
     try {
       const savedTheme = window.localStorage.getItem('al_burhan_theme');
-      if (savedTheme === 'dark' || savedTheme === 'light') {
+      if (savedTheme === 'dark' || savedTheme === 'light' || savedTheme === 'sepia' || savedTheme === 'system') {
         setTheme(savedTheme);
       }
     } catch {
@@ -1310,6 +1311,25 @@ export default function App() {
   const [authপাসওয়ার্ড, setAuthপাসওয়ার্ড] = useState('');
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [showপাসওয়ার্ড, setShowপাসওয়ার্ড] = useState(false);
+
+  // Responsive navigation and database-backed topic directory
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [directoryTopics, setDirectoryTopics] = useState<Array<{ id: string; name: string; description?: string | null }>>([]);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/topics', { cache: 'no-store' })
+      .then(response => response.ok ? response.json() : Promise.reject(new Error('topics-unavailable')))
+      .then(data => {
+        if (active && Array.isArray(data.topics)) {
+          setDirectoryTopics(data.topics.map((topic: { id: string; name: string; description?: string | null }) => ({
+            id: topic.id, name: topic.name, description: topic.description || ''
+          })));
+        }
+      })
+      .catch(() => { /* Use article categories when the topic service is unavailable. */ });
+    return () => { active = false; };
+  }, []);
 
   // Navigation & Active View
   const [activeTab, setActiveTab] = useState<'explore' | 'admin' | 'editor' | 'saved' | 'stack'>('explore');
@@ -1968,6 +1988,26 @@ export default function App() {
   };
 
   // Admin filtered list
+  const homeTopics = useMemo(() => {
+    if (directoryTopics.length > 0) return directoryTopics.map(topic => ({
+      ...topic,
+      count: posts.filter(post =>
+        post.topicId === topic.id ||
+        post.category === topic.name ||
+        categoryLabel(post.category) === topic.name
+      ).length
+    }));
+    return Array.from(new Set(posts.map(post => post.category))).map((name, index) => ({
+      id: 'fallback-topic-' + index,
+      name: categoryLabel(name),
+      description: '',
+      count: posts.filter(post => post.category === name).length
+    }));
+  }, [directoryTopics, posts]);
+
+  const spotlightPost = posts.find(post => post.featured) || posts[0] || null;
+  const latestHomePosts = [...posts].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).slice(0, 3);
+
   const adminFilteredPosts = useMemo(() => {
     const q = adminSearchFilter.trim().toLowerCase();
     if (!q) return posts;
@@ -1980,7 +2020,7 @@ export default function App() {
   }, [posts, adminSearchFilter]);
 
   return (
-    <div className={`app-shell min-h-screen flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-200 ${theme === 'dark' ? 'theme-dark' : 'theme-light'}`}>
+    <div className={`app-shell min-h-screen flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-200 theme-${theme}`}>
       {/* TOAST BANNER */}
       {toast && (
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-emerald-950/95 border border-emerald-500/40 text-emerald-100 shadow-2xl backdrop-blur-md">
@@ -2078,8 +2118,8 @@ export default function App() {
       )}
 
       {/* TOP NAVIGATION HEADER */}
-      <header className="sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <header className="site-header sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
+        <div className="site-header-inner max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
           {/* Brand Logo */}
           <div
             onClick={() => {
@@ -2107,11 +2147,12 @@ export default function App() {
           </div>
 
           {/* Navigation Tabs */}
-          <nav className="main-nav flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+          <nav className={`main-nav flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800 ${isMobileMenuOpen ? 'is-open' : ''}`}>
             <button
               onClick={() => {
                 setSelectedPostId(null);
                 setActiveTab('explore');
+                setIsMobileMenuOpen(false);
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'explore' && !selectedPostId
@@ -2127,6 +2168,7 @@ export default function App() {
               onClick={() => {
                 setSelectedPostId(null);
                 setActiveTab('admin');
+                setIsMobileMenuOpen(false);
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'admin'
@@ -2140,6 +2182,7 @@ export default function App() {
 
             <button
               onClick={() => {
+                setIsMobileMenuOpen(false);
                 window.location.assign('/admin/editor');
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
@@ -2156,6 +2199,7 @@ export default function App() {
               onClick={() => {
                 setSelectedPostId(null);
                 setActiveTab('saved');
+                setIsMobileMenuOpen(false);
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'saved'
@@ -2174,6 +2218,7 @@ export default function App() {
               onClick={() => {
                 setSelectedPostId(null);
                 setActiveTab('stack');
+                setIsMobileMenuOpen(false);
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'stack'
@@ -2182,7 +2227,7 @@ export default function App() {
               }`}
             >
               <Database className="w-4 h-4" />
-              <span className="hidden sm:inline">Next.js + Prisma Code</span>
+              <span className="hidden sm:inline">প্রযুক্তি</span>
             </button>
           </nav>
 
@@ -2190,13 +2235,22 @@ export default function App() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setTheme((current) => current === 'light' ? 'dark' : 'light')}
-              aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
-              title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs sm:text-sm font-medium transition-colors"
+              onClick={() => setTheme((current) => current === 'light' ? 'sepia' : current === 'sepia' ? 'dark' : current === 'dark' ? 'system' : 'light')}
+              aria-label="পড়ার থিম পরিবর্তন করুন"
+              title="লাইট, সেপিয়া, ডার্ক ও সিস্টেম থিম পরিবর্তন করুন"
+              className="theme-switch inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs sm:text-sm font-medium transition-colors"
             >
-              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-              <span className="hidden sm:inline">{theme === 'light' ? 'Dark' : 'Light'}</span>
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : theme === 'sepia' ? <BookOpen className="w-4 h-4" /> : theme === 'system' ? <Database className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              <span className="hidden sm:inline">{theme === 'light' ? 'সেপিয়া' : theme === 'sepia' ? 'ডার্ক' : theme === 'dark' ? 'সিস্টেম' : 'লাইট'}</span>
+            </button>
+            <button
+              type="button"
+              className="mobile-menu-toggle inline-flex items-center justify-center rounded-xl border border-slate-700 px-3 py-2 text-slate-200"
+              aria-expanded={isMobileMenuOpen}
+              aria-label={isMobileMenuOpen ? 'মেনু বন্ধ করুন' : 'মেনু খুলুন'}
+              onClick={() => setIsMobileMenuOpen(open => !open)}
+            >
+              {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
             {currentUser ? (
               <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5">
@@ -2245,14 +2299,14 @@ export default function App() {
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs sm:text-sm font-medium transition-colors"
             >
               <Sparkles className="w-4 h-4 text-amber-200" />
-              <span className="hidden sm:inline">AI Bot</span>
+              <span className="hidden sm:inline">এআই সহকারী</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* MAIN CONTENT CONTAINER */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
+      <main className="site-main flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
         {/* VIEW 1: SINGLE ARTICLE READER (WITH INTERLEAVED TEXT, IMAGES & YOUTUBE VIDEO EMBEDS) */}
         {selectedPostId && activePost ? (
           <div className="max-w-4xl mx-auto">
@@ -2262,7 +2316,7 @@ export default function App() {
                 className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-sm font-medium transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
-                <span>Back to Knowledge Base</span>
+                <span>পাঠাগারে ফিরুন</span>
               </button>
 
               <div className="flex items-center gap-2">
@@ -2274,7 +2328,7 @@ export default function App() {
                   className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm font-medium transition-colors"
                 >
                   <Sparkles className="w-4 h-4" />
-                  <span>Ask AI About This Post</span>
+                  <span>এই প্রবন্ধ নিয়ে প্রশ্ন করুন</span>
                 </button>
                 <button
                   onClick={() => handleToggleBookmark(activePost.id)}
@@ -2285,7 +2339,7 @@ export default function App() {
                   }`}
                 >
                   <Bookmark className="w-4 h-4" />
-                  <span>{activePost.bookmarked ? 'Saved' : 'Save'}</span>
+                  <span>{activePost.bookmarked ? 'সংরক্ষিত' : 'সংরক্ষণ'}</span>
                 </button>
                 {currentUser?.role === 'ADMIN' && (
                   <>
@@ -2294,7 +2348,7 @@ export default function App() {
                       className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs sm:text-sm font-medium"
                     >
                       <Edit3 className="w-4 h-4" />
-                      <span>Edit Blocks</span>
+                      <span>সম্পাদনা</span>
                     </button>
                     <button
                       onClick={() => handleDeletePost(activePost.id)}
@@ -3256,7 +3310,7 @@ export default function App() {
           /* VIEW 5: EXPLORE / SAVED BLOG ARCHIVE WITH AI AUTO-SEARCH, FILTERS & PAGINATION */
           <div className="space-y-6">
             {/* HERO BANNER WITH AI AUTO-SEARCH */}
-            <section className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-emerald-950/40 to-slate-900 border border-emerald-500/25 p-6 sm:p-8 shadow-2xl">
+            <section className="home-search-panel relative rounded-2xl bg-gradient-to-br from-slate-900 via-emerald-950/40 to-slate-900 border border-emerald-500/25 p-5 sm:p-7 shadow-2xl">
               <div className="max-w-3xl">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-3">
                   <Sparkles className="w-3.5 h-3.5" />
@@ -3286,7 +3340,7 @@ export default function App() {
                         setSearchQuery(e.target.value);
                         setShowAutoSearchDropdown(true);
                       }}
-                      placeholder='Auto-search claims, verses, or topics (e.g., "quantum vacuum", "36:36 pairs", "solar orbit", "ribs 86:7", "slavery")...'
+                      placeholder='প্রবন্ধ, গবেষণার বিষয়, প্রশ্ন বা কোনো ধারণা লিখে খুঁজুন…'
                       className="w-full pl-12 pr-10 py-3.5 rounded-2xl bg-slate-950/95 border border-slate-700/80 focus:border-emerald-400 text-sm sm:text-base text-white placeholder-slate-400 focus:outline-none shadow-inner"
                     />
                     {searchQuery && (
@@ -3389,7 +3443,7 @@ export default function App() {
                       </div>
                     ) : (
                       <div className="p-4 text-center text-sm text-slate-400">
-                        সরাসরি কোনো প্রবন্ধ মেলেনি। <strong>"এআই সহকারী"</strong> to synthesize a response or create a new post!
+                        সরাসরি কোনো প্রবন্ধ মেলেনি। <strong>"এআই সহকারী"</strong> — নতুন করে অন্য শব্দ দিয়ে খুঁজে দেখুন।
                       </div>
                     )}
                   </div>
@@ -3419,6 +3473,74 @@ export default function App() {
                     </button>
                   ))}
                 </div>
+              </div>
+            </section>
+
+            {/* LIBRARY DIRECTORY — quick access, inspired by Bangla knowledge portals */}
+            <section className="library-directory space-y-4">
+              <div className="library-section-heading flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="section-eyebrow">আল-বুরহান গবেষণা পাঠাগার</p>
+                  <h2 className="section-title">শুরু করুন এখান থেকে</h2>
+                  <p className="section-description">বিষয়, প্রবন্ধ ও গবেষণার উপকরণ এক জায়গায় খুঁজে নিন।</p>
+                </div>
+                <span className="library-total">{posts.length.toLocaleString('bn-BD')}টি প্রবন্ধ</span>
+              </div>
+              <div className="library-directory-grid">
+                <button type="button" className="directory-card directory-card-primary" onClick={() => { setSelectedCategory('ALL'); setActiveTab('explore'); setCurrentPage(1); }}>
+                  <span className="directory-icon"><BookOpen className="h-5 w-5"/></span>
+                  <span className="directory-copy"><strong>সব প্রবন্ধ</strong><small>গবেষণা ও বিশ্লেষণের সম্পূর্ণ সংগ্রহ</small></span>
+                  <span className="directory-count">{posts.length.toLocaleString('bn-BD')}</span>
+                </button>
+                {homeTopics.slice(0, 7).map((topic, index) => (
+                  <button type="button" key={topic.id} className="directory-card" onClick={() => { setSelectedCategory(topic.name); setActiveTab('explore'); setCurrentPage(1); }}>
+                    <span className="directory-icon">{index % 3 === 0 ? <Compass className="h-5 w-5"/> : index % 3 === 1 ? <FileText className="h-5 w-5"/> : <BookOpen className="h-5 w-5"/>}</span>
+                    <span className="directory-copy"><strong>{topic.name}</strong><small>{topic.description || 'এই বিষয়ের প্রবন্ধ ও গবেষণা দেখুন'}</small></span>
+                    <span className="directory-count">{topic.count.toLocaleString('bn-BD')}</span>
+                  </button>
+                ))}
+                <button type="button" className="directory-card" onClick={() => setIsChatOpen(true)}>
+                  <span className="directory-icon directory-icon-ai"><Sparkles className="h-5 w-5"/></span>
+                  <span className="directory-copy"><strong>এআই গবেষণা সহকারী</strong><small>প্রশ্ন করুন, সম্পর্কিত প্রবন্ধ খুঁজুন</small></span>
+                  <span className="directory-arrow">খুলুন →</span>
+                </button>
+              </div>
+            </section>
+
+            {spotlightPost && (
+              <section className="spotlight-section">
+                <div className="library-section-heading flex items-end justify-between gap-3">
+                  <div>
+                    <p className="section-eyebrow">সম্পাদকীয় নির্বাচন</p>
+                    <h2 className="section-title">বিশেষভাবে নির্বাচিত</h2>
+                  </div>
+                  <button type="button" className="section-link" onClick={() => { setSelectedPostId(null); setActiveTab('explore'); setSelectedCategory('ALL'); }}>সব প্রবন্ধ দেখুন <span>→</span></button>
+                </div>
+                <button type="button" onClick={() => handleOpenPost(spotlightPost.id)} className="spotlight-card text-left">
+                  <span className="spotlight-meta"><span>নির্বাচিত প্রবন্ধ</span><span>{spotlightPost.readTimeMinutes.toLocaleString('bn-BD')} মিনিটের পাঠ</span></span>
+                  <strong>{spotlightPost.title}</strong>
+                  <span className="spotlight-excerpt">{spotlightPost.excerpt}</span>
+                  <span className="spotlight-footer"><span>{categoryLabel(spotlightPost.category)}</span><span>প্রবন্ধটি পড়ুন →</span></span>
+                </button>
+              </section>
+            )}
+
+            <section className="latest-mini-section">
+              <div className="library-section-heading flex items-end justify-between gap-3">
+                <div>
+                  <p className="section-eyebrow">পাঠাগারে নতুন সংযোজন</p>
+                  <h2 className="section-title">সর্বশেষ প্রবন্ধ</h2>
+                </div>
+                <span className="library-total">{latestHomePosts.length.toLocaleString('bn-BD')}টি সাম্প্রতিক</span>
+              </div>
+              <div className="latest-mini-list">
+                {latestHomePosts.map(post => (
+                  <button type="button" key={post.id} className="latest-mini-item" onClick={() => handleOpenPost(post.id)}>
+                    <span className="latest-mini-date">{post.publishedAt}</span>
+                    <span className="latest-mini-content"><strong>{post.title}</strong><small>{post.excerpt}</small></span>
+                    <span className="latest-mini-arrow">→</span>
+                  </button>
+                ))}
               </div>
             </section>
 
@@ -3752,7 +3874,7 @@ export default function App() {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                  <span>Al-Burhan AI Research Bot</span>
+                  <span>আল-বুরহান গবেষণা সহকারী</span>
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 </h3>
                 <p className="text-[11px] text-slate-400">
@@ -3869,15 +3991,15 @@ export default function App() {
       )}
 
       {/* FOOTER */}
-      <footer className="border-t border-slate-900 bg-slate-950 py-5 px-4 sm:px-6 mt-12">
+      <footer className="site-footer border-t border-slate-900 bg-slate-950 py-5 px-4 sm:px-6 mt-12">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500">
           <div>
-            <span className="font-bold text-slate-300">AL-BURHAN Digital Apologetics Platform</span> — Next.js, TypeScript, PostgreSQL, Prisma & NextAuth
+            <span className="font-bold text-slate-300">আল-বুরহান গবেষণা পাঠাগার</span> — বাংলা ভাষায় জ্ঞানচর্চা, বিশ্লেষণ ও গবেষণা
           </div>
           <div className="flex items-center gap-4">
-            <span>Author: Masud Rana</span>
+            <span>প্রতিষ্ঠাতা ও সম্পাদক: Masud Rana</span>
             <span>•</span>
-            <span>Smart Interleaved Media + Admin Portal Active</span>
+            <span>প্রবন্ধ, ছবি, ভিডিও ও গবেষণা উপকরণ</span>
           </div>
         </div>
       </footer>
