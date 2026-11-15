@@ -1471,9 +1471,9 @@ export default function App() {
       timeline.play(0);
 
       const iconTimeline = gsap.timeline();
-      if (topLine) iconTimeline.to(topLine, { y: 5, rotation: 45, duration: duration(0.55), ease: 'power4.out' }, 0);
+      if (topLine) iconTimeline.to(topLine, { y: 7, rotation: 45, duration: duration(0.55), ease: 'power4.out' }, 0);
       if (middleLine) iconTimeline.to(middleLine, { scaleX: 0, opacity: 0, duration: duration(0.22), ease: 'power2.inOut' }, 0);
-      if (bottomLine) iconTimeline.to(bottomLine, { y: -5, rotation: -45, duration: duration(0.55), ease: 'power4.out' }, 0);
+      if (bottomLine) iconTimeline.to(bottomLine, { y: -7, rotation: -45, duration: duration(0.55), ease: 'power4.out' }, 0);
       mobileMenuIconTimelineRef.current = iconTimeline;
     } else if (mobileMenuHasOpenedRef.current) {
       const closeTimeline = gsap.timeline({
