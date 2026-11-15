@@ -1968,3 +1968,40 @@ body {
     transition-duration: .01ms !important; animation-duration: .01ms !important;
   }
 }
+
+
+/* Reliable mobile navigation: React's is-open class controls visibility directly. */
+@media (max-width: 767px) {
+  .site-header-inner > .main-nav {
+    transform: translate3d(100%, 0, 0) !important;
+    transition: transform .42s cubic-bezier(.22, 1, .36, 1) !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+  }
+  .site-header-inner > .main-nav.is-open {
+    transform: translate3d(0, 0, 0) !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+  .site-header .main-nav button.mobile-menu-item {
+    opacity: 0 !important;
+    transform: translate3d(0, 22px, 0) !important;
+    transition: opacity .32s ease, transform .42s cubic-bezier(.22, 1, .36, 1) !important;
+  }
+  .site-header .main-nav.is-open button.mobile-menu-item {
+    opacity: 1 !important;
+    transform: translate3d(0, 0, 0) !important;
+  }
+  .site-header .main-nav.is-open button.mobile-menu-item:nth-of-type(1) { transition-delay: .12s !important; }
+  .site-header .main-nav.is-open button.mobile-menu-item:nth-of-type(2) { transition-delay: .17s !important; }
+  .site-header .main-nav.is-open button.mobile-menu-item:nth-of-type(3) { transition-delay: .22s !important; }
+  .site-header .main-nav.is-open button.mobile-menu-item:nth-of-type(4) { transition-delay: .27s !important; }
+  .site-header .main-nav.is-open button.mobile-menu-item:nth-of-type(5) { transition-delay: .32s !important; }
+  .site-header .main-nav.is-open button.mobile-menu-item:nth-of-type(6) { transition-delay: .37s !important; }
+  .site-header .mobile-menu-backdrop { transition: opacity .25s ease !important; }
+  .site-header .mobile-menu-backdrop.is-open { opacity: 1 !important; pointer-events: auto !important; }
+  .site-header .mobile-menu-toggle-line { transition: transform .3s ease, opacity .2s ease !important; }
+  .site-header .mobile-menu-toggle[aria-expanded="true"] .mobile-menu-toggle-line--top { transform: translateY(7px) rotate(45deg) !important; }
+  .site-header .mobile-menu-toggle[aria-expanded="true"] .mobile-menu-toggle-line--middle { opacity: 0 !important; transform: scaleX(0) !important; }
+  .site-header .mobile-menu-toggle[aria-expanded="true"] .mobile-menu-toggle-line--bottom { transform: translateY(-7px) rotate(-45deg) !important; }
+}
