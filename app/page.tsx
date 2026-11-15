@@ -3360,7 +3360,7 @@ export default function App() {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-slate-400">ট্যাগ:span>
+                    <span className="text-xs text-slate-400">ট্যাগ:</span>
                     <select
                       value={selectedTag}
                       onChange={(e) => setSelectedTag(e.target.value)}
@@ -3397,7 +3397,7 @@ export default function App() {
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-1.5">
                     <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="text-xs text-slate-400">সাজান:span>
+                    <span className="text-xs text-slate-400">সাজান:</span>
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
@@ -3411,7 +3411,7 @@ export default function App() {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-slate-400">প্রতি পৃষ্ঠায়:span>
+                    <span className="text-xs text-slate-400">প্রতি পৃষ্ঠায়:</span>
                     <select
                       value={pageSize}
                       onChange={(e) => setPageSize(Number(e.target.value))}
