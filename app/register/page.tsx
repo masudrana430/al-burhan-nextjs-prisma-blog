@@ -10,9 +10,9 @@ export default function RegisterPage() {
   const router = useRouter();
   const [name,setName] = useState('');
   const [email,setEmail] = useState('');
-  const [password,setপাসওয়ার্ড] = useState('');
+  const [password,setPassword] = useState('');
   const [confirm,setConfirm] = useState('');
-  const [showপাসওয়ার্ড,setShowপাসওয়ার্ড] = useState(false);
+  const [showPassword,setShowPassword] = useState(false);
   const [loading,setLoading] = useState(false);
   const [error,setError] = useState('');
   const [googleEnabled, setGoogleEnabled] = useState(false);
@@ -24,7 +24,7 @@ export default function RegisterPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
-    if (password !== confirm) { setError('পাসওয়ার্ডs do not match.'); return; }
+    if (password !== confirm) { setError('দুটি পাসওয়ার্ড মেলেনি.'); return; }
     setLoading(true);
     try {
       const response = await fetch('/api/register', {
@@ -32,13 +32,13 @@ export default function RegisterPage() {
         body:JSON.stringify({name,email,password})
       });
       const data = await response.json();
-      if (!response.ok) { setError(data.error || 'Could not create your account.'); return; }
+      if (!response.ok) { setError(data.error || 'অ্যাকাউন্ট তৈরি করা যায়নি।'); return; }
       const result = await signIn('user-credentials',{email,password,redirect:false});
       if (!result || result.error) { router.replace('/login?registered=1'); return; }
       router.replace('/');
       router.refresh();
     } catch {
-      setError('Registration failed. Please check your connection and try again.');
+      setError('নিবন্ধন করা যায়নি। ইন্টারনেট সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।');
     } finally {
       setLoading(false);
     }
@@ -63,7 +63,7 @@ export default function RegisterPage() {
             <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><Mail size={17}/><input required type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" className="w-full py-3 bg-transparent outline-none"/></span>
           </label>
           <label className="block text-sm font-medium">পাসওয়ার্ড
-            <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><LockKeyhole size={17}/><input required minLength={10} maxLength={128} type={showপাসওয়ার্ড?'text':'password'} autoComplete="new-password" value={password} onChange={e=>setপাসওয়ার্ড(e.target.value)} placeholder="কমপক্ষে ১০ অক্ষর" className="w-full py-3 bg-transparent outline-none"/><button type="button" aria-label={showপাসওয়ার্ড?'Hide password':'Show password'} onClick={()=>setShowপাসওয়ার্ড(v=>!v)}>{showপাসওয়ার্ড?<EyeOff size={17}/>:<Eye size={17}/>}</button></span>
+            <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><LockKeyhole size={17}/><input required minLength={10} maxLength={128} type={showPassword?'text':'password'} autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="কমপক্ষে ১০ অক্ষর" className="w-full py-3 bg-transparent outline-none"/><button type="button" aria-label={showPassword?'পাসওয়ার্ড লুকান':'পাসওয়ার্ড দেখুন'} onClick={()=>setShowPassword(v=>!v)}>{showPassword?<EyeOff size={17}/>:<Eye size={17}/>}</button></span>
           </label>
           <label className="block text-sm font-medium">পাসওয়ার্ড নিশ্চিত করুন
             <span className="auth-input-wrap mt-1.5 flex items-center gap-2 rounded-xl border px-3"><LockKeyhole size={17}/><input required type="password" autoComplete="new-password" value={confirm} onChange={e=>setConfirm(e.target.value)} placeholder="আবার পাসওয়ার্ড লিখুন" className="w-full py-3 bg-transparent outline-none"/></span>
