@@ -96,6 +96,11 @@ interface BlogPost {
 }
 
 
+function difficultyLabel(difficulty: string): string {
+  const labels: Record<string, string> = { Beginner: 'প্রাথমিক', Intermediate: 'মধ্যবর্তী', Advanced: 'উন্নত' };
+  return labels[difficulty] || difficulty;
+}
+
 function categoryLabel(category: string): string {
   const labels: Record<string, string> = {
     'Cosmology & Physics': 'মহাবিশ্ববিদ্যা ও পদার্থবিজ্ঞান',
@@ -3222,7 +3227,7 @@ export default function App() {
                     className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs sm:text-sm font-bold transition-all shrink-0 shadow-lg shadow-amber-950/40"
                   >
                     <Bot className="w-4 h-4" />
-                    <span>Ask AI Bot</span>
+                    <span>এআই সহকারীকে জিজ্ঞাসা করুন</span>
                   </button>
                 </div>
 
@@ -3232,7 +3237,7 @@ export default function App() {
                     <div className="px-4 py-2.5 bg-slate-950/90 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
                       <span className="flex items-center gap-1.5 font-semibold text-emerald-300">
                         <Sparkles className="w-3.5 h-3.5" />
-                        Instant AI Auto-Search Matches ({autoSearchSuggestions.length})
+                        দ্রুত এআই অনুসন্ধানের ফলাফল ({autoSearchSuggestions.length})
                       </span>
                       <button
                         onClick={() => setShowAutoSearchDropdown(false)}
@@ -3262,7 +3267,7 @@ export default function App() {
                               </p>
                               {matchedTerms.length > 0 && (
                                 <div className="flex items-center gap-1.5 mt-1.5">
-                                  <span className="text-[11px] text-slate-500">Matched concepts:</span>
+                                  <span className="text-[11px] text-slate-500">মিলে যাওয়া ধারণা:</span>
                                   {matchedTerms.map((t) => (
                                     <span
                                       key={t}
@@ -3282,7 +3287,7 @@ export default function App() {
                       </div>
                     ) : (
                       <div className="p-4 text-center text-sm text-slate-400">
-                        No direct article match. Click <strong>"Ask AI Bot"</strong> to synthesize a response or create a new post!
+                        সরাসরি কোনো প্রবন্ধ মেলেনি। <strong>"Ask AI Bot"</strong> to synthesize a response or create a new post!
                       </div>
                     )}
                   </div>
@@ -3290,7 +3295,7 @@ export default function App() {
 
                 {/* Quick Concept Chips */}
                 <div className="flex flex-wrap items-center gap-2 mt-3.5 text-xs">
-                  <span className="text-slate-400 font-medium">Quick Auto-Search:</span>
+                  <span className="text-slate-400 font-medium">দ্রুত অনুসন্ধান:span>
                   {[
                     'Kalam & Quantum Vacuum',
                     'Surah Yasin 36:36 Zawj',
@@ -3320,7 +3325,7 @@ export default function App() {
               {/* Category Pills */}
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1 mr-1">
-                  <Filter className="w-3.5 h-3.5 text-emerald-400" /> Category:
+                  <Filter className="w-3.5 h-3.5 text-emerald-400" /> বিষয়:
                 </span>
                 {['ALL', ...Array.from(new Set(posts.map((post) => post.category)))].map((cat) => (
                   <button
@@ -3332,7 +3337,7 @@ export default function App() {
                         : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
                     }`}
                   >
-                    {cat === 'ALL' ? 'সব বিষয়' : cat}
+                    {cat === 'ALL' ? 'সব বিষয়' : categoryLabel(cat)}
                   </button>
                 ))}
               </div>
@@ -3348,20 +3353,20 @@ export default function App() {
                       className="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
                     >
                       <option value="ALL">সব স্তর</option>
-                      <option value="Beginner">Beginner</option>
-                      <option value="Intermediate">Intermediate</option>
-                      <option value="Advanced">Advanced</option>
+                      <option value="Beginner">প্রাথমিক</option>
+                      <option value="Intermediate">মধ্যবর্তী</option>
+                      <option value="Advanced">উন্নত</option>
                     </select>
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-slate-400">Tag:</span>
+                    <span className="text-xs text-slate-400">ট্যাগ:span>
                     <select
                       value={selectedTag}
                       onChange={(e) => setSelectedTag(e.target.value)}
                       className="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
                     >
-                      <option value="ALL">All Tags ({allTags.length})</option>
+                      <option value="ALL">সব ট্যাগ ({allTags.length})</option>
                       {allTags.map((tag) => (
                         <option key={tag} value={tag}>
                           #{tag}
@@ -3384,7 +3389,7 @@ export default function App() {
                       className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-950/50 border border-rose-500/30 text-rose-300 text-xs hover:bg-rose-900/50"
                     >
                       <RefreshCw className="w-3 h-3" />
-                      <span>Reset Filters</span>
+                      <span>ফিল্টার মুছুন</span>
                     </button>
                   )}
                 </div>
@@ -3392,30 +3397,30 @@ export default function App() {
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-1.5">
                     <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="text-xs text-slate-400">Sort:</span>
+                    <span className="text-xs text-slate-400">সাজান:span>
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
                       className="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
                     >
-                      <option value="relevance">AI Relevance</option>
-                      <option value="newest">Newest Published</option>
-                      <option value="popular">Most Viewed</option>
-                      <option value="readTime">Shortest Read</option>
+                      <option value="relevance">প্রাসঙ্গিকতা</option>
+                      <option value="newest">নতুন প্রকাশিত</option>
+                      <option value="popular">সর্বাধিক পঠিত</option>
+                      <option value="readTime">কম সময়ে পড়ুন</option>
                     </select>
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-slate-400">Per page:</span>
+                    <span className="text-xs text-slate-400">প্রতি পৃষ্ঠায়:span>
                     <select
                       value={pageSize}
                       onChange={(e) => setPageSize(Number(e.target.value))}
                       className="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
                     >
-                      <option value={2}>2 posts</option>
-                      <option value={4}>4 posts</option>
-                      <option value={6}>6 posts</option>
-                      <option value={8}>8 posts</option>
+                      <option value={2}>২টি পোস্ট</option>
+                      <option value={4}>৪টি পোস্ট</option>
+                      <option value={6}>৬টি পোস্ট</option>
+                      <option value={8}>৮টি পোস্ট</option>
                     </select>
                   </div>
                 </div>
@@ -3425,12 +3430,12 @@ export default function App() {
             {/* RESULTS SUMMARY BAR */}
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 px-1">
               <div>
-                Showing{' '}
+                দেখানো হচ্ছে{' '}
                 <span className="font-semibold text-white">
                   {scoredAndFilteredPosts.length === 0 ? 0 : (safePage - 1) * pageSize + 1}–
                   {Math.min(safePage * pageSize, scoredAndFilteredPosts.length)}
                 </span>{' '}
-                of <span className="font-semibold text-emerald-300">{scoredAndFilteredPosts.length}</span> matching refutation articles
+                / <span className="font-semibold text-emerald-300">{scoredAndFilteredPosts.length}</span> matching refutation articles
                 {activeTab === 'saved' && ' (Saved Library)'}
               </div>
               <div>
@@ -3461,7 +3466,7 @@ export default function App() {
                               {post.category}
                             </span>
                             <span className="px-2 py-0.5 rounded-md text-[11px] bg-slate-800 text-slate-300">
-                              {post.difficulty}
+                              {difficultyLabel(post.difficulty)}
                             </span>
                             {hasImage && (
                               <span className="px-2 py-0.5 rounded-md text-[10px] bg-sky-500/15 text-sky-300 border border-sky-500/30 flex items-center gap-1">
