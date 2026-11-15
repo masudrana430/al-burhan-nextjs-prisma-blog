@@ -1375,7 +1375,7 @@ export default function App() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [aiLauncherPosition, setAiLauncherPosition] = useState<{ x: number; y: number } | null>(null);
   const [aiScrollShift, setAiScrollShift] = useState(0);
-  const [aiAnimationData, setAiAnimationData] = useState<any>(null);
+  const [aiAnimationSrc, setAiAnimationSrc] = useState<string | null>(null);
 
   // Remove the white disc baked into both rotating Lottie image layers.
   // The blue halo/ring stays intact; the center sparkle is a separate layer.
@@ -1416,14 +1416,24 @@ export default function App() {
           });
         }));
 
-        if (!cancelled) setAiAnimationData(animation);
+        if (cancelled) return;
+        const animationUrl = URL.createObjectURL(
+          new Blob([JSON.stringify(animation)], { type: 'application/json' }),
+        );
+        setAiAnimationSrc(animationUrl);
       } catch {
-        if (!cancelled) setAiAnimationData(null);
+        if (!cancelled) setAiAnimationSrc('/ai.json');
       }
     };
 
     void prepareAnimation();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      setAiAnimationSrc((current) => {
+        if (current?.startsWith('blob:')) URL.revokeObjectURL(current);
+        return null;
+      });
+    };
   }, []);
 
   const aiLauncherDragRef = useRef({
@@ -1444,7 +1454,7 @@ export default function App() {
       if (!saved) return;
       const parsed = JSON.parse(saved) as { x?: number; y?: number };
       if (typeof parsed.x !== 'number' || typeof parsed.y !== 'number') return;
-      const size = window.innerWidth <= 640 ? 82 : 94;
+      const size = window.innerWidth <= 640 ? 144 : 160;
       setAiLauncherPosition({
         x: Math.max(8, Math.min(parsed.x, window.innerWidth - size - 8)),
         y: Math.max(8, Math.min(parsed.y, window.innerHeight - size - 8)),
@@ -4129,7 +4139,7 @@ export default function App() {
               setIsChatOpen(true);
             }}
           >
-            {aiAnimationData && <Lottie animationData={aiAnimationData} autoplay loop className="alburhan-ai-lottie" />}
+            {aiAnimationSrc && <Lottie src={aiAnimationSrc} autoplay loop className="alburhan-ai-lottie" />}
             <span className="alburhan-ai-float-halo" aria-hidden="true" />
           </button>
           <span className="alburhan-ai-float-label" aria-hidden="true">Ask Al-Burhan AI</span>
