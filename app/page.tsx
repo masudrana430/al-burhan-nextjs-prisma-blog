@@ -1375,6 +1375,57 @@ export default function App() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [aiLauncherPosition, setAiLauncherPosition] = useState<{ x: number; y: number } | null>(null);
   const [aiScrollShift, setAiScrollShift] = useState(0);
+  const [aiAnimationData, setAiAnimationData] = useState<any>(null);
+
+  // Remove the white disc baked into both rotating Lottie image layers.
+  // The blue halo/ring stays intact; the center sparkle is a separate layer.
+  useEffect(() => {
+    let cancelled = false;
+    const prepareAnimation = async () => {
+      try {
+        const response = await fetch('/ai.json', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Unable to load AI animation');
+        const animation = await response.json();
+
+        await Promise.all((animation.assets || []).map(async (asset: any) => {
+          if (!['1_82e22e0b-7c81-4068-90f8-7e7bfe6bde64', '2_c10c0b4b-1075-4a1f-ac98-74fa8663497d'].includes(asset.id)) return;
+          if (typeof asset.p !== 'string' || !asset.p.startsWith('data:image/')) return;
+
+          await new Promise<void>((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => {
+              try {
+                const canvas = document.createElement('canvas');
+                canvas.width = image.naturalWidth || asset.w;
+                canvas.height = image.naturalHeight || asset.h;
+                const context = canvas.getContext('2d');
+                if (!context) throw new Error('Canvas is unavailable');
+                context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                context.globalCompositeOperation = 'destination-out';
+                context.beginPath();
+                context.arc(canvas.width / 2, canvas.height * (455 / 804), canvas.width * (125 / 720), 0, Math.PI * 2);
+                context.fill();
+                asset.p = canvas.toDataURL('image/png');
+                resolve();
+              } catch (error) {
+                reject(error);
+              }
+            };
+            image.onerror = () => reject(new Error('Unable to process AI animation layer'));
+            image.src = asset.p;
+          });
+        }));
+
+        if (!cancelled) setAiAnimationData(animation);
+      } catch {
+        if (!cancelled) setAiAnimationData(null);
+      }
+    };
+
+    void prepareAnimation();
+    return () => { cancelled = true; };
+  }, []);
+
   const aiLauncherDragRef = useRef({
     pointerId: null as number | null,
     startX: 0,
@@ -4078,7 +4129,7 @@ export default function App() {
               setIsChatOpen(true);
             }}
           >
-            <Lottie src="/ai.json" autoplay loop className="alburhan-ai-lottie" />
+            {aiAnimationData && <Lottie animationData={aiAnimationData} autoplay loop className="alburhan-ai-lottie" />}
             <span className="alburhan-ai-float-halo" aria-hidden="true" />
           </button>
           <span className="alburhan-ai-float-label" aria-hidden="true">Ask Al-Burhan AI</span>
