@@ -808,17 +808,17 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: 'Administrator',
       credentials: {
-        email: { label: 'Administrator email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+        email: { label: 'প্রশাসকের ইমেইল', type: 'email' },
+        password: { label: 'পাসওয়ার্ড', type: 'password' },
       },
       async authorize(credentials) {
         const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-        const adminPassword = process.env.ADMIN_PASSWORD;
+        const adminপাসওয়ার্ড = process.env.ADMIN_PASSWORD;
         const email = credentials?.email?.trim().toLowerCase();
         const password = credentials?.password;
 
-        if (!adminEmail || !adminPassword || !email || !password) return null;
-        if (email !== adminEmail || !passwordMatches(password, adminPassword)) return null;
+        if (!adminEmail || !adminপাসওয়ার্ড || !email || !password) return null;
+        if (email !== adminEmail || !passwordMatches(password, adminপাসওয়ার্ড)) return null;
 
         return { id: \`admin:\${adminEmail}\`, email: adminEmail, name: 'Administrator', role: 'ADMIN' };
       },
@@ -1307,9 +1307,9 @@ export default function App() {
   // Admin credentials are submitted to the server; no browser-stored login state.
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authEmail, setAuthEmail] = useState('');
-  const [authPassword, setAuthPassword] = useState('');
+  const [authপাসওয়ার্ড, setAuthপাসওয়ার্ড] = useState('');
   const [isAuthLoading, setIsAuthLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showপাসওয়ার্ড, setShowপাসওয়ার্ড] = useState(false);
 
   // Navigation & Active View
   const [activeTab, setActiveTab] = useState<'explore' | 'admin' | 'editor' | 'saved' | 'stack'>('explore');
@@ -1469,8 +1469,8 @@ export default function App() {
   const handleCredentialAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     const emailClean = authEmail.trim().toLowerCase();
-    if (!emailClean || !authPassword) {
-      triggerToast('Enter your administrator email and password.', 'info');
+    if (!emailClean || !authপাসওয়ার্ড) {
+      triggerToast('প্রশাসকের ইমেইল ও পাসওয়ার্ড লিখুন।', 'info');
       return;
     }
 
@@ -1478,23 +1478,23 @@ export default function App() {
     try {
       const result = await signIn('admin-credentials', {
         email: emailClean,
-        password: authPassword,
+        password: authপাসওয়ার্ড,
         redirect: false
       });
 
       if (!result || result.error) {
-        triggerToast('Invalid administrator email or password.', 'info');
+        triggerToast('প্রশাসকের ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।', 'info');
         return;
       }
 
       await updateSession();
-      setAuthPassword('');
+      setAuthপাসওয়ার্ড('');
       setIsAuthModalOpen(false);
       setActiveTab('admin');
       setSelectedPostId(null);
-      triggerToast('Administrator sign-in successful.', 'success');
+      triggerToast('প্রশাসক হিসেবে সফলভাবে লগইন হয়েছে।', 'success');
     } catch {
-      triggerToast('Sign-in failed. Please try again.', 'info');
+      triggerToast('লগইন করা যায়নি। আবার চেষ্টা করুন।', 'info');
     } finally {
       setIsAuthLoading(false);
     }
@@ -1502,11 +1502,11 @@ export default function App() {
 
   const handleLogout = async () => {
     await signOut({ redirect: false });
-    setAuthPassword('');
+    setAuthপাসওয়ার্ড('');
     if (activeTab === 'admin' || activeTab === 'editor') {
       setActiveTab('explore');
     }
-    triggerToast('Logged out successfully.', 'info');
+    triggerToast('সফলভাবে লগআউট হয়েছে।', 'info');
   };
 
   // --- SMART BLOCK BUILDER HANDLERS (ADD / INSERT / MOVE / UPLOAD IMAGE / YOUTUBE) ---
@@ -1914,7 +1914,7 @@ export default function App() {
             <button
               onClick={() => {
                 setIsAuthModalOpen(false);
-                setAuthPassword('');
+                setAuthপাসওয়ার্ড('');
               }}
               className="absolute top-4 right-4 p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white"
             >
@@ -1926,22 +1926,22 @@ export default function App() {
                 <Lock className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Secure Administrator Login</h3>
+                <h3 className="text-lg font-bold text-white">নিরাপদ প্রশাসক লগইন</h3>
                 <p className="text-xs text-slate-400">
-                  Credentials are verified on the server using private Vercel environment variables.
+                  আপনার লগইন তথ্য সার্ভারে নিরাপদভাবে যাচাই করা হয়।
                 </p>
               </div>
             </div>
 
             <div className="mb-4 rounded-xl border border-emerald-500/20 bg-emerald-950/20 px-3 py-2 text-xs text-emerald-100">
-              Admin access is restricted to the account configured in Vercel. Demo and simulated Google logins are disabled.
+              শুধু Vercel-এ নির্ধারিত প্রশাসক অ্যাকাউন্ট প্রবেশ করতে পারবে।
             </div>
 
             {/* Credentials Form */}
             <form onSubmit={handleCredentialAuth} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Email Address
+                  ইমেইল ঠিকানা
                 </label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -1950,7 +1950,7 @@ export default function App() {
                     required
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
-                    placeholder="Administrator email"
+                    placeholder="প্রশাসকের ইমেইল"
                     className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
@@ -1958,24 +1958,24 @@ export default function App() {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Password
+                  পাসওয়ার্ড
                 </label>
                 <div className="relative">
                   <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
-                    type={showPassword ? 'text' : 'password'}
+                    type={showপাসওয়ার্ড ? 'text' : 'password'}
                     required
-                    value={authPassword}
-                    onChange={(e) => setAuthPassword(e.target.value)}
+                    value={authপাসওয়ার্ড}
+                    onChange={(e) => setAuthপাসওয়ার্ড(e.target.value)}
                     placeholder="••••••••"
                     className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500"
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword((p) => !p)}
+                    onClick={() => setShowপাসওয়ার্ড((p) => !p)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showপাসওয়ার্ড ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
@@ -1985,11 +1985,11 @@ export default function App() {
                 disabled={isAuthLoading || authStatus === 'loading'}
                 className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold text-sm shadow-lg shadow-emerald-950/60 transition-all"
               >
-                {isAuthLoading ? 'Verifying securely…' : 'Sign In to Admin Dashboard'}
+                {isAuthLoading ? 'নিরাপদভাবে যাচাই করা হচ্ছে…' : 'প্রশাসক হিসেবে লগইন করুন'}
               </button>
             </form>
             <div className="mt-5 pt-4 border-t border-slate-800 text-center text-xs text-slate-400">
-              Reader account? <a href="/login" className="font-semibold text-sky-500 hover:underline">Sign in or create an account</a>
+              পাঠক অ্যাকাউন্ট আছে? <a href="/login" className="font-semibold text-sky-500 hover:underline">লগইন করুন অথবা নতুন অ্যাকাউন্ট খুলুন</a>
             </div>
           </div>
         </div>
@@ -2140,7 +2140,7 @@ export default function App() {
                 </div>
                 <button
                   onClick={handleLogout}
-                  title="Log Out"
+                  title="লগআউট করুন"
                   className="p-1.5 rounded-lg bg-slate-950 hover:bg-rose-950/60 text-slate-400 hover:text-rose-300 transition-colors"
                 >
                   <LogOut className="w-3.5 h-3.5" />
@@ -2538,7 +2538,7 @@ export default function App() {
                     <span>Smart Interleaved Content Builder</span>
                   </div>
                   <h2 className="text-xl sm:text-2xl font-bold text-white">
-                    {editingPostId ? 'Edit Refutation Article & Media Blocks' : 'নতুন পোস্ট তৈরি করুন (Text + Images + YouTube Video Previews)'}
+                    {editingPostId ? 'Edit Refutation Article & মিডিয়া ব্লক' : 'নতুন পোস্ট তৈরি করুন (Text + Images + YouTube Video Previews)'}
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-400 mt-1">
                     Insert **Smart Text**, **Images (URL or Local Upload)**, and **YouTube Video Link Previews** in any order between paragraphs.
@@ -3287,7 +3287,7 @@ export default function App() {
                       </div>
                     ) : (
                       <div className="p-4 text-center text-sm text-slate-400">
-                        সরাসরি কোনো প্রবন্ধ মেলেনি। <strong>"Ask AI Bot"</strong> to synthesize a response or create a new post!
+                        সরাসরি কোনো প্রবন্ধ মেলেনি। <strong>"এআই সহকারী"</strong> to synthesize a response or create a new post!
                       </div>
                     )}
                   </div>
