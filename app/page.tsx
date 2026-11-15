@@ -1126,7 +1126,7 @@ function RichPostContentRenderer({ post }: { post: BlogPost }) {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-[11px] text-slate-300 hover:text-white bg-slate-800/90 px-2.5 py-1 rounded-lg"
                 >
-                  <span>Watch on YouTube</span>
+                  <span>ইউটিউবে দেখুন</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
@@ -1342,8 +1342,8 @@ export default function App() {
     {
       id: 'welcome-msg',
       role: 'assistant',
-      text: 'Assalamu Alaikum! I am **Al-Burhan AI Assistant**. Ask me any question or paste an anti-Islamic claim (e.g., *"How do we answer the quantum vacuum objection?"*, *"Surah Yasin 36:36 pairs"*, *"Solar orbit 21:33"*, or *"Backbone and ribs in 86:7"*), and I will auto-search your blog database and synthesize a scholarly response with direct article links.',
-      timestamp: 'Just now',
+      text: 'আসসালামু আলাইকুম! আমি **আল-বুরহান এআই সহকারী**। গবেষণা, বিজ্ঞান, দর্শন, ইতিহাস, ভাষাতত্ত্ব অথবা কোনো প্রশ্ন লিখুন। আমি পাঠাগারের প্রাসঙ্গিক প্রবন্ধ খুঁজে উত্তর সাজাতে সাহায্য করব।',
+      timestamp: 'এইমাত্র',
       matchedPostIds: ['post-1', 'post-2']
     }
   ]);
@@ -1835,24 +1835,24 @@ export default function App() {
       const primary = topMatches[0].post;
       matchedIds = topMatches.map((m) => m.post.id);
 
-      reply = `Based on **Al-Burhan Knowledge Base**, here is the structured refutation for your query:\n\n` +
+      reply = `**আল-বুরহান জ্ঞানভান্ডার** থেকে আপনার প্রশ্নের সঙ্গে সম্পর্কিত তথ্যগুলো নিচে সাজানো হলো:\n\n` +
         `1. **Core Argument (${primary.title}):**\n` +
         `${primary.excerpt}\n\n` +
-        `2. **Key Evidence & Takeaways:**\n` +
+        `২. **গুরুত্বপূর্ণ প্রমাণ ও মূল বিষয়:**\n` +
         primary.keyTakeaways.map((k) => `• ${k}`).join('\n') +
-        `\n\n3. **Primary Citation:**\n` +
+        `\n\n৩. **প্রাথমিক তথ্যসূত্র:**\n` +
         `*"${primary.references[0]?.citation || ''}"* — **${primary.references[0]?.label || ''}**`;
 
       if (topMatches[1]) {
-        reply += `\n\n**Related Database Entry:** Also review *"${topMatches[1].post.title}"* (${topMatches[1].post.category}) for complementary arguments.`;
+        reply += `\n\n**সম্পর্কিত প্রবন্ধ:** আরও পড়ুন *"${topMatches[1].post.title}"* (${topMatches[1].post.category}) — বিষয়টির সঙ্গে সম্পর্কিত অতিরিক্ত আলোচনা।`;
       }
     } else {
       matchedIds = posts.slice(0, 2).map((p) => p.id);
       reply =
         `I searched all **${posts.length} articles** in your repository. While no exact keyword match was found for *"${queryText}"*, here is the core methodological framework from our database:\n\n` +
-        `• **Linguistic Verification:** Check the classical Arabic root in *Lisan al-Arab* before accepting a polemical translation.\n` +
+        `• **ভাষাতাত্ত্বিক যাচাই:** কোনো অনুবাদ গ্রহণের আগে নির্ভরযোগ্য অভিধান ও মূল ভাষার ব্যবহার যাচাই করুন।\n` +
         `• **Contextual & Empirical Check:** Distinguish between observational phenomenology (like "sunrise/sunset") and physical cosmology.\n` +
-        `• **Tip:** You can publish a dedicated article on this claim using the **Admin Dashboard / Smart Block Studio** so I can automatically index it!`;
+        `• **পরামর্শ:** প্রশাসক ড্যাশবোর্ড থেকে এ বিষয়ে নতুন প্রবন্ধ প্রকাশ করলে তা পাঠাগারে যুক্ত হবে।`;
     }
 
     const botMsg: ChatMessage = {
