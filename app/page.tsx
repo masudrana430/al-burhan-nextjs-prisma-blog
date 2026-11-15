@@ -1329,20 +1329,6 @@ export default function App() {
     };
   }, [isMobileMenuOpen]);
 
-  // Mobile menu visibility is controlled by React state and CSS, not animation timelines.
-  useEffect(() => {
-    if (!isMobileMenuOpen) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsMobileMenuOpen(false);
-    };
-    window.addEventListener('keydown', closeOnEscape);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', closeOnEscape);
-    };
-  }, [isMobileMenuOpen]);
   const [directoryTopics, setDirectoryTopics] = useState<Array<{ id: string; name: string; description?: string | null }>>([]);
 
   useEffect(() => {
