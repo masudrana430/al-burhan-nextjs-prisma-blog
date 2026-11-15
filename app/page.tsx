@@ -1379,6 +1379,47 @@ export default function App() {
   ]);
   const [editorPreviewMode, setEditorPreviewMode] = useState(false);
   const [formCategory, setFormCategory] = useState<BlogPost['category']>('Cosmology & Physics');
+  const [availableTopics, setAvailableTopics] = useState<Array<{id:string;name:string;description?:string|null}>>([]);
+  const [formTopicId, setFormTopicId] = useState('');
+  const [showQuickTopic, setShowQuickTopic] = useState(false);
+  const [quickTopicName, setQuickTopicName] = useState('');
+  const [quickTopicDescription, setQuickTopicDescription] = useState('');
+  const [creatingQuickTopic, setCreatingQuickTopic] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/topics')
+      .then(response => response.ok ? response.json() : Promise.reject(new Error('বিষয়ের তালিকা আনা যায়নি।')))
+      .then(data => { if (active && Array.isArray(data.topics)) setAvailableTopics(data.topics); })
+      .catch(error => console.error('[topics]', error));
+    return () => { active = false; };
+  }, []);
+
+  const handleQuickTopicCreate = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (quickTopicName.trim().length < 2) return;
+    setCreatingQuickTopic(true);
+    try {
+      const response = await fetch('/api/topics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: quickTopicName.trim(), description: quickTopicDescription.trim() }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'ক্যাটাগরি তৈরি করা যায়নি।');
+      const topic = data.topic;
+      setAvailableTopics(current => [...current.filter(item => item.id !== topic.id), topic]);
+      setFormTopicId(topic.id);
+      setQuickTopicName('');
+      setQuickTopicDescription('');
+      setShowQuickTopic(false);
+      triggerToast('নতুন ক্যাটাগরি তৈরি ও নির্বাচন করা হয়েছে।', 'success');
+    } catch (error) {
+      triggerToast(error instanceof Error ? error.message : 'ক্যাটাগরি তৈরি করা যায়নি।', 'info');
+    } finally {
+      setCreatingQuickTopic(false);
+    }
+  };
   const [formDifficulty, setFormDifficulty] = useState<BlogPost['difficulty']>('Intermediate');
   const [formTags, setFormTags] = useState('');
   const [formTakeaways, setFormTakeaways] = useState('');
@@ -1740,7 +1781,7 @@ export default function App() {
   };
 
   // Save New or Edited Post from Smart Block Editor
-  const handleSavePost = (e: React.FormEvent) => {
+  const handleSavePost = async (e: React.FormEvent) => {
     e.preventDefault();
     const combinedContent = serializeBlocksToContent(formBlocks);
     if (!formTitle.trim() || !combinedContent.trim()) {
@@ -1780,7 +1821,8 @@ export default function App() {
           .trim() + '...',
       content: combinedContent,
       blocks: formBlocks,
-      category: formCategory,
+      category: formTopicId ? (availableTopics.find(topic => topic.id === formTopicId)?.name || formCategory) : formCategory,
+      topicId: formTopicId || undefined,
       difficulty: formDifficulty,
       tags: parsedTags.length > 0 ? parsedTags : ['Apologetics', 'Refutation'],
       author: currentUser?.name || 'Masud Rana',
@@ -1804,8 +1846,35 @@ export default function App() {
       setPosts((prev) => prev.map((p) => (p.id === editingPostId ? newPost : p)));
       triggerToast('Article updated with smart media blocks!', 'success');
     } else {
-      setPosts((prev) => [newPost, ...prev]);
-      triggerToast('New refutation article published & indexed for AI search!', 'success');
+      try {
+        const categoryMap: Record<string, string> = {
+          'Cosmology & Physics': 'COSMOLOGY_PHYSICS',
+          'Biology & Embryology': 'BIOLOGY_EMBRYOLOGY',
+          'Historical & Ethics': 'HISTORICAL_ETHICS',
+          'Philosophy & Logic': 'PHILOSOPHY_LOGIC',
+          'Linguistics & Tafsir': 'LINGUISTICS_TAFSIR',
+        };
+        const response = await fetch('/api/posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: newPost.title, slug: newPost.slug, claimAddressed: newPost.claimAddressed,
+            excerpt: newPost.excerpt, content: newPost.content, blocks: newPost.blocks,
+            topicId: formTopicId || undefined, category: categoryMap[formCategory] || 'PHILOSOPHY_LOGIC',
+            difficulty: formDifficulty.toUpperCase(), tags: newPost.tags,
+            keyTakeaways: newPost.keyTakeaways, references: newPost.references,
+            readTimeMinutes: newPost.readTimeMinutes, featured: newPost.featured, published: true,
+          }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'পোস্ট সংরক্ষণ করা যায়নি।');
+        newPost.id = data.post.id;
+        setPosts((prev) => [newPost, ...prev]);
+        triggerToast('পোস্ট ও ক্যাটাগরি ডাটাবেজে সংরক্ষণ করা হয়েছে।', 'success');
+      } catch (error) {
+        triggerToast(error instanceof Error ? error.message : 'পোস্ট সংরক্ষণ করা যায়নি।', 'info');
+        return;
+      }
     }
 
     setEditingPostId(null);
@@ -2642,20 +2711,40 @@ export default function App() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                        Category
-                      </label>
+                      <div className="mb-1.5 flex items-center justify-between gap-2">
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">বিষয় / ক্যাটাগরি</label>
+                        <button type="button" onClick={() => setShowQuickTopic(value => !value)} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/10">
+                          <Plus className="h-3.5 w-3.5"/> নতুন ক্যাটাগরি
+                        </button>
+                      </div>
                       <select
-                        value={formCategory}
-                        onChange={(e) => setFormCategory(e.target.value as BlogPost['category'])}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500"
+                        value={formTopicId ? 'topic:' + formTopicId : formCategory}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value.startsWith('topic:')) setFormTopicId(value.slice(6));
+                          else { setFormTopicId(''); setFormCategory(value as BlogPost['category']); }
+                        }}
+                        className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
                       >
-                        <option value="Cosmology & Physics">Cosmology & Physics</option>
-                        <option value="Biology & Embryology">Biology & Embryology</option>
-                        <option value="Historical & Ethics">Historical & Ethics</option>
-                        <option value="Philosophy & Logic">Philosophy & Logic</option>
-                        <option value="Linguistics & Tafsir">Linguistics & Tafsir</option>
+                        <optgroup label="আগের ক্যাটাগরি">
+                          <option value="Cosmology & Physics">মহাবিশ্ববিদ্যা ও পদার্থবিজ্ঞান</option>
+                          <option value="Biology & Embryology">জীববিজ্ঞান ও ভ্রূণতত্ত্ব</option>
+                          <option value="Historical & Ethics">ইতিহাস ও নৈতিকতা</option>
+                          <option value="Philosophy & Logic">দর্শন ও যুক্তিবিদ্যা</option>
+                          <option value="Linguistics & Tafsir">ভাষাতত্ত্ব ও তাফসির</option>
+                        </optgroup>
+                        {availableTopics.length > 0 && <optgroup label="আপনার তৈরি ক্যাটাগরি">
+                          {availableTopics.map(topic => <option key={topic.id} value={'topic:' + topic.id}>{topic.name}</option>)}
+                        </optgroup>}
                       </select>
+                      {showQuickTopic && <form onSubmit={handleQuickTopicCreate} className="mt-3 space-y-2 rounded-xl border border-emerald-500/30 bg-slate-900 p-3">
+                        <input autoFocus value={quickTopicName} onChange={e => setQuickTopicName(e.target.value)} maxLength={60} minLength={2} required placeholder="নতুন ক্যাটাগরির নাম" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white placeholder:text-slate-500"/>
+                        <input value={quickTopicDescription} onChange={e => setQuickTopicDescription(e.target.value)} maxLength={500} placeholder="সংক্ষিপ্ত বিবরণ (ঐচ্ছিক)" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white placeholder:text-slate-500"/>
+                        <div className="flex gap-2">
+                          <button disabled={creatingQuickTopic} type="submit" className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{creatingQuickTopic ? 'তৈরি হচ্ছে…' : 'ক্যাটাগরি তৈরি করুন'}</button>
+                          <button type="button" onClick={() => setShowQuickTopic(false)} className="rounded-lg border border-slate-700 px-3 py-2.5 text-sm text-slate-300">বাতিল</button>
+                        </div>
+                      </form>}
                     </div>
                   </div>
 
