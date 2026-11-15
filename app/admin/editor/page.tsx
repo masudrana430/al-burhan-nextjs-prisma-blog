@@ -8,7 +8,8 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminEditorPage() {
   const session = await getServerSession(authOptions);
-  if ((session?.user as { role?: string } | undefined)?.role !== 'ADMIN') redirect('/login');
+  const sessionUser = (session as { user?: { role?: string } } | null)?.user;
+  if (sessionUser?.role !== 'ADMIN') redirect('/login');
   const topics = await prisma.topic.findMany({
     where: { isActive: true },
     orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
