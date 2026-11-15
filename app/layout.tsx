@@ -3,8 +3,8 @@ import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'AL-BURHAN | Digital Apologetics & Counter-Critique Platform',
-  description: 'Next.js, TypeScript, PostgreSQL & Prisma Blog Platform with AI Auto-Search and RAG Chatbot',
+  title: 'আল-বুরহান | গবেষণা ও জ্ঞানভিত্তিক পাঠাগার',
+  description: 'বাংলা ভাষায় গবেষণা, জ্ঞানচর্চা, প্রবন্ধ ও পাঠাগার।',
 };
 
 export default function RootLayout({
@@ -13,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="bg-slate-950 text-slate-100 antialiased"><Providers>{children}</Providers></body>
+    <html lang="bn">
+      <body className="bg-slate-50 text-slate-900 antialiased"><Providers>{children}</Providers></body>
     </html>
   );
 }
