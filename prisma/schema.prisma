@@ -56,6 +56,8 @@ model Post {
   authorRole      String                 @default("B.Sc. in Engineering Physics & Researcher")
   authorId        String?
   author          User?                  @relation(fields: [authorId], references: [id])
+  topicId         String?
+  topic           Topic?                 @relation(fields: [topicId], references: [id], onDelete: SetNull)
   readTimeMinutes Int                    @default(7)
   views           Int                    @default(0)
   featured        Boolean                @default(false)
@@ -67,6 +69,7 @@ model Post {
   updatedAt       DateTime               @updatedAt
 
   @@index([category, published])
+  @@index([topicId, published])
   @@index([slug])
 }
 
@@ -76,4 +79,20 @@ model AiChatSession {
   response  String   @db.Text
   citedIds  String[]
   createdAt DateTime @default(now())
+}
+
+
+model Topic {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  color       String   @default("#1a73e8")
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  posts       Post[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
 }
