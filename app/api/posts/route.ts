@@ -69,8 +69,9 @@ export async function GET(req: NextRequest) {
   }
 }
 
-function isAdmin(session: Awaited<ReturnType<typeof getServerSession>>) {
-  return (session?.user as { role?: string } | undefined)?.role === 'ADMIN';
+function isAdmin(session: unknown) {
+  const user = (session as { user?: { role?: string } } | null)?.user;
+  return user?.role === 'ADMIN';
 }
 
 function makeSlug(value: string) {
@@ -95,6 +96,7 @@ export async function POST(req: NextRequest) {
       const topic = await prisma.topic.findUnique({ where: { id: topicId }, select: { id: true, isActive: true } });
       if (!topic?.isActive) return NextResponse.json({ error: 'নির্বাচিত বিষয়টি পাওয়া যায়নি।' }, { status: 400 });
     }
+    const sessionUser = (session as { user?: { name?: string } } | null)?.user;
     const post = await prisma.post.create({
       data: {
         title, slug,
@@ -111,7 +113,7 @@ export async function POST(req: NextRequest) {
         readTimeMinutes: Math.max(1, Math.min(120, Number(body.readTimeMinutes) || 5)),
         featured: body.featured === true,
         published: body.published !== false,
-        authorName: session?.user?.name || 'আল-বুরহান সম্পাদক',
+        authorName: sessionUser?.name || 'আল-বুরহান সম্পাদক',
       },
       include: { topic: true },
     });
