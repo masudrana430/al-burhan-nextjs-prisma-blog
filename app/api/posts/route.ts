@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { Prisma, Category, Difficulty } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { randomUUID } from 'node:crypto';
 
 export async function GET(req: NextRequest) {
   try {
@@ -88,7 +89,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'শিরোনাম ও মূল লেখা আবশ্যক।' }, { status: 400 });
     }
     const baseSlug = makeSlug(typeof body.slug === 'string' && body.slug.trim() ? body.slug : title) || 'article';
-    const slug = `${baseSlug}-${crypto.randomUUID().slice(0, 6)}`;
+    const slug = `${baseSlug}-${randomUUID().slice(0, 6)}`;
     const topicId = typeof body.topicId === 'string' && body.topicId ? body.topicId : undefined;
     if (topicId) {
       const topic = await prisma.topic.findUnique({ where: { id: topicId }, select: { id: true, isActive: true } });
@@ -111,7 +112,6 @@ export async function POST(req: NextRequest) {
         featured: body.featured === true,
         published: body.published !== false,
         authorName: session?.user?.name || 'আল-বুরহান সম্পাদক',
-        authorId: session?.user?.id || undefined,
       },
       include: { topic: true },
     });
