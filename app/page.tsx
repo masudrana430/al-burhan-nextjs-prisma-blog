@@ -1989,6 +1989,7 @@ export default function App() {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'পোস্ট সংরক্ষণ করা যায়নি।');
         newPost.id = data.post.id;
+        newPost.slug = data.post.slug;
         setPosts((prev) => [newPost, ...prev]);
         triggerToast('পোস্ট ও ক্যাটাগরি ডাটাবেজে সংরক্ষণ করা হয়েছে।', 'success');
       } catch (error) {
