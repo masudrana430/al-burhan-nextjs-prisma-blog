@@ -3034,3 +3034,41 @@ body {
   z-index: 1;
   pointer-events: auto;
 }
+
+
+/* Lightweight animated robot fallback for the floating AI launcher. */
+.alburhan-ai-robot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 104px;
+  height: 104px;
+  border: 1px solid rgba(193, 157, 83, .48);
+  border-radius: 34px;
+  background: radial-gradient(circle at 35% 25%, rgba(255,255,255,.98), rgba(233,244,233,.94) 48%, rgba(190,215,194,.92));
+  box-shadow: 0 12px 34px rgba(19, 61, 37, .24), inset 0 1px 0 rgba(255,255,255,.9);
+  font-size: 66px;
+  line-height: 1;
+  animation: alburhan-ai-robot-bob 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+.alburhan-ai-robot::after {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  border: 1px solid rgba(184, 134, 53, .32);
+  border-radius: 40px;
+  animation: alburhan-ai-robot-pulse 2.8s ease-out infinite;
+}
+@keyframes alburhan-ai-robot-bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-9px) rotate(2deg); }
+}
+@keyframes alburhan-ai-robot-pulse {
+  0% { transform: scale(.94); opacity: .65; }
+  100% { transform: scale(1.13); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .alburhan-ai-robot, .alburhan-ai-robot::after { animation: none; }
+}
