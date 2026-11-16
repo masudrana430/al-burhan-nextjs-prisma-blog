@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Lottie from 'lottie-react';
+import { Lottie } from 'lottie-react';
 
 type Props = { className?: string };
 
