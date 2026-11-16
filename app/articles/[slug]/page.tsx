@@ -54,22 +54,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 function renderText(value: string, prefix: string) {
-  return value.split(/\\n{2,}/).map((paragraph, index) => {
+  return value.split(/\n{2,}/).map((paragraph, index) => {
     const text = paragraph.trim();
     const key = prefix + '-' + index;
     if (!text) return null;
     if (text.startsWith('### ')) return <h2 key={key} className="mt-8 border-b border-stone-200 pb-2 text-xl font-bold text-slate-900">{text.slice(4)}</h2>;
     if (text.startsWith('#### ')) return <h3 key={key} className="mt-6 text-lg font-semibold text-slate-900">{text.slice(5)}</h3>;
     if (text.startsWith('> ')) return <blockquote key={key} className="border-l-4 border-amber-500 bg-amber-50 px-5 py-4 italic text-slate-700">{text.slice(2)}</blockquote>;
-    const lines = text.split('\\n');
-    if (lines.every((line) => /^[-*]\\s/.test(line))) return <ul key={key} className="list-disc space-y-2 pl-6 text-slate-700">{lines.map((line, i) => <li key={key + '-' + i}>{line.replace(/^[-*]\\s/, '')}</li>)}</ul>;
-    if (lines.every((line) => /^\\d+[.)]\\s/.test(line))) return <ol key={key} className="list-decimal space-y-2 pl-6 text-slate-700">{lines.map((line, i) => <li key={key + '-' + i}>{line.replace(/^\\d+[.)]\\s/, '')}</li>)}</ol>;
+    const lines = text.split('\n');
+    if (lines.every((line) => /^[-*]\s/.test(line))) return <ul key={key} className="list-disc space-y-2 pl-6 text-slate-700">{lines.map((line, i) => <li key={key + '-' + i}>{line.replace(/^[-*]\s/, '')}</li>)}</ul>;
+    if (lines.every((line) => /^\d+[.)]\s/.test(line))) return <ol key={key} className="list-decimal space-y-2 pl-6 text-slate-700">{lines.map((line, i) => <li key={key + '-' + i}>{line.replace(/^\d+[.)]\s/, '')}</li>)}</ol>;
     return <p key={key} className="whitespace-pre-line text-base leading-8 text-slate-700">{text}</p>;
   });
 }
 
 function getYoutubeId(value: string) {
-  const match = value.match(/(?:youtube\\.com\\/(?:watch\\?.*v=|embed\\/|shorts\\/)|youtu\\.be\\/)([A-Za-z0-9_-]{11})/);
+  const match = value.match(/(?:youtube\.com\/(?:watch\?.*v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
   return match?.[1] || (/^[A-Za-z0-9_-]{11}$/.test(value) ? value : null);
 }
 
@@ -99,7 +99,7 @@ export default async function ArticlePage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-[#faf8f2] px-4 py-8 text-slate-900 sm:py-12">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd).replace(/</g, '\\\\u003c') }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd).replace(/</g, '\\u003c') }} />
       <div className="mx-auto max-w-4xl">
         <header className="mb-8 flex items-center justify-between gap-4 border-b border-stone-200 pb-5">
           <Link href="/" className="flex items-center gap-3" aria-label="AL-BURHAN homepage">
@@ -129,7 +129,7 @@ export default async function ArticlePage({ params }: Props) {
             {blocks.length ? blocks.map((block, index) => {
               const value = typeof block.value === 'string' ? block.value : '';
               if (block.type === 'image') {
-                const safeSrc = /^(https?:\\/\\/|data:image\\/)/i.test(value) ? value : '';
+                const safeSrc = /^(https?:\/\/|data:image\/)/i.test(value) ? value : '';
                 return safeSrc ? <figure key={block.id || index} className="my-8"><img src={safeSrc} alt={block.caption || post.title} loading="lazy" className="mx-auto h-auto max-h-[560px] w-auto max-w-full rounded-xl object-contain" />{block.caption ? <figcaption className="mt-2 text-center text-sm text-slate-500">{block.caption}</figcaption> : null}</figure> : null;
               }
               if (block.type === 'youtube') {
