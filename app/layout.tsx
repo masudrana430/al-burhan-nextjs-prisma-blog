@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'AL-BURHAN — The Proof Website',
-    description: 'Islamic research, Quran and science, philosophy, history and evidence-based articles in Bangla and English.'
+    description: 'Islamic research, Quran and science, philosophy, history and evidence-based articles in Bangla and English.',
     images: [brandImage],
   },
   icons: { icon: [{ url: '/al-burhan-logo.svg', type: 'image/svg+xml' }], shortcut: ['/al-burhan-logo.svg'] },
