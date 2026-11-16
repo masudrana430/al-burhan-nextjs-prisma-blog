@@ -2290,11 +2290,11 @@ export default function App() {
             aria-hidden={!isMobileMenuOpen} inert={!isMobileMenuOpen}>
             <p className="honors-mobile-nav__eyebrow">Explore AL-BURHAN</p>
             <ul>
-              <li style={{'--menu-index':0} as React.CSSProperties}><button type="button" onClick={() => { setSelectedPostId(null); setActiveTab('explore'); setIsMobileMenuOpen(false); }}><span className="honors-mobile-nav__number">01</span><span>প্রবন্ধ ও গবেষণা</span><Compass size={19}/></button></li>
-              <li style={{'--menu-index':1} as React.CSSProperties}><button type="button" onClick={() => { setSelectedPostId(null); setActiveTab('admin'); setIsMobileMenuOpen(false); }}><span className="honors-mobile-nav__number">02</span><span>প্রশাসক ড্যাশবোর্ড</span><LayoutDashboard size={19}/></button></li>
-              <li style={{'--menu-index':2} as React.CSSProperties}><button type="button" onClick={() => { setIsMobileMenuOpen(false); window.location.assign('/admin/editor'); }}><span className="honors-mobile-nav__number">03</span><span>নতুন পোস্ট লিখুন</span><Plus size={19}/></button></li>
-              <li style={{'--menu-index':3} as React.CSSProperties}><button type="button" onClick={() => { setSelectedPostId(null); setActiveTab('saved'); setIsMobileMenuOpen(false); }}><span className="honors-mobile-nav__number">04</span><span>সংরক্ষিত প্রবন্ধ</span><Bookmark size={19}/></button></li>
-              <li style={{'--menu-index':4} as React.CSSProperties}><button type="button" onClick={() => { setSelectedPostId(null); setActiveTab('stack'); setIsMobileMenuOpen(false); }}><span className="honors-mobile-nav__number">05</span><span>প্রযুক্তি ও Stack</span><Database size={19}/></button></li>
+              <li style={{'--menu-index':0} as React.CSSProperties}><button type="button" onClick={() => { setSelectedPostId(null); setActiveTab('explore'); setIsMobileMenuOpen(false); }}><span className="honors-mobile-nav__number">01</span><span>Articles &amp; Research</span><Compass size={19}/></button></li>
+              <li style={{'--menu-index':1} as React.CSSProperties}><button type="button" onClick={() => { setSelectedPostId(null); setActiveTab('admin'); setIsMobileMenuOpen(false); }}><span className="honors-mobile-nav__number">02</span><span>Admin Dashboard</span><LayoutDashboard size={19}/></button></li>
+              <li style={{'--menu-index':2} as React.CSSProperties}><button type="button" onClick={() => { setIsMobileMenuOpen(false); window.location.assign('/admin/editor'); }}><span className="honors-mobile-nav__number">03</span><span>Write New Post</span><Plus size={19}/></button></li>
+              <li style={{'--menu-index':3} as React.CSSProperties}><button type="button" onClick={() => { setSelectedPostId(null); setActiveTab('saved'); setIsMobileMenuOpen(false); }}><span className="honors-mobile-nav__number">04</span><span>Saved Articles</span><Bookmark size={19}/></button></li>
+              <li style={{'--menu-index':4} as React.CSSProperties}><button type="button" onClick={() => { setIsMobileMenuOpen(false); window.location.assign('/about'); }}><span className="honors-mobile-nav__number">05</span><span>About Me</span><UserRound size={19}/></button></li>
             </ul>
             <div className="honors-mobile-nav__footer">
               <p className="honors-mobile-nav__footer-label">Quick actions <span>· দ্রুত ব্যবহার</span></p>
@@ -2351,7 +2351,7 @@ export default function App() {
               }`}
             >
               <Compass className="w-4 h-4" />
-              <span className="mobile-menu-item-label">প্রবন্ধ ({posts.length.toLocaleString('bn-BD')})</span>
+              <span className="mobile-menu-item-label">Articles &amp; Research ({posts.length.toLocaleString('en-US')})</span>
             </button>
 
             <button
@@ -2367,7 +2367,7 @@ export default function App() {
               }`}
             >
               <LayoutDashboard className="w-4 h-4" />
-              <span className="mobile-menu-item-label">প্রশাসক ড্যাশবোর্ড</span>
+              <span className="mobile-menu-item-label">Admin Dashboard</span>
             </button>
 
             <button
@@ -2382,7 +2382,7 @@ export default function App() {
               }`}
             >
               <Plus className="w-4 h-4" />
-              <span className="mobile-menu-item-label">নতুন পোস্ট লিখুন</span>
+              <span className="mobile-menu-item-label">Write New Post</span>
             </button>
 
             <button
@@ -2398,7 +2398,7 @@ export default function App() {
               }`}
             >
               <Bookmark className="w-4 h-4" />
-              <span className="mobile-menu-item-label">সংরক্ষিত</span>
+              <span className="mobile-menu-item-label">Saved Articles</span>
               <span className="mobile-menu-count text-xs px-1.5 py-0.2 rounded bg-slate-800 text-emerald-300">
                 {posts.filter((p) => p.bookmarked).length}
               </span>
@@ -2406,9 +2406,8 @@ export default function App() {
 
             <button
               onClick={() => {
-                setSelectedPostId(null);
-                setActiveTab('stack');
                 setIsMobileMenuOpen(false);
+                window.location.assign('/about');
               }}
               className={`mobile-menu-item flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'stack'
@@ -2417,7 +2416,7 @@ export default function App() {
               }`}
             >
               <Database className="w-4 h-4" />
-              <span className="mobile-menu-item-label">প্রযুক্তি</span>
+              <span className="mobile-menu-item-label">About Me</span>
             </button>
             <p className="mobile-menu-eyebrow">AL-BURHAN <span>/</span> Explore</p>
             <div className="mobile-menu-footer">
