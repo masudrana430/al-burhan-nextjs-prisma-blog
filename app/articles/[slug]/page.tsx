@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { siteUrl } from '@/lib/site';
+import { ArticleThemeShell } from '@/components/article-theme-shell';
 
 export const dynamic = 'force-dynamic';
 
