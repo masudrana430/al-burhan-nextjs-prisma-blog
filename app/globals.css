@@ -3020,3 +3020,17 @@ body {
     background: color-mix(in srgb, #1a2920 94%, transparent) !important;
   }
 }
+
+
+/* About route AI launcher: portal it above sticky navigation and page stacking contexts. */
+.about-ai-float-portal {
+  position: fixed !important;
+  z-index: 9999 !important;
+  isolation: isolate;
+  pointer-events: auto;
+}
+.about-ai-float-portal .alburhan-ai-float-button {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+}
