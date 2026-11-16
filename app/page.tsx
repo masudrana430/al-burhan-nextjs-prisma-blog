@@ -1736,7 +1736,9 @@ export default function App() {
   const handleOpenPost = (postId: string) => {
     const selectedPost = posts.find((post) => post.id === postId);
     if (selectedPost && !selectedPost.id.startsWith('post-')) {
-      window.location.assign('/articles/' + encodeURIComponent(selectedPost.slug));
+      // Use the immutable database ID for navigation; the detail route resolves
+      // the ID and redirects to the canonical slug. This avoids stale/mismatched slugs.
+      window.location.assign('/articles/' + encodeURIComponent(selectedPost.id));
       return;
     }
     setPosts((prev) =>
