@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { siteUrl } from '@/lib/site';
 
@@ -11,8 +11,13 @@ type Props = { params: Promise<{ slug: string }> };
 type ContentBlock = { id?: string; type?: string; value?: string; caption?: string };
 type Reference = { label?: string; citation?: string };
 
-async function getArticle(slug: string) {
-  const post = await prisma.post.findUnique({ where: { slug }, include: { topic: true } });
+async function getArticle(identifier: string) {
+  // Accept both canonical slugs and immutable database IDs. IDs keep links
+  // reliable even if a post's slug was changed or an older client cached it.
+  const post = await prisma.post.findFirst({
+    where: { OR: [{ slug: identifier }, { id: identifier }] },
+    include: { topic: true },
+  });
   if (!post || !post.published) return null;
   return post;
 }
@@ -77,6 +82,7 @@ export default async function ArticlePage({ params }: Props) {
   const { slug } = await params;
   const post = await getArticle(slug);
   if (!post) notFound();
+  if (slug !== post.slug) permanentRedirect('/articles/' + encodeURIComponent(post.slug));
 
   const canonical = siteUrl + '/articles/' + encodeURIComponent(post.slug);
   const blocks = Array.isArray(post.blocks) ? post.blocks as ContentBlock[] : [];
