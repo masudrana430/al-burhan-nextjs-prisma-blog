@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import AboutAiLauncher from '@/components/about-ai-launcher';
 import {
   Github, Linkedin, Facebook, Instagram, Youtube, Globe, Mail,
@@ -110,7 +111,7 @@ export default function AboutPage() {
       <header className="about-site-header">
         <div className="about-nav-inner">
           <Link href="/" className="about-brand" aria-label="AL-BURHAN home">
-            <span className="about-brand-mark">AB</span>
+            <Image src="/al-burhan-logo.svg" alt="AL-BURHAN official logo" width={48} height={48} unoptimized className="h-11 w-11 rounded-lg object-cover" />
             <span className="about-brand-copy"><strong>AL-BURHAN</strong><small>Research & Knowledge Library</small></span>
           </Link>
           <nav className="about-main-nav" aria-label="Main navigation">
