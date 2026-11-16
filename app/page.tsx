@@ -2294,7 +2294,7 @@ export default function App() {
               <li style={{'--menu-index':1} as React.CSSProperties}><button type="button" onClick={() => { setSelectedPostId(null); setActiveTab('admin'); setIsMobileMenuOpen(false); }}><span className="honors-mobile-nav__number">02</span><span>Admin Dashboard</span><LayoutDashboard size={19}/></button></li>
               <li style={{'--menu-index':2} as React.CSSProperties}><button type="button" onClick={() => { setIsMobileMenuOpen(false); window.location.assign('/admin/editor'); }}><span className="honors-mobile-nav__number">03</span><span>Write New Post</span><Plus size={19}/></button></li>
               <li style={{'--menu-index':3} as React.CSSProperties}><button type="button" onClick={() => { setSelectedPostId(null); setActiveTab('saved'); setIsMobileMenuOpen(false); }}><span className="honors-mobile-nav__number">04</span><span>Saved Articles</span><Bookmark size={19}/></button></li>
-              <li style={{'--menu-index':4} as React.CSSProperties}><button type="button" onClick={() => { setIsMobileMenuOpen(false); window.location.assign('/about'); }}><span className="honors-mobile-nav__number">05</span><span>About Me</span><UserRound size={19}/></button></li>
+              <li style={{'--menu-index':4} as React.CSSProperties}><button type="button" onClick={() => { setIsMobileMenuOpen(false); window.location.assign('/about'); }}><span className="honors-mobile-nav__number">05</span><span>About Me</span><User size={19}/></button></li>
             </ul>
             <div className="honors-mobile-nav__footer">
               <p className="honors-mobile-nav__footer-label">Quick actions <span>· দ্রুত ব্যবহার</span></p>
