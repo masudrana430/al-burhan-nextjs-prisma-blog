@@ -1,13 +1,14 @@
-import type { Metadata } from 'next';
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import {
   Github, Linkedin, Facebook, Instagram, Youtube, Globe, Mail,
   FileText, MapPin, Code2, GraduationCap, BriefcaseBusiness, ArrowUpRight,
+  Home, BookOpen, LayoutDashboard, Plus, Bookmark, UserRound, Sun, Moon, Monitor,
 } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'About Me | AL-BURHAN',
-  description: 'About Masud Rana — Engineering Physics student and Full-Stack Developer from Chattogram, Bangladesh.',
-};
+type ThemeMode = 'light' | 'sepia' | 'dark' | 'system';
 
 const socialLinks = [
   { label: 'GitHub', href: 'https://github.com/masudrana430', Icon: Github },
@@ -63,83 +64,147 @@ const projects = [
   },
 ];
 
+const navigation = [
+  { label: 'Articles & Research', href: '/?view=explore', Icon: BookOpen },
+  { label: 'Admin Dashboard', href: '/?view=admin', Icon: LayoutDashboard },
+  { label: 'Write New Post', href: '/admin/editor', Icon: Plus },
+  { label: 'Saved Articles', href: '/?view=saved', Icon: Bookmark },
+  { label: 'About Me', href: '/about', Icon: UserRound, active: true },
+];
+
 export default function AboutPage() {
+  const [theme, setTheme] = useState<ThemeMode>('light');
+  const [themeReady, setThemeReady] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem('al_burhan_theme');
+      if (saved === 'light' || saved === 'sepia' || saved === 'dark' || saved === 'system') {
+        setTheme(saved);
+      }
+    } catch {
+      // The page remains usable with the default light theme.
+    }
+    setThemeReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!themeReady) return;
+    try {
+      window.localStorage.setItem('al_burhan_theme', theme);
+    } catch {
+      // Theme selection still applies to this page.
+    }
+  }, [theme, themeReady]);
+
+  const cycleTheme = () => {
+    setTheme((current) => current === 'light' ? 'sepia' : current === 'sepia' ? 'dark' : current === 'dark' ? 'system' : 'light');
+  };
+  const themeLabel = theme === 'light' ? 'Light theme' : theme === 'sepia' ? 'Sepia theme' : theme === 'dark' ? 'Dark theme' : 'System theme';
+  const ThemeIcon = theme === 'light' ? Sun : theme === 'sepia' ? BookOpen : theme === 'dark' ? Moon : Monitor;
+
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl space-y-8">
-        <section className="relative overflow-hidden rounded-3xl border border-emerald-900/30 bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-900 p-6 text-white shadow-xl sm:p-10">
-          <div className="pointer-events-none absolute -right-16 -top-20 h-72 w-72 rounded-full border border-amber-300/20" />
-          <div className="pointer-events-none absolute -right-8 -top-12 h-56 w-56 rounded-full border border-amber-300/10" />
-          <div className="relative flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-            <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-3xl border border-amber-200/40 bg-white/10 text-4xl font-black tracking-tight text-amber-200 shadow-2xl">MR</div>
-            <div>
-              <span className="inline-flex rounded-full border border-amber-200/30 bg-amber-100/10 px-3 py-1 text-xs font-semibold tracking-wide text-amber-100">ABOUT THE CREATOR OF AL-BURHAN</span>
-              <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">Masud Rana</h1>
-              <p className="mt-2 text-base font-semibold text-emerald-100">Full-Stack Developer &amp; Engineering Physics Student</p>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-200">I build practical web products — from responsive interfaces and interactive experiences to secure APIs, database-driven workflows, and third-party integrations. I enjoy turning complex ideas into useful, polished applications.</p>
-              <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-200">
-                <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4 text-amber-200" />Chattogram, Bangladesh</span>
-                <span className="inline-flex items-center gap-1.5"><BriefcaseBusiness className="h-4 w-4 text-amber-200" />Open to remote collaboration</span>
+    <div className={`about-page-shell theme-${theme}`}>
+      <div className="about-honeycomb-pattern" aria-hidden="true" />
+      <header className="about-site-header">
+        <div className="about-nav-inner">
+          <Link href="/" className="about-brand" aria-label="AL-BURHAN home">
+            <span className="about-brand-mark">AB</span>
+            <span className="about-brand-copy"><strong>AL-BURHAN</strong><small>Research & Knowledge Library</small></span>
+          </Link>
+          <nav className="about-main-nav" aria-label="Main navigation">
+            {navigation.map(({ label, href, Icon, active }) => (
+              <Link key={label} href={href} aria-current={active ? 'page' : undefined} className={active ? 'is-active' : ''}>
+                <Icon size={15} strokeWidth={2} />
+                <span>{label}</span>
+              </Link>
+            ))}
+          </nav>
+          <button type="button" className="about-theme-toggle" onClick={cycleTheme} title={`Current: ${themeLabel}. Click to change.`} aria-label={`Current ${themeLabel}. Change theme.`}>
+            <ThemeIcon size={17} />
+            <span>{theme}</span>
+          </button>
+        </div>
+      </header>
+
+      <main className="about-main-content">
+        <section className="about-hero">
+          <div className="about-hero-ornament" aria-hidden="true"><span /><span /><span /></div>
+          <div className="about-hero-content">
+            <div className="about-avatar" aria-hidden="true">MR</div>
+            <div className="about-hero-copy">
+              <span className="about-eyebrow">ABOUT THE CREATOR OF AL-BURHAN</span>
+              <h1>Masud Rana</h1>
+              <p className="about-role">Full-Stack Developer &amp; Engineering Physics Student</p>
+              <p className="about-intro">I build practical web products — from responsive interfaces and interactive experiences to secure APIs, database-driven workflows, and third-party integrations. I enjoy turning complex ideas into useful, polished applications.</p>
+              <div className="about-facts">
+                <span><MapPin size={15} />Chattogram, Bangladesh</span>
+                <span><BriefcaseBusiness size={15} />Open to remote collaboration</span>
               </div>
-              <div className="mt-5 flex flex-wrap gap-2">
-                <a href="mailto:masud040502@gmail.com" className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-emerald-400"><Mail className="h-4 w-4" />Contact Me</a>
-                <a href="https://drive.google.com/file/d/1etarj3H6FQBGSjCJPe73b3FaYpRkTG97/view" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-white/25 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-white/10"><FileText className="h-4 w-4" />View Resume</a>
+              <div className="about-hero-actions">
+                <a href="mailto:masud040502@gmail.com"><Mail size={16} />Contact Me</a>
+                <a href="https://drive.google.com/file/d/1etarj3H6FQBGSjCJPe73b3FaYpRkTG97/view" target="_blank" rel="noopener noreferrer"><FileText size={16} />View Resume</a>
+                <a href="https://github.com/masudrana430" target="_blank" rel="noopener noreferrer"><Github size={16} />GitHub</a>
               </div>
             </div>
           </div>
+          <div className="about-hero-bottom-line"><span /> KNOWLEDGE · ENGINEERING · PURPOSE <span /></div>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-7">
-            <div className="flex items-center gap-2"><Code2 className="h-5 w-5 text-emerald-600" /><h2 className="text-lg font-bold">About Me</h2></div>
-            <div className="mt-4 space-y-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+        <section className="about-content-grid">
+          <article className="about-panel about-bio-panel">
+            <div className="about-section-heading"><span className="about-heading-icon"><Code2 size={18} /></span><div><h2>About Me</h2><p>A little about my journey and interests</p></div></div>
+            <div className="about-prose">
               <p>I’m an Engineering Physics student at National University, Bangladesh, and a Full-Stack Developer who enjoys building complete digital products. My GitHub projects include a developer assessment platform, an event-management and ticketing system, a healthcare API foundation, and BraKet — a physics learning platform.</p>
               <p>I work across the stack: building interfaces with React and Next.js, developing TypeScript and Node.js APIs with Express, and designing PostgreSQL data models with Prisma. My projects also use Redis, JWT and Google authentication, file and email services, API documentation, and payment integrations.</p>
               <p>I’m interested in reliable architecture, secure role-based workflows, performance, and thoughtful user experience. I also enjoy exploring AI integrations, interactive interfaces, animation, and 3D web experiences while continuing to grow as an engineer.</p>
             </div>
           </article>
-          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-7">
-            <div className="flex items-center gap-2"><GraduationCap className="h-5 w-5 text-emerald-600" /><h2 className="text-lg font-bold">Education</h2></div>
-            <div className="mt-4 space-y-4 text-sm">
-              <div><h3 className="font-bold">Bachelor of Science — Engineering Physics</h3><p className="mt-1 text-slate-600 dark:text-slate-400">National University, Bangladesh</p><p className="text-xs text-slate-500">Session: 2021–2022</p></div>
-              <div className="border-t border-slate-100 pt-4 dark:border-slate-800"><h3 className="font-bold">Higher Secondary Certificate — Science</h3><p className="mt-1 text-slate-600 dark:text-slate-400">Chattogram Bandar College · 2021</p></div>
-              <div className="border-t border-slate-100 pt-4 dark:border-slate-800"><h3 className="font-bold">Secondary School Certificate — Science</h3><p className="mt-1 text-slate-600 dark:text-slate-400">Chattogram City Corporation Hatey Khari School &amp; College · 2019</p></div>
+          <article className="about-panel about-education-panel">
+            <div className="about-section-heading"><span className="about-heading-icon"><GraduationCap size={18} /></span><div><h2>Education</h2><p>Academic background</p></div></div>
+            <div className="about-education-list">
+              <div><strong>Bachelor of Science — Engineering Physics</strong><span>National University, Bangladesh</span><small>Session: 2021–2022</small></div>
+              <div><strong>Higher Secondary Certificate — Science</strong><span>Chattogram Bandar College</span><small>2021</small></div>
+              <div><strong>Secondary School Certificate — Science</strong><span>Chattogram City Corporation Hatey Khari School &amp; College</span><small>2019</small></div>
             </div>
           </article>
         </section>
 
-        <section>
-          <div className="mb-4 flex items-center gap-2"><Code2 className="h-5 w-5 text-emerald-600" /><h2 className="text-xl font-bold">Skills &amp; Technologies</h2></div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {skillGroups.map((group) => <article key={group.title} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"><h3 className="text-sm font-bold">{group.title}</h3><div className="mt-3 flex flex-wrap gap-2">{group.skills.map((skill) => <span key={skill} className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">{skill}</span>)}</div></article>)}
+        <section className="about-section-block">
+          <div className="about-section-title"><span className="about-heading-icon"><Code2 size={18} /></span><div><h2>Skills &amp; Technologies</h2><p>Tools and technologies reflected in my GitHub projects</p></div></div>
+          <div className="about-skills-grid">
+            {skillGroups.map((group) => <article key={group.title} className="about-panel about-skill-card"><h3>{group.title}</h3><div>{group.skills.map((skill) => <span key={skill}>{skill}</span>)}</div></article>)}
           </div>
         </section>
 
-        <section>
-          <div className="mb-4 flex items-center gap-2"><BriefcaseBusiness className="h-5 w-5 text-emerald-600" /><h2 className="text-xl font-bold">Featured Projects</h2></div>
-          <div className="grid gap-4 md:grid-cols-2">
-            {projects.map((project) => <article key={project.name} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">{project.category}</p>
-              <h3 className="mt-2 text-lg font-bold">{project.name}</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{project.description}</p>
-              <div className="mt-3 flex flex-wrap gap-1.5">{project.stack.map((skill) => <span key={skill} className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">{skill}</span>)}</div>
-              <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold">
-                <a href={project.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-emerald-700 hover:underline dark:text-emerald-300">Source Code <ArrowUpRight className="h-3 w-3" /></a>
-                {'live' in project && project.live ? <a href={project.live} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-emerald-700 hover:underline dark:text-emerald-300">Live Application <ArrowUpRight className="h-3 w-3" /></a> : null}
+        <section className="about-section-block">
+          <div className="about-section-title"><span className="about-heading-icon"><BriefcaseBusiness size={18} /></span><div><h2>Featured Projects</h2><p>Selected products and engineering work</p></div></div>
+          <div className="about-project-grid">
+            {projects.map((project) => <article key={project.name} className="about-panel about-project-card">
+              <span className="about-project-category">{project.category}</span>
+              <h3>{project.name}</h3>
+              <p>{project.description}</p>
+              <div className="about-project-stack">{project.stack.map((skill) => <span key={skill}>{skill}</span>)}</div>
+              <div className="about-project-links">
+                <a href={project.href} target="_blank" rel="noopener noreferrer">Source Code <ArrowUpRight size={14} /></a>
+                {'live' in project && project.live ? <a href={project.live} target="_blank" rel="noopener noreferrer">Live Application <ArrowUpRight size={14} /></a> : null}
               </div>
             </article>)}
           </div>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
-          <h2 className="text-lg font-bold">Social &amp; Contact</h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Find my work, connect with me, or reach out about a project or opportunity.</p>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-            {socialLinks.map(({ label, href, Icon }) => <a key={label} href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-between rounded-xl border border-slate-200 px-3 py-3 text-xs font-semibold text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-emerald-950/40"><span className="inline-flex items-center gap-2"><Icon className="h-4 w-4" />{label}</span><ArrowUpRight className="h-3.5 w-3.5" /></a>)}
+        <section className="about-panel about-social-panel">
+          <div className="about-section-title"><span className="about-heading-icon"><Globe size={18} /></span><div><h2>Social &amp; Contact</h2><p>Find my work, connect with me, or discuss an opportunity</p></div></div>
+          <div className="about-social-grid">
+            {socialLinks.map(({ label, href, Icon }) => <a key={label} href={href} target="_blank" rel="noopener noreferrer"><span><Icon size={17} />{label}</span><ArrowUpRight size={15} /></a>)}
           </div>
         </section>
-        <p className="pb-4 text-center text-xs text-slate-500">Built with curiosity, continuous learning, and a passion for useful technology.</p>
-      </div>
-    </main>
+
+        <footer className="about-page-footer">
+          <Link href="/"><Home size={15} />Back to AL-BURHAN Home</Link>
+          <span>Built with curiosity, continuous learning, and a passion for useful technology.</span>
+        </footer>
+      </main>
+    </div>
   );
 }
