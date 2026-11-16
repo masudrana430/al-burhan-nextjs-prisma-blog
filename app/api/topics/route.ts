@@ -15,7 +15,7 @@ async function requireAdmin() {
 
 function makeSlug(value: string) {
   return value.toLowerCase().normalize('NFKC').trim()
-    .replace(/[^\\p{L}\\p{N}]+/gu, '-').replace(/^-|-$/g, '').slice(0, 90);
+    .replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '').slice(0, 90);
 }
 
 export async function GET() {
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'সঠিক তথ্য পাঠানো হয়নি। আবার চেষ্টা করুন।' }, { status: 400 });
     }
 
-    const name = typeof body.name === 'string' ? body.name.trim().replace(/\\s+/gu, ' ') : '';
+    const name = typeof body.name === 'string' ? body.name.trim().replace(/\s+/gu, ' ') : '';
     const description = typeof body.description === 'string' ? body.description.trim().slice(0, 500) : '';
     if (name.length < 2 || name.length > 60) {
       return NextResponse.json({ error: 'বিষয়ের নাম ২ থেকে ৬০ অক্ষরের মধ্যে হতে হবে।' }, { status: 400 });
