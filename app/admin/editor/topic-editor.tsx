@@ -53,17 +53,27 @@ export default function TopicEditor({ initialTopics }: Props) {
     setTopicBusy(true);
     try {
       const response = await fetch('/api/topics', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newTopic, description: newDescription }),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        cache: 'no-store',
+        body: JSON.stringify({ name: newTopic.trim(), description: newDescription.trim() }),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'বিষয় তৈরি করা যায়নি।');
-      const topic = { id: data.topic.id, name: data.topic.name, description: data.topic.description || '', postCount: 0 };
-      setTopics(current => [...current, topic]);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || `বিষয় সংরক্ষণ ব্যর্থ হয়েছে (HTTP ${response.status})।`);
+      if (!data.topic?.id) throw new Error('ডেটাবেসে সংরক্ষণের নিশ্চিত উত্তর পাওয়া যায়নি। আবার তালিকা রিফ্রেশ করুন।');
+
+      const topic = {
+        id: data.topic.id,
+        name: data.topic.name,
+        description: data.topic.description || '',
+        postCount: data.topic.postCount ?? data.topic._count?.posts ?? 0,
+      };
+      setTopics(current => current.some(item => item.id === topic.id) ? current : [...current, topic]);
       setTopicId(topic.id);
       setNewTopic('');
       setNewDescription('');
-      setMessage('নতুন বিষয়টি তৈরি হয়েছে।');
+      setMessage('সফলভাবে ডেটাবেসে বিষয়টি সংরক্ষিত হয়েছে এবং পোস্টের ক্যাটাগরি হিসেবে নির্বাচন করা হয়েছে।');
+      router.refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'সমস্যা হয়েছে।');
     } finally {
@@ -165,7 +175,7 @@ export default function TopicEditor({ initialTopics }: Props) {
             <form onSubmit={createTopic} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
               <input className={field} value={newTopic} onChange={event => setNewTopic(event.target.value)} placeholder="যেমন: বিজ্ঞান ও প্রযুক্তি" minLength={2} maxLength={60} required/>
               <input className={field} value={newDescription} onChange={event => setNewDescription(event.target.value)} placeholder="বিষয়ের সংক্ষিপ্ত বিবরণ (ঐচ্ছিক)" maxLength={500}/>
-              <button disabled={topicBusy} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#e8f0fe] px-4 py-3 text-sm font-semibold text-[#1967d2] hover:bg-[#dbe8fd] disabled:opacity-50"><Plus size={17}/> বিষয় যোগ</button>
+              <button type="submit" disabled={topicBusy || newTopic.trim().length < 2} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#e8f0fe] px-4 py-3 text-sm font-semibold text-[#1967d2] hover:bg-[#dbe8fd] disabled:opacity-50"><Plus size={17}/> বিষয় যোগ</button>
             </form>
             <div className="mt-4 divide-y divide-[#f1f3f4]">
               {topics.map(topic => <div key={topic.id} className="flex items-center justify-between gap-3 py-3">
