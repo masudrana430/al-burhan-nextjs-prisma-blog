@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Lottie } from 'lottie-react';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import {
   Search,
@@ -1387,69 +1386,6 @@ export default function App() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [aiLauncherPosition, setAiLauncherPosition] = useState<{ x: number; y: number } | null>(null);
   const [aiScrollShift, setAiScrollShift] = useState(0);
-  const [aiAnimationSrc, setAiAnimationSrc] = useState<string | null>(null);
-
-  // Remove the white disc baked into both rotating Lottie image layers.
-  // The blue halo/ring stays intact; the center sparkle is a separate layer.
-  useEffect(() => {
-    let cancelled = false;
-    const prepareAnimation = async () => {
-      try {
-        const response = await fetch('/ai.json', { cache: 'no-store' });
-        if (!response.ok) throw new Error('Unable to load AI animation');
-        const animation = await response.json();
-
-        await Promise.all((animation.assets || []).map(async (asset: any) => {
-          if (!['1_82e22e0b-7c81-4068-90f8-7e7bfe6bde64', '2_c10c0b4b-1075-4a1f-ac98-74fa8663497d'].includes(asset.id)) return;
-          if (typeof asset.p !== 'string' || !asset.p.startsWith('data:image/')) return;
-
-          await new Promise<void>((resolve, reject) => {
-            const image = new Image();
-            image.onload = () => {
-              try {
-                const canvas = document.createElement('canvas');
-                canvas.width = image.naturalWidth || asset.w;
-                canvas.height = image.naturalHeight || asset.h;
-                const context = canvas.getContext('2d');
-                if (!context) throw new Error('Canvas is unavailable');
-                context.drawImage(image, 0, 0, canvas.width, canvas.height);
-                context.globalCompositeOperation = 'destination-out';
-                // Keep the center artwork partially visible: remove only 55% opacity.
-                context.globalAlpha = 0.55;
-                context.beginPath();
-                context.arc(canvas.width / 2, canvas.height * (455 / 804), canvas.width * (125 / 720), 0, Math.PI * 2);
-                context.fill();
-                context.globalAlpha = 1;
-                asset.p = canvas.toDataURL('image/png');
-                resolve();
-              } catch (error) {
-                reject(error);
-              }
-            };
-            image.onerror = () => reject(new Error('Unable to process AI animation layer'));
-            image.src = asset.p;
-          });
-        }));
-
-        if (cancelled) return;
-        const animationUrl = URL.createObjectURL(
-          new Blob([JSON.stringify(animation)], { type: 'application/json' }),
-        );
-        setAiAnimationSrc(animationUrl);
-      } catch {
-        if (!cancelled) setAiAnimationSrc('/ai.json');
-      }
-    };
-
-    void prepareAnimation();
-    return () => {
-      cancelled = true;
-      setAiAnimationSrc((current) => {
-        if (current?.startsWith('blob:')) URL.revokeObjectURL(current);
-        return null;
-      });
-    };
-  }, []);
 
   const aiLauncherDragRef = useRef({
     pointerId: null as number | null,
@@ -4153,7 +4089,7 @@ export default function App() {
               setIsChatOpen(true);
             }}
           >
-            {aiAnimationSrc && <Lottie src={aiAnimationSrc} autoplay loop className="alburhan-ai-lottie" />}
+            <span className="alburhan-ai-robot" aria-hidden="true">🤖</span>
             <span className="alburhan-ai-float-halo" aria-hidden="true" />
           </button>
           <span className="alburhan-ai-float-label" aria-hidden="true">Ask Al-Burhan AI</span>
