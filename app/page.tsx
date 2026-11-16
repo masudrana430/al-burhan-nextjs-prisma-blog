@@ -3468,10 +3468,6 @@ export default function App() {
             {/* HERO BANNER WITH AI AUTO-SEARCH */}
             <section className="home-search-panel relative rounded-2xl bg-gradient-to-br from-slate-900 via-emerald-950/40 to-slate-900 border border-emerald-500/25 p-5 sm:p-7 shadow-2xl">
               <div className="max-w-3xl">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-3">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>এআই-সমর্থিত গবেষণা ও জ্ঞানভিত্তিক সংগ্রহশালা</span>
-                </div>
                 <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
                   জ্ঞান সংরক্ষণ, অনুসন্ধান ও বিশ্লেষণ{' '}
                   <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300 bg-clip-text text-transparent">
