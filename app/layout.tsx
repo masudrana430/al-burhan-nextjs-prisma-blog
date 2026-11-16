@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     default: 'AL-BURHAN — The Proof Website | Research & Knowledge Library',
     template: '%s | AL-BURHAN',
   },
-  description: 'AL-BURHAN হলো বাংলা ও ইংরেজিতে ইসলামি গবেষণা, কুরআন, বিজ্ঞান, দর্শন, ইতিহাস, যুক্তি ও দলিলভিত্তিক বিশ্লেষণের জ্ঞানভান্ডার। Explore evidence-led articles, references and research.',
+  description: 'AL-BURHAN-এ পড়ুন বাংলা ও ইংরেজিতে ইসলামি গবেষণা, কুরআন ও বিজ্ঞান, দর্শন, ইতিহাস এবং যুক্তিনির্ভর প্রবন্ধ। নির্ভরযোগ্য সূত্র, বিশ্লেষণ ও গবেষণা উপকরণ এক জায়গায়।',
   applicationName: 'AL-BURHAN',
   keywords: [
     'AL-BURHAN', 'The Proof Website', 'Islamic research', 'Islamic apologetics', 'Quran and science',
@@ -27,14 +27,14 @@ export const metadata: Metadata = {
     url: siteUrl,
     siteName: 'AL-BURHAN — The Proof Website',
     title: 'AL-BURHAN — The Proof Website',
-    description: 'বাংলা ও ইংরেজিতে গবেষণা, যুক্তি, কুরআন, বিজ্ঞান, দর্শন ও ইতিহাসভিত্তিক প্রবন্ধের পাঠাগার।',
+    description: 'ইসলামি গবেষণা, কুরআন ও বিজ্ঞান, দর্শন, ইতিহাস এবং যুক্তিনির্ভর বাংলা-ইংরেজি প্রবন্ধের পাঠাগার। সূত্র ও বিশ্লেষণসহ পড়ুন AL-BURHAN-এ।',
     locale: 'bn_BD',
     images: [{ url: brandImage, width: 512, height: 512, alt: 'AL-BURHAN official logo' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'AL-BURHAN — The Proof Website',
-    description: 'Research, evidence and knowledge in Bangla and English.',
+    description: 'Islamic research, Quran and science, philosophy, history and evidence-based articles in Bangla and English.'
     images: [brandImage],
   },
   icons: { icon: [{ url: '/al-burhan-logo.svg', type: 'image/svg+xml' }], shortcut: ['/al-burhan-logo.svg'] },
