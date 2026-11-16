@@ -3002,3 +3002,21 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .about-page-shell *, .about-page-shell *::before, .about-page-shell *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+
+/* Keep the About header, navigation and cards aligned to the selected theme. */
+.about-page-shell.theme-light .about-site-header,
+.about-page-shell.theme-system .about-site-header {
+  background: color-mix(in srgb, #fffefa 94%, transparent) !important;
+}
+.about-page-shell.theme-sepia .about-site-header {
+  background: color-mix(in srgb, #fff9ec 94%, transparent) !important;
+}
+.about-page-shell.theme-dark .about-site-header {
+  background: color-mix(in srgb, #1a2920 94%, transparent) !important;
+}
+@media (prefers-color-scheme: dark) {
+  .about-page-shell.theme-system .about-site-header {
+    background: color-mix(in srgb, #1a2920 94%, transparent) !important;
+  }
+}
