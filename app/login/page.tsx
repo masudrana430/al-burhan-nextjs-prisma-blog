@@ -2,9 +2,10 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getProviders, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, BookOpen, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -43,7 +44,7 @@ export default function LoginPage() {
       <section className="auth-panel w-full max-w-md rounded-3xl border p-6 sm:p-8">
         <Link href="/" className="auth-back inline-flex items-center gap-2 text-sm mb-8"><ArrowLeft size={16}/> Back to AL-BURHAN</Link>
         <div className="flex items-center gap-3 mb-6">
-          <div className="auth-logo h-12 w-12 rounded-2xl flex items-center justify-center"><BookOpen size={22}/></div>
+          <Image src="/al-burhan-logo.svg" alt="AL-BURHAN logo" width={56} height={56} unoptimized className="auth-logo h-12 w-12 rounded-xl object-cover" />
           <div><p className="text-xs uppercase tracking-widest auth-muted">RESEARCH & KNOWLEDGE LIBRARY</p><h1 className="text-2xl font-semibold tracking-tight">আবার স্বাগতম</h1></div>
         </div>
         <p className="auth-muted text-sm mb-6">আপনার AL-BURHAN account-এ sign in করে reading ও research চালিয়ে যান।</p>
