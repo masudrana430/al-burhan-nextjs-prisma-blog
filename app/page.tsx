@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import AiLottieAnimation from '@/components/ai-lottie-animation';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import {
@@ -1734,6 +1735,11 @@ export default function App() {
 
   // Open a post & increment views
   const handleOpenPost = (postId: string) => {
+    const selectedPost = posts.find((post) => post.id === postId);
+    if (selectedPost && !selectedPost.id.startsWith('post-')) {
+      window.location.assign('/articles/' + encodeURIComponent(selectedPost.slug));
+      return;
+    }
     setPosts((prev) =>
       prev.map((p) => (p.id === postId ? { ...p, views: p.views + 1 } : p))
     );
@@ -2220,7 +2226,7 @@ export default function App() {
         <div className="honors-mobile-nav lg:hidden" data-open={isMobileMenuOpen ? 'true' : 'false'}>
           <div className="honors-mobile-nav__bar">
             <button type="button" className="honors-mobile-nav__brand" onClick={() => { setSelectedPostId(null); setActiveTab('explore'); setIsMobileMenuOpen(false); }}>
-              <span className="honors-mobile-nav__brand-icon"><ShieldCheck className="w-5 h-5 text-emerald-400" /></span>
+              <Image src="/al-burhan-logo.svg" alt="AL-BURHAN logo" width={48} height={48} unoptimized className="honors-mobile-nav__brand-icon h-11 w-11 rounded-lg object-cover" />
               <span><strong>AL-BURHAN</strong><small>গবেষণা পাঠাগার · Research Library</small></span>
             </button>
             <button type="button" className="honors-mobile-nav__toggle" onClick={() => setIsMobileMenuOpen(value => !value)}
@@ -2267,9 +2273,7 @@ export default function App() {
               setActiveTab('explore');
             }}
           >
-            <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center">
-              <ShieldCheck className="w-5 h-5 text-emerald-400" />
-            </div>
+            <Image src="/al-burhan-logo.svg" alt="AL-BURHAN logo" width={48} height={48} unoptimized className="h-11 w-11 rounded-xl border border-slate-700 bg-white object-cover" />
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-lg tracking-tight text-slate-100">
@@ -3876,7 +3880,9 @@ export default function App() {
 
                         {/* Title */}
                         <h2 className="post-card-title text-lg sm:text-xl font-bold text-white group-hover:text-emerald-300 transition-colors leading-snug mb-2.5">
-                          {post.title}
+                          {!post.id.startsWith('post-') ? (
+                            <a href={'/articles/' + encodeURIComponent(post.slug)} onClick={(event) => event.stopPropagation()} className="hover:underline focus-visible:underline">{post.title}</a>
+                          ) : post.title}
                         </h2>
 
                         {/* Critic Claim Box */}
