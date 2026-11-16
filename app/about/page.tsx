@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import AboutAiLauncher from '@/components/about-ai-launcher';
 import {
   Github, Linkedin, Facebook, Instagram, Youtube, Globe, Mail,
   FileText, MapPin, Code2, GraduationCap, BriefcaseBusiness, ArrowUpRight,
@@ -205,6 +206,7 @@ export default function AboutPage() {
           <span>Built with curiosity, continuous learning, and a passion for useful technology.</span>
         </footer>
       </main>
+      <AboutAiLauncher />
     </div>
   );
 }
