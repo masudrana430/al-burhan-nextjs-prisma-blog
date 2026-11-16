@@ -17,6 +17,17 @@ export default function AiLottieAnimation({ className }: Props) {
         if (!response.ok) throw new Error('Unable to load AI animation');
         const animation = await response.json();
 
+        // Restore the original embedded artwork from the lightweight asset manifest.
+        await Promise.all((animation.assets || []).map(async (asset: any) => {
+          if (typeof asset.p !== 'string' || !asset.p.endsWith('.b64')) return;
+          const assetResponse = await fetch(`${asset.u || ''}${asset.p}`, { cache: 'force-cache' });
+          if (!assetResponse.ok) throw new Error('Unable to load AI animation artwork');
+          const base64 = (await assetResponse.text()).trim();
+          asset.p = `data:image/png;base64,${base64}`;
+          asset.u = '';
+          asset.e = 1;
+        }));
+
         // Preserve the original artwork while softly removing the white discs
         // baked into the two rotating image layers.
         await Promise.all((animation.assets || []).map(async (asset: any) => {
@@ -50,8 +61,8 @@ export default function AiLottieAnimation({ className }: Props) {
         }));
 
         if (!cancelled) setAnimationData(animation);
-      } catch {
-        // Do not replace the launcher with a different icon if loading fails.
+      } catch (error) {
+        console.error('Al-Burhan AI animation failed to load:', error);
       }
     }
 
