@@ -3879,7 +3879,7 @@ export default function App() {
                         {/* Title */}
                         <h2 className="post-card-title text-lg sm:text-xl font-bold text-white group-hover:text-emerald-300 transition-colors leading-snug mb-2.5">
                           {!post.id.startsWith('post-') ? (
-                            <a href={'/articles/' + encodeURIComponent(post.slug)} onClick={(event) => event.stopPropagation()} className="hover:underline focus-visible:underline">{post.title}</a>
+                            <a href={'/articles/' + encodeURIComponent(post.id)} onClick={(event) => event.stopPropagation()} className="hover:underline focus-visible:underline">{post.title}</a>
                           ) : post.title}
                         </h2>
 
