@@ -47,8 +47,7 @@ export default function TopicEditor({ initialTopics }: Props) {
   const wordCount = useMemo(() => content.trim() ? content.trim().split(/\s+/).length : 0, [content]);
   const readTime = Math.max(1, Math.ceil(wordCount / 180));
 
-  async function createTopic(event: FormEvent) {
-    event.preventDefault();
+  async function createTopic() {
     setMessage('');
     setTopicBusy(true);
     try {
@@ -172,10 +171,10 @@ export default function TopicEditor({ initialTopics }: Props) {
 
           <div className="mt-5 rounded-2xl border border-[#e4e8ed] bg-white p-5 shadow-[0_1px_3px_rgba(60,64,67,.05)] sm:p-7">
             <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-[#5f6368]"><FolderPlus size={17}/> নতুন বিষয় বা ক্যাটাগরি তৈরি</div>
-            <form onSubmit={createTopic} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+            <form onSubmit={event => { event.preventDefault(); void createTopic(); }} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
               <input className={field} value={newTopic} onChange={event => setNewTopic(event.target.value)} placeholder="যেমন: বিজ্ঞান ও প্রযুক্তি" minLength={2} maxLength={60} required/>
               <input className={field} value={newDescription} onChange={event => setNewDescription(event.target.value)} placeholder="বিষয়ের সংক্ষিপ্ত বিবরণ (ঐচ্ছিক)" maxLength={500}/>
-              <button type="submit" disabled={topicBusy || newTopic.trim().length < 2} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#e8f0fe] px-4 py-3 text-sm font-semibold text-[#1967d2] hover:bg-[#dbe8fd] disabled:opacity-50"><Plus size={17}/> বিষয় যোগ</button>
+              <button type="button" onClick={() => { if (!topicBusy && newTopic.trim().length >= 2) void createTopic(); }} disabled={topicBusy || newTopic.trim().length < 2} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#e8f0fe] px-4 py-3 text-sm font-semibold text-[#1967d2] hover:bg-[#dbe8fd] disabled:opacity-50"><Plus size={17}/> বিষয় যোগ</button>
             </form>
             <div className="mt-4 divide-y divide-[#f1f3f4]">
               {topics.map(topic => <div key={topic.id} className="flex items-center justify-between gap-3 py-3">
