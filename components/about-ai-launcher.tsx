@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
+import AiLottieAnimation from '@/components/ai-lottie-animation';
 
 type Point = { x: number; y: number };
 
@@ -102,7 +103,7 @@ export default function AboutAiLauncher() {
           router.push('/?openAI=1');
         }}
       >
-        <span className="alburhan-ai-robot" aria-hidden="true">🤖</span>
+        <AiLottieAnimation className="alburhan-ai-lottie" />
         <span className="alburhan-ai-float-halo" aria-hidden="true" />
       </button>
       <span className="alburhan-ai-float-label" aria-hidden="true">Ask Al-Burhan AI</span>
