@@ -45,7 +45,7 @@ export default function AiLottieAnimation({ className }: Props) {
                 if (!context) throw new Error('Canvas is unavailable');
                 context.drawImage(image, 0, 0, canvas.width, canvas.height);
                 context.globalCompositeOperation = 'destination-out';
-                context.globalAlpha = 1;
+                context.globalAlpha = 0.55;
                 context.beginPath();
                 context.arc(canvas.width / 2, canvas.height * (455 / 804), canvas.width * (125 / 720), 0, Math.PI * 2);
                 context.fill();
