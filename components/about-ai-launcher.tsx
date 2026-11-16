@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
-import { Lottie } from 'lottie-react';
 
 type Point = { x: number; y: number };
 
@@ -11,7 +10,6 @@ export default function AboutAiLauncher() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [position, setPosition] = useState<Point | null>(null);
-  const [animation, setAnimation] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -30,15 +28,6 @@ export default function AboutAiLauncher() {
       // Keep the default bottom-right position if saved coordinates are invalid.
     }
 
-    let active = true;
-    fetch('/ai.json')
-      .then((response) => {
-        if (!response.ok) throw new Error('AI animation could not be loaded');
-        return response.json();
-      })
-      .then((data) => { if (active) setAnimation(data); })
-      .catch(() => { if (active) setAnimation(null); });
-    return () => { active = false; };
   }, []);
 
   const drag = useRef<{
@@ -113,7 +102,7 @@ export default function AboutAiLauncher() {
           router.push('/?openAI=1');
         }}
       >
-        {animation && <Lottie animationData={animation} autoplay loop className="alburhan-ai-lottie" />}
+        <span className="alburhan-ai-robot" aria-hidden="true">🤖</span>
         <span className="alburhan-ai-float-halo" aria-hidden="true" />
       </button>
       <span className="alburhan-ai-float-label" aria-hidden="true">Ask Al-Burhan AI</span>
