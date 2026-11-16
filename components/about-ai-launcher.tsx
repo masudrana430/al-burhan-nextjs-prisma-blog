@@ -1,12 +1,14 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lottie } from 'lottie-react';
 
 export default function AboutAiLauncher() {
   const router = useRouter();
   const [position, setPosition] = useState<{x:number;y:number}|null>(null);
+  const [animation, setAnimation] = useState<any>(null);
+  useEffect(() => { let active=true; fetch('/ai.json').then(r=>r.json()).then(data=>{if(active)setAnimation(data);}).catch(()=>{}); return ()=>{active=false;}; }, []);
   const drag = useRef<{pointerId:number|null;startX:number;startY:number;originX:number;originY:number;x:number;y:number;moved:boolean}>({
     pointerId:null,startX:0,startY:0,originX:0,originY:0,x:0,y:0,moved:false,
   });
@@ -45,7 +47,7 @@ export default function AboutAiLauncher() {
           router.push('/?openAI=1');
         }}
       >
-        <Lottie animationData={undefined} path="/ai.json" autoplay loop className="alburhan-ai-lottie" />
+        {animation && <Lottie animationData={animation} autoplay loop className="alburhan-ai-lottie" />}
         <span className="alburhan-ai-float-halo" aria-hidden="true" />
       </button>
       <span className="alburhan-ai-float-label" aria-hidden="true">Ask Al-Burhan AI</span>
