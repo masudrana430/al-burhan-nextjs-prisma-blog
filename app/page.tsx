@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import AiLottieAnimation from '@/components/ai-lottie-animation';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import {
   Search,
@@ -4089,7 +4090,7 @@ export default function App() {
               setIsChatOpen(true);
             }}
           >
-            <span className="alburhan-ai-robot" aria-hidden="true">🤖</span>
+            <AiLottieAnimation className="alburhan-ai-lottie" />
             <span className="alburhan-ai-float-halo" aria-hidden="true" />
           </button>
           <span className="alburhan-ai-float-label" aria-hidden="true">Ask Al-Burhan AI</span>
