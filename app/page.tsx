@@ -1349,6 +1349,17 @@ export default function App() {
 
   // Navigation & Active View
   const [activeTab, setActiveTab] = useState<'explore' | 'admin' | 'editor' | 'saved' | 'stack'>('explore');
+
+  // Allow the About page's persistent navigation to open the matching home view.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const requestedView = params.get('view');
+    if (requestedView === 'explore' || requestedView === 'admin' || requestedView === 'saved') {
+      setActiveTab(requestedView);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [adminSearchFilter, setAdminSearchFilter] = useState('');
