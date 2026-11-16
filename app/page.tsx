@@ -1511,8 +1511,7 @@ export default function App() {
     return () => { active = false; };
   }, []);
 
-  const handleQuickTopicCreate = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleQuickTopicCreate = async () => {
     if (quickTopicName.trim().length < 2) return;
     setCreatingQuickTopic(true);
     try {
@@ -2947,14 +2946,14 @@ export default function App() {
                           {availableTopics.map(topic => <option key={topic.id} value={'topic:' + topic.id}>{topic.name}</option>)}
                         </optgroup>}
                       </select>
-                      {showQuickTopic && <form onSubmit={handleQuickTopicCreate} className="mt-3 space-y-2 rounded-xl border border-emerald-500/30 bg-slate-900 p-3">
-                        <input autoFocus value={quickTopicName} onChange={e => setQuickTopicName(e.target.value)} maxLength={60} minLength={2} required placeholder="নতুন ক্যাটাগরির নাম" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white placeholder:text-slate-500"/>
+                      {showQuickTopic && <div className="mt-3 space-y-2 rounded-xl border border-emerald-500/30 bg-slate-900 p-3">
+                        <input autoFocus value={quickTopicName} onChange={e => setQuickTopicName(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); void handleQuickTopicCreate(); } }} maxLength={60} minLength={2} placeholder="নতুন ক্যাটাগরির নাম" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white placeholder:text-slate-500"/>
                         <input value={quickTopicDescription} onChange={e => setQuickTopicDescription(e.target.value)} maxLength={500} placeholder="সংক্ষিপ্ত বিবরণ (ঐচ্ছিক)" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-white placeholder:text-slate-500"/>
                         <div className="flex gap-2">
-                          <button disabled={creatingQuickTopic} type="submit" className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{creatingQuickTopic ? 'তৈরি হচ্ছে…' : 'ক্যাটাগরি তৈরি করুন'}</button>
+                          <button disabled={creatingQuickTopic || quickTopicName.trim().length < 2} type="button" onClick={() => void handleQuickTopicCreate()} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{creatingQuickTopic ? 'তৈরি হচ্ছে…' : 'ক্যাটাগরি তৈরি করুন'}</button>
                           <button type="button" onClick={() => setShowQuickTopic(false)} className="rounded-lg border border-slate-700 px-3 py-2.5 text-sm text-slate-300">বাতিল</button>
                         </div>
-                      </form>}
+                      </div>}
                     </div>
                   </div>
 
