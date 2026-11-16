@@ -104,6 +104,7 @@ export default async function ArticlePage({ params }: Props) {
   };
 
   return (
+    <ArticleThemeShell>
     <main className="min-h-screen bg-[#faf8f2] px-4 py-8 text-slate-900 sm:py-12">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd).replace(/</g, '\\u003c') }} />
       <div className="mx-auto max-w-4xl">
@@ -154,5 +155,6 @@ export default async function ArticlePage({ params }: Props) {
         <footer className="mt-8 text-center text-sm text-slate-500">© {new Date().getFullYear()} AL-BURHAN — গবেষণা, যুক্তি ও জ্ঞানচর্চা</footer>
       </div>
     </main>
+    </ArticleThemeShell>
   );
 }
