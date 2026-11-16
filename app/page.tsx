@@ -1356,8 +1356,9 @@ export default function App() {
     const requestedView = params.get('view');
     if (requestedView === 'explore' || requestedView === 'admin' || requestedView === 'saved') {
       setActiveTab(requestedView);
-      window.history.replaceState({}, '', window.location.pathname);
     }
+    if (params.get('openAI') === '1') setIsChatOpen(true);
+    if (params.has('view') || params.has('openAI')) window.history.replaceState({}, '', window.location.pathname);
   }, []);
 
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
