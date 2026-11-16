@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
-import { Lottie } from 'lottie-react';
+import Lottie from 'lottie-react';
 
 type Point = { x: number; y: number };
 
