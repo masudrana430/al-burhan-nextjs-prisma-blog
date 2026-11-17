@@ -3,7 +3,7 @@ import './globals.css';
 import { Providers } from './providers';
 import { siteUrl } from '@/lib/site';
 
-const brandImage = siteUrl + '/opengraph-image';
+const brandImage = siteUrl + '/og-image.png';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
