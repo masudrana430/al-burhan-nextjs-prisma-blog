@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import AiLottieAnimation from '@/components/ai-lottie-animation';
+import { getSavedArticleIds, migrateLegacySavedArticles, setSavedArticle } from '@/lib/saved-articles';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import {
   Search,
@@ -1273,6 +1274,7 @@ export default function App() {
           LINGUISTICS_TAFSIR: 'ভাষাতত্ত্ব ও তাফসির',
         };
         const difficultyLabels: Record<string, string> = { BEGINNER: 'Beginner', INTERMEDIATE: 'Intermediate', ADVANCED: 'Advanced' };
+        const savedIds = new Set(migrateLegacySavedArticles());
         const loaded: BlogPost[] = data.posts.map((item: any) => ({
           id: item.id, title: item.title, slug: item.slug,
           claimAddressed: item.claimAddressed || '', excerpt: item.excerpt || '', content: item.content || '',
@@ -1282,7 +1284,7 @@ export default function App() {
           tags: Array.isArray(item.tags) ? item.tags : [], author: item.authorName || 'আল-বুরহান',
           authorRole: item.authorRole || 'সম্পাদক', readTimeMinutes: item.readTimeMinutes || 5,
           views: item.views || 0, publishedAt: item.createdAt ? new Date(item.createdAt).toISOString().slice(0,10) : '',
-          featured: Boolean(item.featured), bookmarked: false,
+          featured: Boolean(item.featured), bookmarked: savedIds.has(item.id),
           references: Array.isArray(item.references) ? item.references : [],
           keyTakeaways: Array.isArray(item.keyTakeaways) ? item.keyTakeaways : [],
         }));
@@ -1748,19 +1750,13 @@ export default function App() {
     setShowAutoSearchDropdown(false);
   };
 
-  // Toggle Bookmark
+  // Persist saved article IDs separately so database refreshes never clear bookmarks.
   const handleToggleBookmark = (postId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    setPosts((prev) =>
-      prev.map((p) => {
-        if (p.id === postId) {
-          const nextState = !p.bookmarked;
-          triggerToast(nextState ? 'Saved article to your research library' : 'Removed from saved library', 'info');
-          return { ...p, bookmarked: nextState };
-        }
-        return p;
-      })
-    );
+    const nextState = !getSavedArticleIds().includes(postId);
+    setSavedArticle(postId, nextState);
+    setPosts((prev) => prev.map((post) => post.id === postId ? { ...post, bookmarked: nextState } : post));
+    triggerToast(nextState ? 'প্রবন্ধটি Saved Articles-এ সংরক্ষিত হয়েছে।' : 'Saved Articles থেকে প্রবন্ধটি সরানো হয়েছে।', 'info');
   };
 
   // Delete Post
@@ -2250,7 +2246,7 @@ export default function App() {
               <li style={{'--menu-index':0} as React.CSSProperties}><button type="button" onClick={() => { setSelectedPostId(null); setActiveTab('explore'); setIsMobileMenuOpen(false); }}><span className="honors-mobile-nav__number">01</span><span>Articles &amp; Research</span><Compass size={19}/></button></li>
               <li style={{'--menu-index':1} as React.CSSProperties}><button type="button" onClick={() => { setSelectedPostId(null); setActiveTab('admin'); setIsMobileMenuOpen(false); }}><span className="honors-mobile-nav__number">02</span><span>Admin Dashboard</span><LayoutDashboard size={19}/></button></li>
               <li style={{'--menu-index':2} as React.CSSProperties}><button type="button" onClick={() => { setIsMobileMenuOpen(false); window.location.assign('/admin/editor'); }}><span className="honors-mobile-nav__number">03</span><span>Write New Post</span><Plus size={19}/></button></li>
-              <li style={{'--menu-index':3} as React.CSSProperties}><button type="button" onClick={() => { setSelectedPostId(null); setActiveTab('saved'); setIsMobileMenuOpen(false); }}><span className="honors-mobile-nav__number">04</span><span>Saved Articles</span><Bookmark size={19}/></button></li>
+              <li style={{'--menu-index':3} as React.CSSProperties}><button type="button" onClick={() => { setIsMobileMenuOpen(false); window.location.assign('/saved'); }}><span className="honors-mobile-nav__number">04</span><span>Saved Articles</span><Bookmark size={19}/></button></li>
               <li style={{'--menu-index':4} as React.CSSProperties}><button type="button" onClick={() => { setIsMobileMenuOpen(false); window.location.assign('/about'); }}><span className="honors-mobile-nav__number">05</span><span>About Me</span><User size={19}/></button></li>
             </ul>
             <div className="honors-mobile-nav__footer">
@@ -2342,9 +2338,8 @@ export default function App() {
 
             <button
               onClick={() => {
-                setSelectedPostId(null);
-                setActiveTab('saved');
                 setIsMobileMenuOpen(false);
+                window.location.assign('/saved');
               }}
               className={`mobile-menu-item flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'saved'
