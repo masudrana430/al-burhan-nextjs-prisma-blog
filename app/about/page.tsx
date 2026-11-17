@@ -70,7 +70,7 @@ const navigation = [
   { label: 'Articles & Research', href: '/?view=explore', Icon: BookOpen },
   { label: 'Admin Dashboard', href: '/?view=admin', Icon: LayoutDashboard },
   { label: 'Write New Post', href: '/admin/editor', Icon: Plus },
-  { label: 'Saved Articles', href: '/?view=saved', Icon: Bookmark },
+  { label: 'Saved Articles', href: '/saved', Icon: Bookmark },
   { label: 'About Me', href: '/about', Icon: UserRound, active: true },
 ];
 
