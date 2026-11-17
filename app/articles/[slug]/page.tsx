@@ -48,13 +48,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       modifiedTime: post.updatedAt.toISOString(),
       authors: [post.authorName || 'AL-BURHAN'],
       tags: post.tags,
-      images: [{ url: siteUrl + '/opengraph-image', width: 1200, height: 630, alt: 'AL-BURHAN — The Proof Website' }],
+      images: [{ url: siteUrl + '/og-image.png', width: 1200, height: 630, alt: 'AL-BURHAN — The Proof Website' }],
     },
     twitter: {
       card: 'summary_large_image',
       title: post.title,
       description,
-      images: [siteUrl + '/opengraph-image'],
+      images: [siteUrl + '/og-image.png'],
     },
     robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 } },
   };
