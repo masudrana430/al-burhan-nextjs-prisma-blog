@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { siteUrl } from '@/lib/site';
 import { ArticleThemeShell } from '@/components/article-theme-shell';
+import { ArticleBookmarkActions } from '@/components/article-bookmark-actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,13 +48,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       modifiedTime: post.updatedAt.toISOString(),
       authors: [post.authorName || 'AL-BURHAN'],
       tags: post.tags,
-      images: [{ url: siteUrl + '/al-burhan-logo.svg', alt: 'AL-BURHAN logo' }],
+      images: [{ url: siteUrl + '/opengraph-image', width: 1200, height: 630, alt: 'AL-BURHAN — The Proof Website' }],
     },
     twitter: {
       card: 'summary_large_image',
       title: post.title,
       description,
-      images: [siteUrl + '/al-burhan-logo.svg'],
+      images: [siteUrl + '/opengraph-image'],
     },
     robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 } },
   };
@@ -113,7 +114,10 @@ export default async function ArticlePage({ params }: Props) {
             <Image src="/al-burhan-logo.svg" alt="AL-BURHAN logo" width={56} height={56} unoptimized className="h-12 w-12 rounded-xl object-cover" />
             <span><strong className="block text-lg tracking-wide">AL-BURHAN</strong><small className="text-xs text-slate-500">The Proof Website</small></span>
           </Link>
-          <Link href="/" className="rounded-full border border-stone-300 px-4 py-2 text-sm font-medium hover:bg-white">প্রবন্ধ তালিকায় ফিরুন</Link>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <ArticleBookmarkActions postId={post.id} />
+            <Link href="/" className="rounded-full border border-stone-300 px-4 py-2 text-sm font-medium hover:bg-white">প্রবন্ধ তালিকায় ফিরুন</Link>
+          </div>
         </header>
 
         <article className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:p-10">
