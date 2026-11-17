@@ -3,7 +3,7 @@ import './globals.css';
 import { Providers } from './providers';
 import { siteUrl } from '@/lib/site';
 
-const brandImage = siteUrl + '/al-burhan-logo.svg';
+const brandImage = siteUrl + '/opengraph-image';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     title: 'AL-BURHAN — The Proof Website',
     description: 'ইসলামি গবেষণা, কুরআন ও বিজ্ঞান, দর্শন, ইতিহাস এবং যুক্তিনির্ভর বাংলা-ইংরেজি প্রবন্ধের পাঠাগার। সূত্র ও বিশ্লেষণসহ পড়ুন AL-BURHAN-এ।',
     locale: 'bn_BD',
-    images: [{ url: brandImage, width: 512, height: 512, alt: 'AL-BURHAN official logo' }],
+    images: [{ url: brandImage, width: 1200, height: 630, alt: 'AL-BURHAN — The Proof Website logo and research library' }],
   },
   twitter: {
     card: 'summary_large_image',
