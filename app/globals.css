@@ -3521,9 +3521,9 @@ body {
   .site-header.desktop-sidebar-collapsed .site-header-inner>div:last-child>div { justify-content:center!important;width:54px!important;min-height:54px!important;padding:8px!important; }
   .site-header.desktop-sidebar-collapsed .site-header-inner>div:last-child>div>div:nth-child(2),
   .site-header.desktop-sidebar-collapsed .site-header-inner>div:last-child>div>button { display:none!important; }
-  .site-header.desktop-sidebar-collapsed .site-main { width:calc(100% - 84px)!important;max-width:calc(100% - 84px)!important;margin-left:84px!important; }
+  body:has(.site-header.desktop-sidebar-collapsed) .site-main { width:calc(100% - 84px)!important;max-width:calc(100% - 84px)!important;margin-left:84px!important; }
 }
 @media (min-width:1280px) {
   .site-header.desktop-sidebar-collapsed { width:84px!important; }
-  .site-header.desktop-sidebar-collapsed .site-main { width:calc(100% - 84px)!important;max-width:calc(100% - 84px)!important;margin-left:84px!important; }
+  body:has(.site-header.desktop-sidebar-collapsed) .site-main { width:calc(100% - 84px)!important;max-width:calc(100% - 84px)!important;margin-left:84px!important; }
 }
