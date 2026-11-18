@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 export const runtime = 'nodejs';
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_HISTORY_MESSAGES = 8;
@@ -122,12 +122,6 @@ export async function POST(req: NextRequest) {
       'Use library excerpts as context, not unquestionable authority. Never invent Quran verse numbers, Hadith wording, book titles, scholars, quotations, URLs, or citations. Distinguish established facts, scholarly interpretations, disputed claims, and your own explanation. For Hadith, give collection/reference only when supported by reliable context; otherwise say verification is needed. Explain disagreements fairly. If the library lacks information, say so. Do not claim to be a mufti or issue binding fatwas. Be clear, structured, respectful, and sufficiently detailed.\n\n' +
       'AL-BURHAN LIBRARY CONTEXT:\n' + (contextBlock || 'No matching published library articles were retrieved.');
 
-    const model = genAI.getGenerativeModel({
-      model: process.env.AI_MODEL || 'gemini-3.8-flash',
-      systemInstruction,
-      generationConfig: { temperature: 0.35, topP: 0.9, maxOutputTokens: 1800 },
-    });
-
     const history = cleanHistory(body?.history);
     const normalizedHistory = history.filter((item, index, items) =>
       index === 0 || item.role !== items[index - 1].role
@@ -136,9 +130,40 @@ export async function POST(req: NextRequest) {
       normalizedHistory.pop();
     }
 
-    const chat = model.startChat({ history: normalizedHistory });
-    const result = await chat.sendMessage(message);
-    const replyText = result.response.text()?.trim();
+    // If the primary model is temporarily overloaded, retry once on Google's
+    // lower-latency Flash-Lite model instead of returning a non-JSON platform error.
+    const primaryModel = process.env.AI_MODEL || 'gemini-3.8-flash';
+    const fallbackModel = 'gemini-3.5-flash-lite';
+    const modelCandidates = primaryModel === fallbackModel
+      ? [primaryModel]
+      : [primaryModel, fallbackModel];
+    let replyText = '';
+    let lastModelError: unknown;
+
+    for (const modelName of modelCandidates) {
+      try {
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          systemInstruction,
+          generationConfig: { temperature: 0.35, topP: 0.9, maxOutputTokens: 1800 },
+        });
+        const chat = model.startChat({ history: normalizedHistory });
+        const result = await chat.sendMessage(message);
+        replyText = result.response.text()?.trim() || '';
+        if (replyText) break;
+        throw new Error('Gemini returned an empty response.');
+      } catch (modelError) {
+        lastModelError = modelError;
+        const status = Number((modelError as { status?: number })?.status);
+        const messageText = modelError instanceof Error ? modelError.message : String(modelError);
+        const temporary = [429, 500, 502, 503, 504].includes(status) ||
+          /high demand|temporarily unavailable|overloaded|timed out|timeout/i.test(messageText);
+        if (!temporary || modelName === modelCandidates[modelCandidates.length - 1]) throw modelError;
+        console.warn('[AI] Primary Gemini model temporarily unavailable; trying fallback model.');
+      }
+    }
+
+    if (!replyText) throw lastModelError || new Error('Gemini returned an empty response.');
     if (!replyText) {
       return NextResponse.json({ error: 'AI থেকে কোনো উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।' }, { status: 502 });
     }
@@ -153,6 +178,15 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('[POST /api/ai-assistant]', error);
-    return NextResponse.json({ error: 'AI request failed. Please try again shortly.' }, { status: 500 });
+    const status = Number((error as { status?: number })?.status);
+    const messageText = error instanceof Error ? error.message : String(error);
+    const temporarilyUnavailable = [429, 500, 502, 503, 504].includes(status) ||
+      /high demand|temporarily unavailable|overloaded|timed out|timeout/i.test(messageText);
+    return NextResponse.json(
+      { error: temporarilyUnavailable
+          ? 'এই মুহূর্তে AI সার্ভারে অতিরিক্ত চাপ রয়েছে। অনুগ্রহ করে ২০–৩০ সেকেন্ড পর আবার চেষ্টা করুন।'
+          : 'AI উত্তর তৈরি করতে সমস্যা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।' },
+      { status: temporarilyUnavailable ? 503 : 500 }
+    );
   }
 }
