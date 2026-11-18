@@ -2040,10 +2040,24 @@ export default function App() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: queryText, history }),
       });
-      const data = await response.json();
+      const responseText = await response.text();
+      let data: { reply?: string; error?: string; matchedPosts?: Array<{ id: string }> } = {};
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        console.error('[Al-Burhan AI] API returned non-JSON response:', response.status, responseText.slice(0, 300));
+        throw new Error(
+          response.status >= 500
+            ? 'AI সার্ভার সাময়িকভাবে ব্যস্ত বা অনুপলব্ধ। ২০–৩০ সেকেন্ড পর আবার চেষ্টা করুন।'
+            : 'সার্ভার থেকে সঠিক উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।'
+        );
+      }
       if (!response.ok) {
         if (response.status === 401) throw new Error('আপনার সেশন শেষ হয়েছে। AI ব্যবহার করতে আবার লগইন করুন।');
         throw new Error(data.error || 'AI উত্তর দিতে পারেনি। কিছুক্ষণ পর আবার চেষ্টা করুন।');
+      }
+      if (typeof data.reply !== 'string' || !data.reply.trim()) {
+        throw new Error('AI থেকে খালি উত্তর এসেছে। আবার চেষ্টা করুন।');
       }
       setChatMessages((prev) => [...prev, {
         id: 'bot-' + Date.now(), role: 'assistant', text: data.reply,
