@@ -1456,6 +1456,7 @@ export default function App() {
     };
   }, [isChatOpen]);
   const [chatInput, setChatInput] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome-msg',
@@ -2011,64 +2012,54 @@ export default function App() {
     triggerToast('Exported all blog posts as JSON archive!', 'success');
   };
 
-  // AI Chatbot Response Engine (RAG over stored posts)
-  const handleSendChat = (customPrompt?: string) => {
+  // Authenticated Gemini-powered RAG assistant. Existing chat UI and launcher stay intact.
+  const handleSendChat = async (customPrompt?: string) => {
     const queryText = (customPrompt ?? chatInput).trim();
-    if (!queryText) return;
-
-    const userMsg: ChatMessage = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      text: queryText,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-
-    const ranked = posts
-      .map((post) => ({ post, ...scorePostAgainstQuery(post, queryText) }))
-      .filter((item) => item.score > 0)
-      .sort((a, b) => b.score - a.score);
-
-    const topMatches = ranked.slice(0, 2);
-    let reply = '';
-    let matchedIds: string[] = [];
-
-    if (topMatches.length > 0) {
-      const primary = topMatches[0].post;
-      matchedIds = topMatches.map((m) => m.post.id);
-
-      reply = `**আল-বুরহান জ্ঞানভান্ডার** থেকে আপনার প্রশ্নের সঙ্গে সম্পর্কিত তথ্যগুলো নিচে সাজানো হলো:\n\n` +
-        `১. **মূল আলোচনা (${primary.title}):**\n` +
-        `${primary.excerpt}\n\n` +
-        `২. **গুরুত্বপূর্ণ প্রমাণ ও মূল বিষয়:**\n` +
-        primary.keyTakeaways.map((k) => `• ${k}`).join('\n') +
-        `\n\n৩. **প্রাথমিক তথ্যসূত্র:**\n` +
-        `*"${primary.references[0]?.citation || ''}"* — **${primary.references[0]?.label || ''}**`;
-
-      if (topMatches[1]) {
-        reply += `\n\n**সম্পর্কিত প্রবন্ধ:** আরও পড়ুন *"${topMatches[1].post.title}"* (${topMatches[1].post.category}) — বিষয়টির সঙ্গে সম্পর্কিত অতিরিক্ত আলোচনা।`;
-      }
-    } else {
-      matchedIds = posts.slice(0, 2).map((p) => p.id);
-      reply =
-        `আমি পাঠাগারের **${posts.length}টি প্রবন্ধে** অনুসন্ধান করেছি। *${queryText}* বিষয়ে সরাসরি মিল পাওয়া যায়নি। তবে নিচের বিষয়গুলো বিবেচনা করতে পারেন:\n\n` +
-        `• **ভাষাতাত্ত্বিক যাচাই:** কোনো অনুবাদ গ্রহণের আগে নির্ভরযোগ্য অভিধান ও মূল ভাষার ব্যবহার যাচাই করুন।\n` +
-        `• **প্রাসঙ্গিকতা ও প্রমাণ যাচাই:** পর্যবেক্ষণভিত্তিক বর্ণনা এবং পদার্থবিজ্ঞানের ব্যাখ্যার পার্থক্য বিবেচনা করুন।\n` +
-        `• **পরামর্শ:** প্রশাসক ড্যাশবোর্ড থেকে এ বিষয়ে নতুন প্রবন্ধ প্রকাশ করলে তা পাঠাগারে যুক্ত হবে.`
+    if (!queryText || isChatLoading) return;
+    if (!currentUser) {
+      setChatMessages((prev) => [...prev, {
+        id: 'auth-' + Date.now(), role: 'assistant',
+        text: 'Al-Burhan AI ব্যবহার করতে প্রথমে আপনার অ্যাকাউন্টে লগইন করুন।',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }]);
+      return;
     }
 
-    const botMsg: ChatMessage = {
-      id: `bot-${Date.now() + 1}`,
-      role: 'assistant',
-      text: reply,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      matchedPostIds: matchedIds
+    const userMsg: ChatMessage = {
+      id: 'user-' + Date.now(), role: 'user', text: queryText,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
-
-    setChatMessages((prev) => [...prev, userMsg, botMsg]);
+    setChatMessages((prev) => [...prev, userMsg]);
+    setIsChatLoading(true);
     if (!customPrompt) setChatInput('');
-    setTimeout(() => {
-      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 80);
+
+    try {
+      const history = chatMessages.filter((message) => message.id !== 'welcome-msg')
+        .slice(-8).map((message) => ({ role: message.role, text: message.text }));
+      const response = await fetch('/api/ai-assistant', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: queryText, history }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        if (response.status === 401) throw new Error('আপনার সেশন শেষ হয়েছে। AI ব্যবহার করতে আবার লগইন করুন।');
+        throw new Error(data.error || 'AI উত্তর দিতে পারেনি। কিছুক্ষণ পর আবার চেষ্টা করুন।');
+      }
+      setChatMessages((prev) => [...prev, {
+        id: 'bot-' + Date.now(), role: 'assistant', text: data.reply,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        matchedPostIds: Array.isArray(data.matchedPosts) ? data.matchedPosts.map((post: { id: string }) => post.id) : []
+      }]);
+    } catch (error) {
+      setChatMessages((prev) => [...prev, {
+        id: 'error-' + Date.now(), role: 'assistant',
+        text: error instanceof Error ? error.message : 'AI service temporarily unavailable.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }]);
+    } finally {
+      setIsChatLoading(false);
+      window.setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 80);
+    }
   };
 
   // Copy code helper
@@ -4085,6 +4076,11 @@ export default function App() {
                 aiLauncherDragRef.current.moved = false;
                 return;
               }
+              if (authStatus === 'loading') return;
+              if (!currentUser) {
+                window.location.href = '/login?callbackUrl=%2F';
+                return;
+              }
               setIsMobileMenuOpen(false);
               setIsChatOpen(true);
             }}
@@ -4166,6 +4162,12 @@ export default function App() {
                   </div>
                 </div>
               ))}
+              {isChatLoading && (
+                <div className="alburhan-ai-message is-assistant" role="status">
+                  <div className="alburhan-ai-message-meta"><Sparkles size={13} /><span>AL-BURHAN AI · উত্তর তৈরি করছে…</span></div>
+                  <div className="alburhan-ai-bubble alburhan-ai-bubble-assistant">আপনার প্রশ্ন ও প্রাসঙ্গিক গবেষণা উপকরণ বিশ্লেষণ করছি…</div>
+                </div>
+              )}
               <div ref={chatEndRef} />
             </div>
 
@@ -4183,7 +4185,7 @@ export default function App() {
                 placeholder="Ask about a verse, research topic, or scientific question..."
                 aria-label="Ask Al-Burhan AI"
               />
-              <button type="submit" aria-label="Send message" disabled={!chatInput.trim()}>
+              <button type="submit" aria-label="Send message" disabled={!chatInput.trim() || isChatLoading}>
                 <Send size={17} />
               </button>
               <p>Answers are matched against the AL-BURHAN research library.</p>
