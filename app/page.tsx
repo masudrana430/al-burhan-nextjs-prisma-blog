@@ -1410,8 +1410,9 @@ export default function App() {
       const parsed = JSON.parse(saved) as { x?: number; y?: number };
       if (typeof parsed.x !== 'number' || typeof parsed.y !== 'number') return;
       const size = window.innerWidth <= 640 ? 144 : 160;
+      const safeLeft = window.innerWidth >= 1024 ? (window.innerWidth >= 1280 ? 300 : 280) : 8;
       setAiLauncherPosition({
-        x: Math.max(8, Math.min(parsed.x, window.innerWidth - size - 8)),
+        x: Math.max(safeLeft, Math.min(parsed.x, window.innerWidth - size - 8)),
         y: Math.max(8, Math.min(parsed.y, window.innerHeight - size - 8)),
       });
     } catch {
@@ -4064,7 +4065,7 @@ export default function App() {
               if (!drag.moved) return;
               const rect = event.currentTarget.getBoundingClientRect();
               const next = {
-                x: Math.max(8, Math.min(drag.originX + deltaX, window.innerWidth - rect.width - 8)),
+                x: Math.max(window.innerWidth >= 1024 ? (window.innerWidth >= 1280 ? 300 : 280) : 8, Math.min(drag.originX + deltaX, window.innerWidth - rect.width - 8)),
                 y: Math.max(8, Math.min(drag.originY + deltaY, window.innerHeight - rect.height - 8)),
               };
               drag.x = next.x;
