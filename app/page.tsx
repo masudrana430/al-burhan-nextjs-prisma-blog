@@ -2402,13 +2402,14 @@ export default function App() {
           <div className="hidden lg:flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setTheme((current) => current === 'light' ? 'sepia' : current === 'sepia' ? 'dark' : current === 'dark' ? 'system' : 'light')}
-              aria-label="পড়ার থিম পরিবর্তন করুন"
-              title="লাইট, সেপিয়া, ডার্ক ও সিস্টেম থিম পরিবর্তন করুন"
-              className="theme-switch inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs sm:text-sm font-medium transition-colors"
+              onClick={() => setTheme(current => current === 'dark' ? 'light' : 'dark')}
+              aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+              aria-pressed={theme === 'dark'}
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="theme-switch inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors"
             >
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : theme === 'sepia' ? <BookOpen className="w-4 h-4" /> : theme === 'system' ? <Database className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              <span className="hidden sm:inline">{theme === 'light' ? 'সেপিয়া' : theme === 'sepia' ? 'ডার্ক' : theme === 'dark' ? 'সিস্টেম' : 'লাইট'}</span>
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              <span className="hidden sm:inline">{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
             </button>
             {currentUser ? (
               <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5">
