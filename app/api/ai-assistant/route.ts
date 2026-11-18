@@ -63,20 +63,53 @@ export async function POST(req: NextRequest) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const embeddingModel = genAI.getGenerativeModel({ model: 'text-embedding-004' });
-    const embeddingRes = await embeddingModel.embedContent(message);
-    const vectorSql = '[' + embeddingRes.embedding.values.join(',') + ']';
-    if (!/^\[-?\d+(\.\d+)?(,-?\d+(\.\d+)?)*\]$/.test(vectorSql)) {
-      throw new Error('Invalid embedding vector returned by provider.');
+    type MatchedPost = { id: string; title: string; slug: string; claimAddressed: string; excerpt: string; content: string };
+    let matchedPosts: MatchedPost[] = [];
+
+    // The old text-embedding-004 model was shut down in January 2026.
+    // Old and new vectors share dimensions but not a vector space, so only
+    // enable pgvector after stored articles have been re-indexed.
+    if (process.env.AI_VECTOR_INDEX_READY === 'true') {
+      const embeddingResponse = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+          body: JSON.stringify({
+            content: { parts: [{ text: message }] },
+            task_type: 'RETRIEVAL_QUERY',
+            output_dimensionality: 768,
+          }),
+          cache: 'no-store',
+        }
+      );
+      if (!embeddingResponse.ok) throw new Error('Gemini embedding request failed: ' + embeddingResponse.status);
+      const embeddingPayload = await embeddingResponse.json();
+      const values = embeddingPayload?.embedding?.values;
+      if (!Array.isArray(values) || values.length !== 768 ||
+          values.some((value: unknown) => typeof value !== 'number' || !Number.isFinite(value))) {
+        throw new Error('Gemini returned an invalid 768-dimensional embedding.');
+      }
+      const vectorSql = '[' + values.join(',') + ']';
+      matchedPosts = await prisma.$queryRawUnsafe<MatchedPost[]>(
+        'SELECT id, title, slug, "claimAddressed", excerpt, content FROM "Post" ' +
+        'WHERE published = true AND embedding IS NOT NULL ' +
+        'ORDER BY embedding <=> $1::vector LIMIT 4',
+        vectorSql
+      );
     }
 
-    const matchedPosts = await prisma.$queryRawUnsafe<
-      Array<{ id: string; title: string; slug: string; claimAddressed: string; excerpt: string; content: string }>
-    >(
-      'SELECT id, title, slug, "claimAddressed", excerpt, content FROM "Post" ' +
-      'WHERE published = true ORDER BY embedding <=> $1::vector LIMIT 4',
-      vectorSql
-    );
+    // Keyword fallback keeps RAG useful before the vector index is rebuilt.
+    if (matchedPosts.length === 0) {
+      const pattern = '%' + message.replace(/[\\%_]/g, '\\$&') + '%';
+      matchedPosts = await prisma.$queryRawUnsafe<MatchedPost[]>(
+        'SELECT id, title, slug, "claimAddressed", excerpt, content FROM "Post" ' +
+        'WHERE published = true AND (' +
+        'title ILIKE $1 OR "claimAddressed" ILIKE $1 OR excerpt ILIKE $1 OR content ILIKE $1' +
+        ') ORDER BY CASE WHEN title ILIKE $1 THEN 0 ELSE 1 END, "createdAt" DESC LIMIT 4',
+        pattern
+      );
+    }
 
     const contextBlock = matchedPosts.map((post, index) => {
       const content = [post.claimAddressed, post.excerpt, post.content].filter(Boolean).join('\n');
@@ -90,7 +123,7 @@ export async function POST(req: NextRequest) {
       'AL-BURHAN LIBRARY CONTEXT:\n' + (contextBlock || 'No matching published library articles were retrieved.');
 
     const model = genAI.getGenerativeModel({
-      model: process.env.AI_MODEL || 'gemini-2.5-flash',
+      model: process.env.AI_MODEL || 'gemini-3.8-flash',
       systemInstruction,
       generationConfig: { temperature: 0.35, topP: 0.9, maxOutputTokens: 1800 },
     });
