@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
 
     // Keyword fallback keeps RAG useful before the vector index is rebuilt.
     if (matchedPosts.length === 0) {
-      const pattern = '%' + message.replace(/[\\%_]/g, '\\$&') + '%';
+      const pattern = '%' + message + '%';
       matchedPosts = await prisma.$queryRawUnsafe<MatchedPost[]>(
         'SELECT id, title, slug, "claimAddressed", excerpt, content FROM "Post" ' +
         'WHERE published = true AND (' +
