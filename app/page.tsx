@@ -1318,6 +1318,21 @@ export default function App() {
 
   // Responsive navigation and database-backed topic directory
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      setIsDesktopSidebarCollapsed(window.localStorage.getItem('al-burhan-sidebar-collapsed') === 'true');
+    } catch { /* Keep the expanded sidebar when storage is unavailable. */ }
+  }, []);
+
+  const toggleDesktopSidebar = () => {
+    setIsDesktopSidebarCollapsed(current => {
+      const next = !current;
+      try { window.localStorage.setItem('al-burhan-sidebar-collapsed', String(next)); } catch {}
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (!isMobileMenuOpen) return;
@@ -2227,7 +2242,7 @@ export default function App() {
 
       {/* TOP NAVIGATION HEADER */}
       {/* Original Honors-project staggered mobile navigation, adapted for AL-BURHAN actions */}
-      <header className="site-header sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
+      <header className={`site-header sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl${isDesktopSidebarCollapsed ? " desktop-sidebar-collapsed" : ""}`}>
         <div className="honors-mobile-nav lg:hidden" data-open={isMobileMenuOpen ? 'true' : 'false'}>
           <div className="honors-mobile-nav__bar">
             <button type="button" className="honors-mobile-nav__brand" onClick={() => { setSelectedPostId(null); setActiveTab('explore'); setIsMobileMenuOpen(false); }}>
@@ -2293,6 +2308,18 @@ export default function App() {
               </p>
             </div>
           </div>
+
+          <button
+            type="button"
+            className="desktop-sidebar-toggle hidden lg:inline-flex"
+            onClick={toggleDesktopSidebar}
+            aria-label={isDesktopSidebarCollapsed ? 'Expand navigation sidebar' : 'Collapse navigation sidebar'}
+            aria-expanded={!isDesktopSidebarCollapsed}
+            title={isDesktopSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {isDesktopSidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+            <span className="sr-only">{isDesktopSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}</span>
+          </button>
 
           {/* Navigation Tabs */}
           <nav aria-label="Main navigation" className="main-nav hidden lg:flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
