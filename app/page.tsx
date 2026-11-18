@@ -2059,8 +2059,9 @@ export default function App() {
       if (typeof data.reply !== 'string' || !data.reply.trim()) {
         throw new Error('AI থেকে খালি উত্তর এসেছে। আবার চেষ্টা করুন।');
       }
+      const assistantReply: string = data.reply;
       setChatMessages((prev) => [...prev, {
-        id: 'bot-' + Date.now(), role: 'assistant', text: data.reply,
+        id: 'bot-' + Date.now(), role: 'assistant', text: assistantReply,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         matchedPostIds: Array.isArray(data.matchedPosts) ? data.matchedPosts.map((post: { id: string }) => post.id) : []
       }]);
