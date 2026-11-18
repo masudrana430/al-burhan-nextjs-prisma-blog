@@ -19,8 +19,9 @@ export default function AboutAiLauncher() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Number.isFinite(parsed.x) && Number.isFinite(parsed.y)) {
+          const safeLeft = window.innerWidth >= 1024 ? (window.innerWidth >= 1280 ? 300 : 280) : 8;
           setPosition({
-            x: Math.max(8, Math.min(parsed.x, window.innerWidth - 152)),
+            x: Math.max(safeLeft, Math.min(parsed.x, window.innerWidth - 152)),
             y: Math.max(8, Math.min(parsed.y, window.innerHeight - 152)),
           });
         }
@@ -79,7 +80,7 @@ export default function AboutAiLauncher() {
           if (!current.moved) return;
           const rect = event.currentTarget.getBoundingClientRect();
           const next = {
-            x: Math.max(8, Math.min(current.originX + dx, window.innerWidth - rect.width - 8)),
+            x: Math.max(window.innerWidth >= 1024 ? (window.innerWidth >= 1280 ? 300 : 280) : 8, Math.min(current.originX + dx, window.innerWidth - rect.width - 8)),
             y: Math.max(8, Math.min(current.originY + dy, window.innerHeight - rect.height - 8)),
           };
           current.x = next.x;
