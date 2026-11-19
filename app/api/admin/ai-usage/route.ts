@@ -190,7 +190,9 @@ export async function GET() {
         today: todayByProvider[provider.id] || { success: 0, failed: 0 },
         quota: provider.id === 'openrouter'
           ? openRouterQuota
-          : provider.id === 'groq' && latestGroqQuota
+          : provider.id === 'cloudflare'
+            ? provider.quota
+            : provider.id === 'groq' && latestGroqQuota
             ? {
                 source: 'latest Groq response headers',
                 requestsPerDay: {
