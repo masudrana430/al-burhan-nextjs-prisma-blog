@@ -189,14 +189,6 @@ export async function POST(req: NextRequest) {
       normalizedHistory.pop();
     }
 
-    const history = cleanHistory(body?.history);
-    const normalizedHistory = history.filter((item, index, items) =>
-      index === 0 || item.role !== items[index - 1].role
-    );
-    while (normalizedHistory.length && normalizedHistory[normalizedHistory.length - 1].role !== 'model') {
-      normalizedHistory.pop();
-    }
-
     type AIProvider = 'openrouter' | 'gemini' | 'groq';
     const configuredOrder = (process.env.AI_PROVIDER_ORDER || 'openrouter,gemini,groq')
       .split(',')
