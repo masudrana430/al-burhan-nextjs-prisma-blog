@@ -103,6 +103,7 @@ export async function GET() {
         id: 'cloudflare',
         name: 'Cloudflare Workers AI',
         keyConfigured: Boolean(process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ACCOUNT_ID),
+        tokenConfigured: Boolean(process.env.CLOUDFLARE_API_TOKEN),
         enabled: configuredOrder.includes('cloudflare') && Boolean(process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ACCOUNT_ID) &&
           (!freeMode || cloudflareConfirmed),
         model: process.env.CLOUDFLARE_MODEL || '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
