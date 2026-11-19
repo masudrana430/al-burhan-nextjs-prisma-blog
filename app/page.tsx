@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import AiLottieAnimation from '@/components/ai-lottie-animation';
+import AdminAiUsageMonitor from '@/components/admin-ai-usage-monitor';
 import { getSavedArticleIds, migrateLegacySavedArticles, setSavedArticle } from '@/lib/saved-articles';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import {
@@ -2737,6 +2738,8 @@ export default function App() {
                     </div>
                   </div>
                 </div>
+
+                <AdminAiUsageMonitor />
 
                 {/* Admin Posts Management Table */}
                 <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
