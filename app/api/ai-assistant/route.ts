@@ -376,7 +376,7 @@ export async function POST(req: NextRequest) {
           const url = provider === 'openrouter'
             ? 'https://openrouter.ai/api/v1/chat/completions'
             : 'https://api.groq.com/openai/v1/chat/completions';
-          const headers = provider === 'openrouter'
+          const headers: Record<string, string> = provider === 'openrouter'
             ? {
                 'HTTP-Referer': process.env.NEXTAUTH_URL || 'https://al-burhan-pearl-nine.vercel.app',
                 'X-Title': 'Al-Burhan Research Assistant',
