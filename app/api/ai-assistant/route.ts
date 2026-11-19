@@ -189,16 +189,17 @@ export async function POST(req: NextRequest) {
       normalizedHistory.pop();
     }
 
-    type AIProvider = 'openrouter' | 'gemini' | 'groq';
-    const configuredOrder = (process.env.AI_PROVIDER_ORDER || 'openrouter,gemini,groq')
+    type AIProvider = 'openrouter' | 'gemini' | 'groq' | 'cloudflare';
+    const configuredOrder = (process.env.AI_PROVIDER_ORDER || 'openrouter,gemini,groq,cloudflare')
       .split(',')
       .map((provider) => provider.trim().toLowerCase())
       .filter((provider): provider is AIProvider =>
-        provider === 'openrouter' || provider === 'gemini' || provider === 'groq'
+        provider === 'openrouter' || provider === 'gemini' || provider === 'groq' || provider === 'cloudflare'
       );
     const providerOrder = [...new Set(configuredOrder)];
     const freeMode = (process.env.AI_FREE_MODE || 'true').toLowerCase() !== 'false';
     const groqFreeTierConfirmed = process.env.AI_GROQ_FREE_TIER_CONFIRMED === 'true';
+    const cloudflareFreeTierConfirmed = process.env.AI_CLOUDFLARE_FREE_TIER_CONFIRMED === 'true';
     const generationDeadline = Date.now() + 48_000;
     const retryDelay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -390,7 +391,9 @@ export async function POST(req: NextRequest) {
         ? process.env.OPENROUTER_API_KEY
         : provider === 'groq'
           ? process.env.GROQ_API_KEY
-          : process.env.GEMINI_API_KEY;
+          : provider === 'cloudflare'
+            ? process.env.CLOUDFLARE_API_TOKEN
+            : process.env.GEMINI_API_KEY;
       if (!apiKey) continue;
 
       // Groq has usage-based pricing after upgrading its account to the Developer tier.
@@ -399,6 +402,11 @@ export async function POST(req: NextRequest) {
         console.info('[AI] Skipping Groq in free mode until its free-tier status is confirmed.');
         continue;
       }
+      if (provider === 'cloudflare' && freeMode && !cloudflareFreeTierConfirmed) {
+        console.info('[AI] Skipping Cloudflare Workers AI in free mode until its free allowance is confirmed.');
+        continue;
+      }
+      if (provider === 'cloudflare' && !process.env.CLOUDFLARE_ACCOUNT_ID) continue;
 
       try {
         if (provider === 'gemini') {
@@ -438,6 +446,28 @@ export async function POST(req: NextRequest) {
               });
             }
           }
+        } else if (provider === 'cloudflare') {
+          const model = process.env.CLOUDFLARE_MODEL || '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
+          const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+          if (!accountId) throw new Error('Cloudflare Account ID is not configured.');
+          const result = await postProviderJson(
+            provider,
+            model,
+            'https://api.cloudflare.com/client/v4/accounts/' + encodeURIComponent(accountId) + '/ai/run/' +
+              model.split('/').map(encodeURIComponent).join('/'),
+            apiKey,
+            {
+              messages: [
+                { role: 'system', content: systemInstruction },
+                ...openAIHistory,
+                { role: 'user', content: message },
+              ],
+              temperature: 0.35,
+              max_tokens: 1800,
+            }
+          );
+          replyText = typeof result?.result?.response === 'string' ? result.result.response.trim() : '';
+          if (!replyText) throw new Error('Cloudflare Workers AI returned an empty response.');
         } else {
           const model = provider === 'openrouter'
             ? process.env.OPENROUTER_MODEL || 'openrouter/free'
@@ -492,6 +522,7 @@ export async function POST(req: NextRequest) {
       const anyProviderConfigured = providerOrder.some((provider) => {
         if (provider === 'openrouter') return Boolean(process.env.OPENROUTER_API_KEY);
         if (provider === 'groq') return Boolean(process.env.GROQ_API_KEY);
+        if (provider === 'cloudflare') return Boolean(process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ACCOUNT_ID);
         return Boolean(process.env.GEMINI_API_KEY);
       });
       const unavailableError = new Error(anyProviderConfigured
