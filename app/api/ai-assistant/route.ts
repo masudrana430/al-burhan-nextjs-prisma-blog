@@ -202,6 +202,52 @@ export async function POST(req: NextRequest) {
     const generationDeadline = Date.now() + 48_000;
     const retryDelay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+    function safeHeaderInt(headers: Headers | undefined, name: string): number | undefined {
+      if (!headers) return undefined;
+      const raw = headers.get(name);
+      if (!raw) return undefined;
+      const parsed = Number.parseInt(raw, 10);
+      return Number.isFinite(parsed) ? parsed : undefined;
+    }
+
+    async function saveProviderUsage(input: {
+      provider: AIProvider;
+      model: string;
+      outcome: 'SUCCESS' | 'ERROR';
+      statusCode?: number;
+      errorMessage?: string;
+      latencyMs?: number;
+      attempt: number;
+      requestId?: string;
+      headers?: Headers;
+    }) {
+      try {
+        await prisma.aiProviderUsage.create({
+          data: {
+            provider: input.provider,
+            model: input.model.slice(0, 160),
+            outcome: input.outcome,
+            statusCode: input.statusCode,
+            errorMessage: input.errorMessage?.slice(0, 240),
+            latencyMs: input.latencyMs,
+            attempt: input.attempt,
+            requestId: input.requestId?.slice(0, 160),
+            rateLimitLimitRequestsDay: safeHeaderInt(input.headers, 'x-ratelimit-limit-requests'),
+            rateLimitRemainingRequestsDay: safeHeaderInt(input.headers, 'x-ratelimit-remaining-requests'),
+            rateLimitResetRequestsDay: input.headers?.get('x-ratelimit-reset-requests')?.slice(0, 80),
+            rateLimitLimitTokensMinute: safeHeaderInt(input.headers, 'x-ratelimit-limit-tokens'),
+            rateLimitRemainingTokensMinute: safeHeaderInt(input.headers, 'x-ratelimit-remaining-tokens'),
+            rateLimitResetTokensMinute: input.headers?.get('x-ratelimit-reset-tokens')?.slice(0, 80),
+          },
+        });
+      } catch (storageError) {
+        // Telemetry must never interrupt a user's AI response.
+        console.warn('[AI] Could not persist provider usage telemetry.', {
+          errorName: storageError instanceof Error ? storageError.name : 'UnknownError',
+        });
+      }
+    }
+
     async function postProviderJson(
       provider: AIProvider,
       model: string,
@@ -214,6 +260,7 @@ export async function POST(req: NextRequest) {
       const maxAttempts = 2;
 
       for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+        let response: Response | undefined;
         const remainingMs = generationDeadline - Date.now();
         if (remainingMs <= 500) {
           throw new Error('AI provider time budget exhausted.');
@@ -227,7 +274,7 @@ export async function POST(req: NextRequest) {
         const startedAt = Date.now();
 
         try {
-          const response = await fetch(url, {
+          response = await fetch(url, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -254,9 +301,20 @@ export async function POST(req: NextRequest) {
           }
 
           const result = await response.json();
+          const resolvedModel = typeof result?.model === 'string' ? result.model : model;
+          await saveProviderUsage({
+            provider,
+            model: resolvedModel,
+            outcome: 'SUCCESS',
+            statusCode: response.status,
+            latencyMs: Date.now() - startedAt,
+            attempt,
+            requestId,
+            headers: response.headers,
+          });
           console.info('[AI] Provider request succeeded.', {
             provider,
-            model,
+            model: resolvedModel,
             attempt,
             durationMs: Date.now() - startedAt,
             requestId,
@@ -267,6 +325,17 @@ export async function POST(req: NextRequest) {
           const status = Number((error as { status?: number })?.status) || undefined;
           const requestId = (error as { requestId?: string })?.requestId;
           const errorName = error instanceof Error ? error.name : 'UnknownError';
+          await saveProviderUsage({
+            provider,
+            model,
+            outcome: 'ERROR',
+            statusCode: status,
+            errorMessage: status ? 'HTTP ' + status : errorName,
+            latencyMs: Date.now() - startedAt,
+            attempt,
+            requestId,
+            headers: response?.headers,
+          });
           const retryable = [408, 500, 502, 503, 504].includes(status || 0) ||
             errorName === 'AbortError' ||
             errorName === 'TimeoutError' ||
