@@ -69,10 +69,11 @@ export async function GET() {
       }),
     ]);
 
-    const configuredOrder = (process.env.AI_PROVIDER_ORDER || 'openrouter,gemini,groq')
+    const configuredOrder = (process.env.AI_PROVIDER_ORDER || 'openrouter,gemini,groq,cloudflare')
       .split(',').map((item) => item.trim().toLowerCase());
     const freeMode = (process.env.AI_FREE_MODE || 'true').toLowerCase() !== 'false';
     const groqConfirmed = process.env.AI_GROQ_FREE_TIER_CONFIRMED === 'true';
+    const cloudflareConfirmed = process.env.AI_CLOUDFLARE_FREE_TIER_CONFIRMED === 'true';
 
     const providerConfig = [
       {
@@ -97,6 +98,15 @@ export async function GET() {
         enabled: configuredOrder.includes('groq') && Boolean(process.env.GROQ_API_KEY) &&
           (!freeMode || groqConfirmed),
         model: process.env.GROQ_MODEL || 'openai/gpt-oss-20b',
+      },
+      {
+        id: 'cloudflare',
+        name: 'Cloudflare Workers AI',
+        keyConfigured: Boolean(process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ACCOUNT_ID),
+        enabled: configuredOrder.includes('cloudflare') && Boolean(process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ACCOUNT_ID) &&
+          (!freeMode || cloudflareConfirmed),
+        model: process.env.CLOUDFLARE_MODEL || '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+        quota: { allowance: '10,000 Neurons/day on Workers AI Free allocation', source: 'Cloudflare account dashboard; not exposed as remaining quota in inference response' },
       },
     ];
 
@@ -207,6 +217,7 @@ export async function GET() {
         history: 'Provider/model tracking starts after this monitor is deployed; older AI chat records do not contain provider metadata.',
         geminiQuota: 'Gemini API does not expose a remaining daily quota in ordinary generateContent responses. This page reports this website’s tracked usage, not the whole Google project quota.',
         groqQuota: 'Groq quota values come from the latest inference response headers and can be stale until that provider is used again.',
+        cloudflareQuota: 'Cloudflare Workers AI free allocation is up to 10,000 Neurons/day; exact remaining balance is not returned by ordinary inference responses and must be checked in the Cloudflare dashboard.',
         openRouterQuota: 'OpenRouter free-model daily usage is read live from the current API key endpoint. It includes use of that key outside this website.',
       },
     }, { headers: { 'Cache-Control': 'no-store, max-age=0' } });
