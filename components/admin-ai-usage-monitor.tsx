@@ -47,6 +47,7 @@ type MonitorData = {
     history: string;
     geminiQuota: string;
     groqQuota: string;
+    cloudflareQuota: string;
     openRouterQuota: string;
   };
 };
@@ -210,6 +211,10 @@ export default function AdminAiUsageMonitor() {
                             <div className="mt-1 text-[10px] text-slate-600">Last quota header: {dateTime(provider.quota.capturedAt)}</div>
                           )}
                         </>
+                      ) : provider.id === 'cloudflare' ? (
+                        <div className="mt-3 rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-[11px] leading-relaxed text-slate-400">
+                          {provider.quota?.allowance || 'Cloudflare free allocation is account-specific.'} Exact remaining Neurons are not returned by inference responses; check the Cloudflare AI usage dashboard.
+                        </div>
                       ) : (
                         <div className="mt-3 rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-[11px] leading-relaxed text-slate-400">
                           Exact remaining quota is not exposed by the standard Gemini response API. Website usage is tracked here; check Google AI Studio for the account cap.
@@ -296,6 +301,7 @@ export default function AdminAiUsageMonitor() {
               <p>{data.notes.history}</p>
               <p>{data.notes.openRouterQuota}</p>
               <p>{data.notes.groqQuota}</p>
+              <p>{data.notes.cloudflareQuota}</p>
               <p>{data.notes.geminiQuota}</p>
             </div>
             <div className="flex items-center justify-between gap-2 text-[10px] text-slate-600">
