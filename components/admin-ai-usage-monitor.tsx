@@ -10,6 +10,10 @@ type Provider = {
   id: string;
   name: string;
   keyConfigured: boolean;
+  tokenConfigured?: boolean;
+  accountConfigured?: boolean;
+  freeTierConfirmed?: boolean;
+  statusReason?: string;
   enabled: boolean;
   model: string;
   today: { success: number; failed: number };
@@ -176,7 +180,9 @@ export default function AdminAiUsageMonitor() {
                         </div>
                         <span className={'shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ' +
                           (provider.enabled ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-800 text-slate-400')}>
-                          {provider.enabled ? 'Enabled' : provider.keyConfigured ? 'Paused' : 'No API key'}
+                          {provider.enabled ? 'Enabled' : provider.id === 'cloudflare'
+                            ? (!provider.tokenConfigured || !provider.accountConfigured ? 'Setup required' : 'Paused')
+                            : provider.keyConfigured ? 'Paused' : 'No API key'}
                         </span>
                       </div>
                       <div className="mt-3 flex gap-4 text-xs">
@@ -213,7 +219,16 @@ export default function AdminAiUsageMonitor() {
                         </>
                       ) : provider.id === 'cloudflare' ? (
                         <div className="mt-3 rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-[11px] leading-relaxed text-slate-400">
-                          {provider.quota?.allowance || 'Cloudflare free allocation is account-specific.'} Exact remaining Neurons are not returned by inference responses; check the Cloudflare AI usage dashboard.
+                          <div className="font-semibold text-slate-200">
+                            {provider.quota?.allowance || 'Cloudflare free allocation is account-specific.'}
+                          </div>
+                          <div className="mt-2 grid grid-cols-2 gap-2">
+                            <div>API token: <span className={provider.tokenConfigured ? 'text-emerald-300' : 'text-rose-300'}>{provider.tokenConfigured ? 'Configured' : 'Missing'}</span></div>
+                            <div>Account ID: <span className={provider.accountConfigured ? 'text-emerald-300' : 'text-rose-300'}>{provider.accountConfigured ? 'Configured' : 'Missing'}</span></div>
+                            <div className="col-span-2">Free-tier confirmation: <span className={provider.freeTierConfirmed ? 'text-emerald-300' : 'text-amber-300'}>{provider.freeTierConfirmed ? 'Confirmed' : 'Not confirmed'}</span></div>
+                          </div>
+                          <p className="mt-2 text-slate-500">{provider.statusReason}</p>
+                          <p className="mt-1 text-slate-500">Exact remaining Neurons are not returned by inference responses; check the Cloudflare AI usage dashboard.</p>
                         </div>
                       ) : (
                         <div className="mt-3 rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-[11px] leading-relaxed text-slate-400">
