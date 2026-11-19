@@ -12,7 +12,7 @@ An intellectual apologetics, scientific verification, and counter-critique blog 
    ```bash
    npm install
    ```
-2. Copy `.env.example` to `.env` and add `DATABASE_URL` plus at least one AI provider key (`OPENROUTER_API_KEY`, `GEMINI_API_KEY`, or `GROQ_API_KEY`):
+2. Copy `.env.example` to `.env` and add `DATABASE_URL` plus at least one AI provider key (`OPENROUTER_API_KEY`, `GEMINI_API_KEY`, `GROQ_API_KEY`, or `CLOUDFLARE_API_TOKEN`):
    ```bash
    cp .env.example .env
    ```
@@ -27,11 +27,13 @@ An intellectual apologetics, scientific verification, and counter-critique blog 
 
 ## AI provider configuration
 
-The authenticated AI assistant uses a free-first provider chain. By default it tries OpenRouter, then Gemini, then Groq, skipping any provider whose API key is not configured.
+The authenticated AI assistant uses a free-first provider chain. By default it tries OpenRouter, then Gemini, Groq, and Cloudflare Workers AI, skipping providers without the required credentials.
 
 - **OpenRouter:** set `OPENROUTER_API_KEY`. The default `OPENROUTER_MODEL=openrouter/free` asks OpenRouter to select an available free chat model. OpenRouter's free models have strict shared quotas (currently up to 50 requests/day on its free plan), and availability can vary.
 - **Gemini:** set `GEMINI_API_KEY`. The primary model defaults to `gemini-3.8-flash`; `gemini-3.5-flash-lite` is tried as its model-level fallback before moving to the next provider.
 - **Groq:** set `GROQ_API_KEY` to add Groq as another fallback. In `AI_FREE_MODE=true` it is deliberately skipped until you set `AI_GROQ_FREE_TIER_CONFIRMED=true`. Only set that flag after confirming your Groq account is still on its Free tier. Groq Developer-tier model usage is billed by tokens.
+
+- **Cloudflare Workers AI:** set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`; the default model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`. In free mode it is skipped until `AI_CLOUDFLARE_FREE_TIER_CONFIRMED=true`. Cloudflare advertises a daily free allocation (10,000 Neurons/day), but exact remaining Neurons are account-specific and must be checked in the Cloudflare dashboard. Create a token with permission to use Workers AI; keep it server-side.
 
 Keep `AI_FREE_MODE=true` for the free-first setup. API keys must remain server-side and must never use a `NEXT_PUBLIC_` prefix. Add the same variables in Vercel under **Project Settings → Environment Variables**, then redeploy.
 
