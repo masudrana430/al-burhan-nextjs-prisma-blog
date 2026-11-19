@@ -82,6 +82,29 @@ model AiChatSession {
 }
 
 
+model AiProviderUsage {
+  id                             String   @id @default(cuid())
+  provider                       String
+  model                          String
+  outcome                        String
+  statusCode                     Int?
+  errorMessage                   String?  @db.Text
+  latencyMs                      Int?
+  attempt                        Int      @default(1)
+  requestId                      String?
+  rateLimitLimitRequestsDay      Int?
+  rateLimitRemainingRequestsDay  Int?
+  rateLimitResetRequestsDay      String?
+  rateLimitLimitTokensMinute     Int?
+  rateLimitRemainingTokensMinute Int?
+  rateLimitResetTokensMinute     String?
+  createdAt                      DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([provider, model, createdAt])
+  @@index([outcome, createdAt])
+}
+
 model Topic {
   id          String   @id @default(cuid())
   name        String
