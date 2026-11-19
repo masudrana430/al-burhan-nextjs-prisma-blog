@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
@@ -49,12 +48,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'আপনি অল্প সময়ে অনেকগুলো প্রশ্ন করেছেন। এক মিনিট পর আবার চেষ্টা করুন।' }, { status: 429 });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    console.error('[AI] GEMINI_API_KEY is not configured.');
-    return NextResponse.json({ error: 'AI service is not configured yet.' }, { status: 503 });
-  }
-
   try {
     const body = await req.json();
     const message = typeof body?.message === 'string' ? body.message.trim() : '';
@@ -62,53 +55,72 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'প্রশ্নটি খালি রাখা যাবে না এবং ২০০০ অক্ষরের মধ্যে হতে হবে।' }, { status: 400 });
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
     type MatchedPost = { id: string; title: string; slug: string; claimAddressed: string; excerpt: string; content: string };
     let matchedPosts: MatchedPost[] = [];
 
-    // The old text-embedding-004 model was shut down in January 2026.
-    // Old and new vectors share dimensions but not a vector space, so only
-    // enable pgvector after stored articles have been re-indexed.
-    if (process.env.AI_VECTOR_INDEX_READY === 'true') {
-      const embeddingResponse = await fetch(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-          body: JSON.stringify({
-            content: { parts: [{ text: message }] },
-            task_type: 'RETRIEVAL_QUERY',
-            output_dimensionality: 768,
-          }),
-          cache: 'no-store',
+    // Vector search is an optional enhancement. If Gemini embeddings are unavailable,
+    // continue with PostgreSQL keyword retrieval instead of failing the whole AI request.
+    if (process.env.AI_VECTOR_INDEX_READY === 'true' && process.env.GEMINI_API_KEY) {
+      try {
+        const embeddingResponse = await fetch(
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-goog-api-key': process.env.GEMINI_API_KEY },
+            body: JSON.stringify({
+              content: { parts: [{ text: message }] },
+              task_type: 'RETRIEVAL_QUERY',
+              output_dimensionality: 768,
+            }),
+            cache: 'no-store',
+            signal: AbortSignal.timeout(7000),
+          }
+        );
+        if (!embeddingResponse.ok) {
+          const error = new Error('Gemini embedding request returned HTTP ' + embeddingResponse.status) as Error & { status?: number };
+          error.status = embeddingResponse.status;
+          throw error;
         }
-      );
-      if (!embeddingResponse.ok) throw new Error('Gemini embedding request failed: ' + embeddingResponse.status);
-      const embeddingPayload = await embeddingResponse.json();
-      const values = embeddingPayload?.embedding?.values;
-      if (!Array.isArray(values) || values.length !== 768 ||
-          values.some((value: unknown) => typeof value !== 'number' || !Number.isFinite(value))) {
-        throw new Error('Gemini returned an invalid 768-dimensional embedding.');
+        const embeddingPayload = await embeddingResponse.json();
+        const values = embeddingPayload?.embedding?.values;
+        if (!Array.isArray(values) || values.length !== 768 ||
+            values.some((value: unknown) => typeof value !== 'number' || !Number.isFinite(value))) {
+          throw new Error('Gemini returned an invalid 768-dimensional embedding.');
+        }
+        const vectorSql = '[' + values.join(',') + ']';
+        matchedPosts = await prisma.$queryRawUnsafe<MatchedPost[]>(
+          'SELECT id, title, slug, "claimAddressed", excerpt, content FROM "Post" ' +
+          'WHERE published = true AND embedding IS NOT NULL ' +
+          'ORDER BY embedding <=> $1::vector LIMIT 4',
+          vectorSql
+        );
+      } catch (embeddingError) {
+        const status = Number((embeddingError as { status?: number })?.status) || undefined;
+        console.warn('[AI] Gemini vector retrieval failed; falling back to keyword search.', {
+          status,
+          errorName: embeddingError instanceof Error ? embeddingError.name : 'UnknownError',
+        });
       }
-      const vectorSql = '[' + values.join(',') + ']';
-      matchedPosts = await prisma.$queryRawUnsafe<MatchedPost[]>(
-        'SELECT id, title, slug, "claimAddressed", excerpt, content FROM "Post" ' +
-        'WHERE published = true AND embedding IS NOT NULL ' +
-        'ORDER BY embedding <=> $1::vector LIMIT 4',
-        vectorSql
-      );
+    } else if (process.env.AI_VECTOR_INDEX_READY === 'true') {
+      console.warn('[AI] Vector search is enabled but GEMINI_API_KEY is missing; using keyword search.');
     }
 
-    // Keyword fallback keeps RAG useful before the vector index is rebuilt.
+    // Keyword search remains available even when embedding/vector retrieval fails.
     if (matchedPosts.length === 0) {
-      const pattern = '%' + message + '%';
-      matchedPosts = await prisma.$queryRawUnsafe<MatchedPost[]>(
-        'SELECT id, title, slug, "claimAddressed", excerpt, content FROM "Post" ' +
-        'WHERE published = true AND (' +
-        'title ILIKE $1 OR "claimAddressed" ILIKE $1 OR excerpt ILIKE $1 OR content ILIKE $1' +
-        ') ORDER BY CASE WHEN title ILIKE $1 THEN 0 ELSE 1 END, "createdAt" DESC LIMIT 4',
-        pattern
-      );
+      try {
+        const pattern = '%' + message + '%';
+        matchedPosts = await prisma.$queryRawUnsafe<MatchedPost[]>(
+          'SELECT id, title, slug, "claimAddressed", excerpt, content FROM "Post" ' +
+          'WHERE published = true AND (' +
+          'title ILIKE $1 OR "claimAddressed" ILIKE $1 OR excerpt ILIKE $1 OR content ILIKE $1' +
+          ') ORDER BY CASE WHEN title ILIKE $1 THEN 0 ELSE 1 END, "createdAt" DESC LIMIT 4',
+          pattern
+        );
+      } catch (retrievalError) {
+        console.error('[AI] Library keyword retrieval failed; continuing without library context.', {
+          errorName: retrievalError instanceof Error ? retrievalError.name : 'UnknownError',
+        });
+      }
     }
 
     const contextBlock = matchedPosts.map((post, index) => {
@@ -177,40 +189,262 @@ export async function POST(req: NextRequest) {
       normalizedHistory.pop();
     }
 
-    // If the primary model is temporarily overloaded, retry once on Google's
-    // lower-latency Flash-Lite model instead of returning a non-JSON platform error.
-    const primaryModel = process.env.AI_MODEL || 'gemini-3.8-flash';
-    const fallbackModel = 'gemini-3.5-flash-lite';
-    const modelCandidates = primaryModel === fallbackModel
-      ? [primaryModel]
-      : [primaryModel, fallbackModel];
-    let replyText = '';
-    let lastModelError: unknown;
+    const history = cleanHistory(body?.history);
+    const normalizedHistory = history.filter((item, index, items) =>
+      index === 0 || item.role !== items[index - 1].role
+    );
+    while (normalizedHistory.length && normalizedHistory[normalizedHistory.length - 1].role !== 'model') {
+      normalizedHistory.pop();
+    }
 
-    for (const modelName of modelCandidates) {
+    type AIProvider = 'openrouter' | 'gemini' | 'groq';
+    const configuredOrder = (process.env.AI_PROVIDER_ORDER || 'openrouter,gemini,groq')
+      .split(',')
+      .map((provider) => provider.trim().toLowerCase())
+      .filter((provider): provider is AIProvider =>
+        provider === 'openrouter' || provider === 'gemini' || provider === 'groq'
+      );
+    const providerOrder = [...new Set(configuredOrder)];
+    const freeMode = (process.env.AI_FREE_MODE || 'true').toLowerCase() !== 'false';
+    const groqFreeTierConfirmed = process.env.AI_GROQ_FREE_TIER_CONFIRMED === 'true';
+    const generationDeadline = Date.now() + 48_000;
+    const retryDelay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    async function postProviderJson(
+      provider: AIProvider,
+      model: string,
+      url: string,
+      apiKey: string,
+      payload: Record<string, unknown>,
+      extraHeaders: Record<string, string> = {}
+    ): Promise<any> {
+      let lastError: unknown;
+      const maxAttempts = 2;
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+        const remainingMs = generationDeadline - Date.now();
+        if (remainingMs <= 500) {
+          throw new Error('AI provider time budget exhausted.');
+        }
+        const configuredTimeout = Number(process.env.AI_PROVIDER_TIMEOUT_MS || 10000);
+        const timeoutMs = Math.max(1000, Math.min(
+          Number.isFinite(configuredTimeout) ? configuredTimeout : 10000,
+          15_000,
+          remainingMs
+        ));
+        const startedAt = Date.now();
+
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + apiKey,
+              ...extraHeaders,
+            },
+            body: JSON.stringify(payload),
+            cache: 'no-store',
+            signal: AbortSignal.timeout(timeoutMs),
+          });
+
+          const requestId = response.headers.get('x-request-id') ||
+            response.headers.get('request-id') ||
+            response.headers.get('cf-ray') || undefined;
+
+          if (!response.ok) {
+            const providerError = new Error(provider + ' returned HTTP ' + response.status) as Error & {
+              status?: number;
+              requestId?: string;
+            };
+            providerError.status = response.status;
+            providerError.requestId = requestId;
+            throw providerError;
+          }
+
+          const result = await response.json();
+          console.info('[AI] Provider request succeeded.', {
+            provider,
+            model,
+            attempt,
+            durationMs: Date.now() - startedAt,
+            requestId,
+          });
+          return result;
+        } catch (error) {
+          lastError = error;
+          const status = Number((error as { status?: number })?.status) || undefined;
+          const requestId = (error as { requestId?: string })?.requestId;
+          const errorName = error instanceof Error ? error.name : 'UnknownError';
+          const retryable = [408, 500, 502, 503, 504].includes(status || 0) ||
+            errorName === 'AbortError' ||
+            errorName === 'TimeoutError' ||
+            error instanceof TypeError;
+
+          console.warn('[AI] Provider attempt failed.', {
+            provider,
+            model,
+            status,
+            errorName,
+            attempt,
+            durationMs: Date.now() - startedAt,
+            retryable,
+            requestId,
+          });
+
+          // Rate limits (429) and credential/model errors are not retried here:
+          // another provider is usually a better use of the remaining free quota.
+          if (!retryable || attempt === maxAttempts || generationDeadline - Date.now() < 1500) {
+            throw error;
+          }
+          await retryDelay(450 * attempt);
+        }
+      }
+
+      throw lastError || new Error(provider + ' request failed.');
+    }
+
+    function extractOpenAIText(value: unknown): string {
+      if (typeof value === 'string') return value.trim();
+      if (Array.isArray(value)) {
+        return value
+          .map((part) => part && typeof part === 'object' && typeof (part as { text?: unknown }).text === 'string'
+            ? (part as { text: string }).text
+            : '')
+          .filter(Boolean)
+          .join('\n')
+          .trim();
+      }
+      return '';
+    }
+
+    const openAIHistory = normalizedHistory.map((item) => ({
+      role: item.role === 'model' ? 'assistant' : 'user',
+      content: item.parts[0].text,
+    }));
+    let replyText = '';
+    let successfulProvider: AIProvider | undefined;
+    let lastProviderError: unknown;
+
+    for (const provider of providerOrder) {
+      const apiKey = provider === 'openrouter'
+        ? process.env.OPENROUTER_API_KEY
+        : provider === 'groq'
+          ? process.env.GROQ_API_KEY
+          : process.env.GEMINI_API_KEY;
+      if (!apiKey) continue;
+
+      // Groq has usage-based pricing after upgrading its account to the Developer tier.
+      // In free mode, use it only after the operator explicitly confirms a free-tier account.
+      if (provider === 'groq' && freeMode && !groqFreeTierConfirmed) {
+        console.info('[AI] Skipping Groq in free mode until its free-tier status is confirmed.');
+        continue;
+      }
+
       try {
-        const model = genAI.getGenerativeModel({
-          model: modelName,
-          systemInstruction,
-          generationConfig: { temperature: 0.35, topP: 0.9, maxOutputTokens: 1800 },
+        if (provider === 'gemini') {
+          const primaryModel = process.env.AI_MODEL || 'gemini-3.8-flash';
+          const fallbackModel = process.env.AI_GEMINI_FALLBACK_MODEL || 'gemini-3.5-flash-lite';
+          const geminiModels = [...new Set([primaryModel, fallbackModel])];
+
+          for (const model of geminiModels) {
+            try {
+              const geminiContents = [
+                ...normalizedHistory,
+                { role: 'user' as const, parts: [{ text: message }] },
+              ];
+              const result = await postProviderJson(
+                'gemini',
+                model,
+                'https://generativelanguage.googleapis.com/v1beta/models/' +
+                  encodeURIComponent(model) + ':generateContent',
+                apiKey,
+                {
+                  systemInstruction: { parts: [{ text: systemInstruction }] },
+                  contents: geminiContents,
+                  generationConfig: { temperature: 0.35, topP: 0.9, maxOutputTokens: 1800 },
+                },
+                { 'x-goog-api-key': apiKey }
+              );
+              const parts = result?.candidates?.[0]?.content?.parts;
+              replyText = Array.isArray(parts)
+                ? parts.map((part: { text?: unknown }) => typeof part?.text === 'string' ? part.text : '').join('').trim()
+                : '';
+              if (replyText) break;
+              throw new Error('Gemini returned an empty response.');
+            } catch (modelError) {
+              lastProviderError = modelError;
+              console.warn('[AI] Gemini model failed; trying its configured fallback when available.', {
+                model,
+                status: Number((modelError as { status?: number })?.status) || undefined,
+              });
+            }
+          }
+        } else {
+          const model = provider === 'openrouter'
+            ? process.env.OPENROUTER_MODEL || 'openrouter/free'
+            : process.env.GROQ_MODEL || 'openai/gpt-oss-20b';
+          const url = provider === 'openrouter'
+            ? 'https://openrouter.ai/api/v1/chat/completions'
+            : 'https://api.groq.com/openai/v1/chat/completions';
+          const headers = provider === 'openrouter'
+            ? {
+                'HTTP-Referer': process.env.NEXTAUTH_URL || 'https://al-burhan-pearl-nine.vercel.app',
+                'X-Title': 'Al-Burhan Research Assistant',
+              }
+            : {};
+          const result = await postProviderJson(
+            provider,
+            model,
+            url,
+            apiKey,
+            {
+              model,
+              messages: [
+                { role: 'system', content: systemInstruction },
+                ...openAIHistory,
+                { role: 'user', content: message },
+              ],
+              temperature: 0.35,
+              top_p: 0.9,
+              max_tokens: 1800,
+              stream: false,
+            },
+            headers
+          );
+          replyText = extractOpenAIText(result?.choices?.[0]?.message?.content);
+          if (!replyText) throw new Error(provider + ' returned an empty response.');
+        }
+
+        if (replyText) {
+          successfulProvider = provider;
+          break;
+        }
+      } catch (providerError) {
+        lastProviderError = providerError;
+        console.error('[AI] Provider exhausted; moving to the next configured provider.', {
+          provider,
+          status: Number((providerError as { status?: number })?.status) || undefined,
+          requestId: (providerError as { requestId?: string })?.requestId,
+          errorName: providerError instanceof Error ? providerError.name : 'UnknownError',
         });
-        const chat = model.startChat({ history: normalizedHistory });
-        const result = await chat.sendMessage(message);
-        replyText = result.response.text()?.trim() || '';
-        if (replyText) break;
-        throw new Error('Gemini returned an empty response.');
-      } catch (modelError) {
-        lastModelError = modelError;
-        const status = Number((modelError as { status?: number })?.status);
-        const messageText = modelError instanceof Error ? modelError.message : String(modelError);
-        const temporary = [429, 500, 502, 503, 504].includes(status) ||
-          /high demand|temporarily unavailable|overloaded|timed out|timeout/i.test(messageText);
-        if (!temporary || modelName === modelCandidates[modelCandidates.length - 1]) throw modelError;
-        console.warn('[AI] Primary Gemini model temporarily unavailable; trying fallback model.');
       }
     }
 
-    if (!replyText) throw lastModelError || new Error('Gemini returned an empty response.');
+    if (!replyText) {
+      const anyProviderConfigured = providerOrder.some((provider) => {
+        if (provider === 'openrouter') return Boolean(process.env.OPENROUTER_API_KEY);
+        if (provider === 'groq') return Boolean(process.env.GROQ_API_KEY);
+        return Boolean(process.env.GEMINI_API_KEY);
+      });
+      const unavailableError = new Error(anyProviderConfigured
+        ? 'All configured AI providers are temporarily unavailable.'
+        : 'No eligible AI provider API key is configured.') as Error & { status?: number };
+      unavailableError.status = 503;
+      throw lastProviderError || unavailableError;
+    }
+
+    console.info('[AI] Response generated.', { provider: successfulProvider });
+
     if (!replyText) {
       return NextResponse.json({ error: 'AI থেকে কোনো উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।' }, { status: 502 });
     }
@@ -224,14 +458,17 @@ export async function POST(req: NextRequest) {
       matchedPosts: matchedPosts.map(({ id, title, slug }) => ({ id, title, slug })),
     });
   } catch (error) {
-    console.error('[POST /api/ai-assistant]', error);
     const status = Number((error as { status?: number })?.status);
-    const messageText = error instanceof Error ? error.message : String(error);
-    const temporarilyUnavailable = [429, 500, 502, 503, 504].includes(status) ||
-      /high demand|temporarily unavailable|overloaded|timed out|timeout/i.test(messageText);
+    const errorName = error instanceof Error ? error.name : 'UnknownError';
+    console.error('[POST /api/ai-assistant] Request failed.', { status: status || undefined, errorName });
+    const temporarilyUnavailable = [408, 429, 500, 502, 503, 504].includes(status) ||
+      errorName === 'AbortError' || errorName === 'TimeoutError' ||
+      /temporarily unavailable|overloaded|timed out|timeout|provider time budget/i.test(
+        error instanceof Error ? error.message : String(error)
+      );
     return NextResponse.json(
       { error: temporarilyUnavailable
-          ? 'এই মুহূর্তে AI সার্ভারে অতিরিক্ত চাপ রয়েছে। অনুগ্রহ করে ২০–৩০ সেকেন্ড পর আবার চেষ্টা করুন।'
+          ? 'সব AI সেবা এই মুহূর্তে ব্যস্ত বা অনুপলব্ধ। কিছুক্ষণ পর আবার চেষ্টা করুন।'
           : 'AI উত্তর তৈরি করতে সমস্যা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।' },
       { status: temporarilyUnavailable ? 503 : 500 }
     );
