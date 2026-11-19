@@ -239,7 +239,7 @@ export async function POST(req: NextRequest) {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: 'Bearer ' + apiKey,
+              ...(provider === 'gemini' ? {} : { Authorization: 'Bearer ' + apiKey }),
               ...extraHeaders,
             },
             body: JSON.stringify(payload),
@@ -323,7 +323,6 @@ export async function POST(req: NextRequest) {
     }));
     let replyText = '';
     let successfulProvider: AIProvider | undefined;
-    let lastProviderError: unknown;
 
     for (const provider of providerOrder) {
       const apiKey = provider === 'openrouter'
@@ -372,7 +371,6 @@ export async function POST(req: NextRequest) {
               if (replyText) break;
               throw new Error('Gemini returned an empty response.');
             } catch (modelError) {
-              lastProviderError = modelError;
               console.warn('[AI] Gemini model failed; trying its configured fallback when available.', {
                 model,
                 status: Number((modelError as { status?: number })?.status) || undefined,
@@ -420,7 +418,6 @@ export async function POST(req: NextRequest) {
           break;
         }
       } catch (providerError) {
-        lastProviderError = providerError;
         console.error('[AI] Provider exhausted; moving to the next configured provider.', {
           provider,
           status: Number((providerError as { status?: number })?.status) || undefined,
@@ -440,7 +437,7 @@ export async function POST(req: NextRequest) {
         ? 'All configured AI providers are temporarily unavailable.'
         : 'No eligible AI provider API key is configured.') as Error & { status?: number };
       unavailableError.status = 503;
-      throw lastProviderError || unavailableError;
+      throw unavailableError;
     }
 
     console.info('[AI] Response generated.', { provider: successfulProvider });
