@@ -106,7 +106,16 @@ export async function GET() {
         enabled: configuredOrder.includes('cloudflare') && Boolean(process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ACCOUNT_ID) &&
           (!freeMode || cloudflareConfirmed),
         model: process.env.CLOUDFLARE_MODEL || '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
-        quota: { allowance: '10,000 Neurons/day on Workers AI Free allocation', source: 'Cloudflare account dashboard; not exposed as remaining quota in inference response' },
+        accountConfigured: Boolean(process.env.CLOUDFLARE_ACCOUNT_ID),
+        freeTierConfirmed: cloudflareConfirmed,
+        statusReason: !process.env.CLOUDFLARE_API_TOKEN
+          ? 'CLOUDFLARE_API_TOKEN is missing'
+          : !process.env.CLOUDFLARE_ACCOUNT_ID
+            ? 'CLOUDFLARE_ACCOUNT_ID is missing'
+            : freeMode && !cloudflareConfirmed
+              ? 'Paused: confirm Cloudflare free-tier eligibility first'
+              : 'Credentials configured; eligible for provider fallback',
+        quota: { allowance: 'Up to 10,000 Neurons/day on the Workers AI Free allocation (subject to account eligibility)', source: 'Cloudflare account dashboard; exact remaining Neurons are not exposed by the inference response' },
       },
     ];
 
