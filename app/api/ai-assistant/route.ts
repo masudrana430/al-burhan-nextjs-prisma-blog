@@ -845,7 +845,7 @@ export async function POST(req: NextRequest) {
             // token-per-minute limits, or temporary overload. Record only a short,
             // whitespace-normalized excerpt; never log request prompts or API keys.
             const errorBody = (await response.text().catch(() => ''))
-              .replace(/\\s+/g, ' ')
+              .replace(/\s+/g, ' ')
               .slice(0, 360);
             const providerError = new Error(
               provider + ' returned HTTP ' + response.status +
@@ -961,7 +961,7 @@ export async function POST(req: NextRequest) {
       qulTafsirContext ? 'QUL তাফসীরের প্রাসঙ্গিক উৎস:\n' + qulTafsirContext.slice(0, 3000) : '',
       zakariaQuranContext ? 'QuranEnc যাকারিয়া অনুবাদ ও পৃথক টীকা:\n' + zakariaQuranContext.slice(0, 4000) : '',
       quranComVerificationLinks ? 'Quran.com পাঠ-যাচাই লিংক:\n' + quranComVerificationLinks.slice(0, 800) : '',
-    ].filter(Boolean).join('\\n');
+    ].filter(Boolean).join('\n');
 
     let replyText = '';
     let successfulProvider: AIProvider | undefined;
