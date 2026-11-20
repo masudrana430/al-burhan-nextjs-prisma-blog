@@ -72,3 +72,10 @@ The Al-Fatawa site is a third-party archive, and some translations may be machin
 The AI route prioritises Gemini, then tries OpenRouter and the optional Groq/Cloudflare providers. Each upstream call has a short timeout so a stalled provider does not consume the full request window. OpenRouter receives one quick retry; the other providers are given a chance immediately, and Gemini's configured secondary model is attempted if its primary model fails. Groq GPT-OSS uses the current `max_completion_tokens` parameter with low reasoning effort to reduce empty completions.
 
 Cloudflare Workers AI remains skipped in free mode unless `AI_CLOUDFLARE_FREE_TIER_CONFIRMED=true` is explicitly set after checking the account's allowance. This prevents accidentally moving to billable usage.
+
+
+## Qur'an Bengali translation source policy
+
+For every explicit Bengali Qur'an translation request, the AI route resolves the surah/ayah reference and retrieves the published translation from QuranEnc using the fixed `bengali_zakaria` key. The translation response is returned directly from that source instead of asking a generative model to translate it. The credited translator is Dr. Abu Bakar Muhammad Zakaria; source/version attribution and the Arabic transcript/footnotes supplied by QuranEnc are retained. The system must not substitute another Bengali translator or generate its own Bengali translation. If the reference cannot be identified or QuranEnc is unavailable, it asks for a clearer reference or reports the source failure rather than falling back to another translation.
+
+QuranEnc API reference: https://quranenc.com/en/home/api. Browse the selected Bengali translation: https://quranenc.com/en/browse/bengali_zakaria/.
