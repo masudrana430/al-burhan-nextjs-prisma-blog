@@ -4150,7 +4150,7 @@ export default function App() {
           <section className="alburhan-ai-drawer" role="dialog" aria-modal="true" aria-label="Al-Burhan AI research assistant">
             <header className="alburhan-ai-header">
               <div className="alburhan-ai-brand">
-                <div className="alburhan-ai-brand-icon"><Bot size={21} /></div>
+                <div className="alburhan-ai-brand-icon alburhan-ai-brand-animation"><AiLottieAnimation className="alburhan-ai-header-lottie" /></div>
                 <div className="alburhan-ai-brand-copy">
                   <h3>আল-বুরহান গবেষণা সহকারী <span className="alburhan-ai-online-dot" /></h3>
                   <p>Research assistant <span>·</span> {posts.length} library articles</p>
