@@ -2181,38 +2181,17 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 17px 18px;
+  padding: 7px 16px;
   border-bottom: 1px solid rgba(255,255,255,.14);
   background: linear-gradient(120deg, #143d2f 0%, #1b503b 58%, #254c39 100%);
   color: #fff;
 }
-.alburhan-ai-brand { display: flex; min-width: 0; align-items: center; gap: 11px; }
-.alburhan-ai-brand-icon {
-  display: grid;
-  flex: 0 0 42px;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border: 1px solid rgba(231, 204, 143, .45);
-  border-radius: 13px;
-  background: rgba(255,255,255,.11);
-  color: #f0d99e;
-}
-.alburhan-ai-brand-animation {
-  flex: 0 0 76px;
-  width: 76px;
-  height: 76px;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  overflow: visible;
-}
-.alburhan-ai-header-lottie {
+.alburhan-ai-brand { display: flex; min-width: 0; align-items: center; gap: 8px; }
+.alburhan-ai-brand-lottie {
   display: block;
-  flex: 0 0 76px;
-  width: 76px;
-  height: 76px;
+  flex: 0 0 88px;
+  width: 88px;
+  height: 88px;
   margin: 0;
   pointer-events: none;
 }
@@ -2461,7 +2440,7 @@ body {
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
-  .alburhan-ai-header { padding: 14px 15px; }
+  .alburhan-ai-header { padding: 5px 12px; }
   .alburhan-ai-messages { padding: 15px 13px; }
   .alburhan-ai-composer { padding-right: 12px; padding-left: 12px; }
 }
@@ -2520,11 +2499,6 @@ body {
 .alburhan-ai-drawer .alburhan-ai-brand-copy h3 { color: #fffdf5 !important; }
 .alburhan-ai-drawer .alburhan-ai-brand-copy p { color: #d8e6d9 !important; }
 .alburhan-ai-drawer .alburhan-ai-brand-copy p span { color: #f0d69a !important; }
-.alburhan-ai-drawer .alburhan-ai-brand-icon {
-  color: #f3d99e !important;
-  border-color: rgba(239,213,157,.58) !important;
-  background: rgba(255,255,255,.10) !important;
-}
 .alburhan-ai-drawer .alburhan-ai-close {
   color: #fffdf5 !important;
   background: #285b43 !important;
