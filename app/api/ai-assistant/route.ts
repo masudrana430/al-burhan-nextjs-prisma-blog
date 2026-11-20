@@ -649,6 +649,10 @@ export async function POST(req: NextRequest) {
       '২. শুরুতেই প্রশ্নের সরাসরি উত্তর দেবে। এরপর প্রয়োজনমতো যুক্তি, উদাহরণ, পাল্টা-আপত্তি ও উপসংহার সাজাবে। অপ্রয়োজনীয় ভূমিকা, একই কথা বারবার বলা এবং কৃত্রিম নাটকীয়তা এড়িয়ে চলবে।',
       '৩. কঠিন ধারণা বোঝাতে পদার্থবিজ্ঞান, গণিত, কোডিং, দৈনন্দিন জীবন ও বাস্তব উদাহরণের উপমা ব্যবহার করবে। উপমাকে প্রমাণ হিসেবে চালাবে না; কোথায় উপমার সীমা আছে তা প্রয়োজন হলে জানাবে।',
       '৪. ব্যবহারকারীর প্রশ্নে একাধিক মত থাকলে প্রথমে প্রাসঙ্গিক সালাফি/আহলুস সুন্নাহ অবস্থান ও তার দলিল পরিষ্কার করবে; প্রয়োজনে অন্য প্রধান মতগুলোকে ন্যায্যভাবে ও নির্ভুলভাবে বর্ণনা করবে, কিন্তু সেগুলোকে নিজের অবস্থান বা প্রমাণের সমান মর্যাদা দিয়ে মিশিয়ে ফেলবে না। straw man বা দুর্বল প্রতিপক্ষ তৈরি করবে না.',
+      '৫. ব্যবহারকারী “পূর্ণ উত্তর”, “বিস্তারিত”, “সম্পূর্ণ ব্যাখ্যা”, “full answer” চাইলে অথবা বিষয়টি স্বভাবতই বহু-দিকবিশিষ্ট হলে প্রশ্নের সব প্রধান দিক শেষ করবে: সংজ্ঞা/প্রেক্ষাপট, মূল দলিল ও তার সঠিক অর্থ, প্রাসঙ্গিক ব্যাখ্যা, মতভেদ/সীমাবদ্ধতা, বাস্তব তাৎপর্য এবং সংক্ষিপ্ত উপসংহার। কেবল শিরোনাম বা টেবিল দিয়ে আলোচনা শেষ করবে না; প্রতিটি গুরুত্বপূর্ণ পয়েন্টের যথেষ্ট ব্যাখ্যা দেবে। এমন ক্ষেত্রে সাধারণত ৭০০–১২০০ বাংলা শব্দ (বা সমমানের ইংরেজি) লক্ষ্য রাখবে; প্রশ্ন ছোট হলে অকারণে দীর্ঘ করবে না.',
+      '৬. উত্তরটি স্বাভাবিক ও পূর্ণাঙ্গ সমাপ্তিতে পৌঁছাবে। কোনো তালিকা, উদ্ধৃতি, টেবিল, বাক্য বা শব্দ মাঝপথে কেটে শেষ করবে না; নতুন heading শুরু করে ব্যাখ্যা অসম্পূর্ণ রাখবে না। সীমিত আউটপুটের মধ্যে অপ্রয়োজনীয় ভূমিকা, পুনরাবৃত্তি ও বড় decorative table বাদ দিয়ে প্রয়োজনীয় ব্যাখ্যা আগে সম্পন্ন করবে.',
+      '৭. আয়াত, হাদিস, ইতিহাস, সাল, পরিসংখ্যান, আলেমের বক্তব্য, গ্রন্থ-নম্বর বা আইন/কনভেনশনের নাম ও ধারা বানাবে না। নির্দিষ্ট রেফারেন্স নিশ্চিত না হলে তা উদ্ধৃত না করে অনিশ্চয়তা জানাবে। ব্যবহারকারীর দেওয়া কোনো ভুল রেফারেন্স থাকলে বিনয়ের সঙ্গে সংশোধন করবে; একই বাক্যকে ভিন্ন ভিন্ন আয়াত/হাদিসের নামে পুনরাবৃত্তি করবে না.',
+      '৮. বিষয়ভিত্তিক ভারসাম্য বজায় রাখবে: যেমন ঐতিহাসিক/শরয়ি কোনো বিষয়ে বর্তমান নীতি, প্রাথমিক উৎস, পরবর্তী ঐতিহাসিক বাস্তবতা ও আধুনিক আইনকে আলাদা করে দেখাবে। প্রমাণ ছাড়া “সম্পূর্ণ বিলুপ্ত”, “সর্বসম্মত”, “সব দেশে নিশ্চিত” বা অনুরূপ অতিরঞ্জিত উপসংহার দেবে না.',
       '',
       'জ্ঞানতাত্ত্বিক নীতি ও বিজ্ঞানের সীমা:',
       '১. পরীক্ষণযোগ্য প্রাকৃতিক প্রশ্নে বিজ্ঞান অত্যন্ত শক্তিশালী পদ্ধতি। বিজ্ঞান কীভাবে ঘটনা ঘটে তা ব্যাখ্যা করে; অনেক ক্ষেত্রে কার্যকারণগত “কেন” প্রশ্নও অনুসন্ধান করে। কিন্তু অস্তিত্বের চূড়ান্ত ভিত্তি, কেন কিছু আছে—কিছুই না থাকার বদলে—এবং নৈতিক বাধ্যবাধকতার মতো অধিবিদ্যাগত প্রশ্ন পরীক্ষাগারের পদ্ধতিতে সম্পূর্ণ নিষ্পত্তি হয় না। এই পার্থক্যকে category distinction হিসেবে ব্যাখ্যা করবে; বিজ্ঞানকে অকার্যকর বলবে না।',
@@ -957,6 +961,8 @@ export async function POST(req: NextRequest) {
       'কুরআনের বাংলা অনুবাদ কেবল নিচে দেওয়া QuranEnc-এর Dr. Abu Bakar Muhammad Zakaria (bengali_zakaria) source থেকে হুবহু উদ্ধৃত করবে। অন্য অনুবাদ বা নিজের অনুবাদ তৈরি করবে না। অনুবাদ, প্রকাশিত footnote ও নিজস্ব ব্যাখ্যা আলাদা রাখবে।',
       'QUL Tafsir-কে তাফসীর হিসেবে আলাদা পরিচয় দেবে; অনুবাদ বলবে না। হাদিস/আলেম/ইজমার উদ্ধৃতি, মান ও পৃষ্ঠা নিশ্চিত না হলে বানাবে না। গুরুতর ব্যক্তিগত ফতোয়া বা নির্দিষ্ট ব্যক্তির তাকফির করবে না।',
       'অপ্রাসঙ্গিক প্রশ্নে ধর্মীয় আলোচনা জোর করে ঢোকাবে না। বিজ্ঞান/প্রযুক্তির তথ্য নির্ভুল রাখবে। কোনো সূত্র না পেলে তা স্পষ্ট করবে।',
+      'পূর্ণ/বিস্তারিত উত্তর চাইলে সব প্রধান দিক যথেষ্টভাবে ব্যাখ্যা করে সম্পূর্ণ উপসংহারে পৌঁছাবে; সাধারণত ৭০০–১২০০ বাংলা শব্দ লক্ষ্য রাখবে, কিন্তু অপ্রয়োজনীয় পুনরাবৃত্তি করবে না। শুধু bullet/heading/table দিয়ে থামবে না এবং বাক্য/তালিকা মাঝপথে কাটবে না।',
+      'কুরআন-হাদিস, সূরা-আয়াত নম্বর, হাদিস নম্বর/মান, ঐতিহাসিক সাল বা scholar quote কখনো বানাবে না। রেফারেন্স নিশ্চিত না হলে তা স্পষ্ট করবে; একই ভুয়া উদ্ধৃতি একাধিক সূত্রের নামে পুনরাবৃত্তি করবে না।',
       contextBlock ? 'প্রাসঙ্গিক লাইব্রেরি তথ্য:\n' + contextBlock.slice(0, 1800) : '',
       qulTafsirContext ? 'QUL তাফসীরের প্রাসঙ্গিক উৎস:\n' + qulTafsirContext.slice(0, 3000) : '',
       zakariaQuranContext ? 'QuranEnc যাকারিয়া অনুবাদ ও পৃথক টীকা:\n' + zakariaQuranContext.slice(0, 4000) : '',
@@ -1009,11 +1015,20 @@ export async function POST(req: NextRequest) {
                 {
                   systemInstruction: { parts: [{ text: systemInstruction }] },
                   contents: geminiContents,
-                  generationConfig: { temperature: 0.35, topP: 0.9, maxOutputTokens: 1800 },
+                  generationConfig: { temperature: 0.35, topP: 0.9, maxOutputTokens: 4096 },
                 },
                 { 'x-goog-api-key': apiKey }
               );
-              const parts = result?.candidates?.[0]?.content?.parts;
+              const candidate = result?.candidates?.[0];
+              if (candidate?.finishReason === 'MAX_TOKENS') {
+                console.warn('[AI] Gemini reached its configured output-token limit.', {
+                  provider: 'gemini',
+                  model,
+                  finishReason: candidate.finishReason,
+                  usageMetadata: result?.usageMetadata,
+                });
+              }
+              const parts = candidate?.content?.parts;
               replyText = Array.isArray(parts)
                 ? parts.map((part: { text?: unknown }) => typeof part?.text === 'string' ? part.text : '').join('').trim()
                 : '';
@@ -1047,7 +1062,7 @@ export async function POST(req: NextRequest) {
                 { role: 'user', content: message },
               ],
               temperature: 0.35,
-              max_tokens: 1800,
+              max_tokens: 3000,
             }
           );
           replyText = typeof result?.result?.response === 'string' ? result.result.response.trim() : '';
@@ -1085,15 +1100,23 @@ export async function POST(req: NextRequest) {
                   ],
               temperature: 0.35,
               top_p: 0.9,
-              max_tokens: provider === 'openrouter' ? 1400 : undefined,
+              max_tokens: provider === 'openrouter' ? 3000 : undefined,
               ...(provider === 'groq'
-                ? { max_completion_tokens: 1000, reasoning_effort: 'low' }
+                ? { max_completion_tokens: 3000, reasoning_effort: 'low' }
                 : {}),
               stream: false,
             },
             headers
           );
           const choice = result?.choices?.[0];
+          if (choice?.finish_reason === 'length') {
+            console.warn('[AI] Provider reached its configured output-token limit.', {
+              provider,
+              model,
+              finishReason: choice.finish_reason,
+              completionTokens: Number(result?.usage?.completion_tokens) || undefined,
+            });
+          }
           const assistantMessage = choice?.message;
           replyText = extractOpenAIText(assistantMessage?.content) ||
             extractOpenAIText(assistantMessage?.refusal);
