@@ -174,11 +174,11 @@ async function fetchQulTafsirPassage(reference: QuranReference): Promise<string 
     const text = stripQulHtml(passage.text);
     if (!text) return undefined;
 
-    return '[' + QUL_TAFSIR_SOURCE_LABEL + ']\\n' +
-      'Requested reference: Surah ' + reference.sura + ', Ayah ' + reference.aya + '\\n' +
-      'Passage group: ' + passage.groupAyahKey + '\\n' +
-      'Applies to ayahs: ' + passage.ayahKeys.join(', ') + '\\n' +
-      'Published Bengali Tafsir text (quote faithfully; do not attribute additions to the scholar):\\n' +
+    return '[' + QUL_TAFSIR_SOURCE_LABEL + ']\n' +
+      'Requested reference: Surah ' + reference.sura + ', Ayah ' + reference.aya + '\n' +
+      'Passage group: ' + passage.groupAyahKey + '\n' +
+      'Applies to ayahs: ' + passage.ayahKeys.join(', ') + '\n' +
+      'Published Bengali Tafsir text (quote faithfully; do not attribute additions to the scholar):\n' +
       text;
   } catch (error) {
     console.warn('[AI] QUL Tafsir lookup failed; continuing with verified translation cross-check only.', {

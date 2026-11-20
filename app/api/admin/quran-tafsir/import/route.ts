@@ -15,6 +15,7 @@ const MAX_JSON_BYTES = 64 * 1024 * 1024;
 
 type AyahPosition = { surah: number; ayah: number };
 type TafsirGroup = { groupAyahKey: string; ayahKeys: Set<string>; text: string };
+type TafsirPassageRecord = { sourceSlug: string; groupAyahKey: string; ayahKeys: string[]; fromSurah: number; fromAyah: number; toSurah: number; toAyah: number; text: string };
 
 function parseAyahKey(value: unknown): AyahPosition | null {
   if (typeof value !== 'string') return null;
@@ -33,7 +34,7 @@ function compareAyahKeys(left: string, right: string): number {
   return a.surah - b.surah || a.ayah - b.ayah;
 }
 
-function parseQulDataset(payload: unknown): { groups: TafsirGroup[]; coveredAyahs: number } {
+function parseQulDataset(payload: unknown): { groups: TafsirPassageRecord[]; coveredAyahs: number } {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
     throw new Error('Expected a QUL Tafsir JSON object keyed by surah:ayah.');
   }
