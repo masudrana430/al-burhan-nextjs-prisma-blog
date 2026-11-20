@@ -65,3 +65,10 @@ Source directory:
 - Imam Ahmad's transmitted responsa: https://sites.dlib.nyu.edu/viewer/books/nyu_aco000734/display?lang=en (library record/digital edition of *Kitab Masāʼil al-Imām Aḥmad*, not a modern fatwa website).
 
 The Al-Fatawa site is a third-party archive, and some translations may be machine-generated. The old alfawzan.af.org.sa site was reported closed in April 2026; alfawzan.live describes itself as a research archive, not an official site. For Imam Ahmad, distinguish reports in classical *Masāʼil* collections from modern fatwas and verify attribution/edition before quoting.
+
+
+## AI provider failover and reliability
+
+The AI route prioritises Gemini, then tries OpenRouter and the optional Groq/Cloudflare providers. Each upstream call has a short timeout so a stalled provider does not consume the full request window. OpenRouter receives one quick retry; the other providers are given a chance immediately, and Gemini's configured secondary model is attempted if its primary model fails. Groq GPT-OSS uses the current `max_completion_tokens` parameter with low reasoning effort to reduce empty completions.
+
+Cloudflare Workers AI remains skipped in free mode unless `AI_CLOUDFLARE_FREE_TIER_CONFIRMED=true` is explicitly set after checking the account's allowance. This prevents accidentally moving to billable usage.

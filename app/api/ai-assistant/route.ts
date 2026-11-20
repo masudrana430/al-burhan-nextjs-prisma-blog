@@ -433,7 +433,7 @@ export async function POST(req: NextRequest) {
     }
 
     type AIProvider = 'openrouter' | 'gemini' | 'groq' | 'cloudflare';
-    const configuredOrder = (process.env.AI_PROVIDER_ORDER || 'openrouter,gemini,groq,cloudflare')
+    const configuredOrder = (process.env.AI_PROVIDER_ORDER || 'gemini,openrouter,groq,cloudflare')
       .split(',')
       .map((provider) => provider.trim().toLowerCase())
       .filter((provider): provider is AIProvider =>
@@ -501,7 +501,9 @@ export async function POST(req: NextRequest) {
       extraHeaders: Record<string, string> = {}
     ): Promise<any> {
       let lastError: unknown;
-      const maxAttempts = 2;
+      // Only OpenRouter gets a same-provider retry. Other providers should fail over quickly;
+      // Gemini's distinct fallback model is tried once after the primary model.
+      const maxAttempts = provider === 'openrouter' ? 2 : 1;
 
       for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
         let response: Response | undefined;
@@ -509,10 +511,12 @@ export async function POST(req: NextRequest) {
         if (remainingMs <= 500) {
           throw new Error('AI provider time budget exhausted.');
         }
-        const configuredTimeout = Number(process.env.AI_PROVIDER_TIMEOUT_MS || 10000);
+        const configuredTimeout = Number(process.env.AI_PROVIDER_TIMEOUT_MS || 6500);
+        // Keep each provider attempt short so one slow upstream cannot consume the
+        // whole Vercel function window before the remaining providers are tried.
         const timeoutMs = Math.max(1000, Math.min(
-          Number.isFinite(configuredTimeout) ? configuredTimeout : 10000,
-          15_000,
+          Number.isFinite(configuredTimeout) ? configuredTimeout : 6500,
+          6500,
           remainingMs
         ));
         const startedAt = Date.now();
@@ -574,7 +578,7 @@ export async function POST(req: NextRequest) {
             model,
             outcome: 'ERROR',
             statusCode: status,
-            errorMessage: status ? 'HTTP ' + status : errorName,
+            errorMessage: (error instanceof Error ? error.message : errorName).slice(0, 240),
             latencyMs: Date.now() - startedAt,
             attempt,
             requestId,
@@ -594,6 +598,7 @@ export async function POST(req: NextRequest) {
             durationMs: Date.now() - startedAt,
             retryable,
             requestId,
+            errorMessage: (error instanceof Error ? error.message : errorName).slice(0, 180),
           });
 
           // Rate limits (429) and credential/model errors are not retried here:
@@ -738,13 +743,22 @@ export async function POST(req: NextRequest) {
               ],
               temperature: 0.35,
               top_p: 0.9,
-              max_tokens: 1800,
+              max_tokens: provider === 'openrouter' ? 1800 : undefined,
+              ...(provider === 'groq'
+                ? { max_completion_tokens: 2400, reasoning_effort: 'low' }
+                : {}),
               stream: false,
             },
             headers
           );
-          replyText = extractOpenAIText(result?.choices?.[0]?.message?.content);
-          if (!replyText) throw new Error(provider + ' returned an empty response.');
+          const choice = result?.choices?.[0];
+          const assistantMessage = choice?.message;
+          replyText = extractOpenAIText(assistantMessage?.content) ||
+            extractOpenAIText(assistantMessage?.refusal);
+          if (!replyText) {
+            throw new Error(provider + ' returned an empty response (finish_reason=' +
+              String(choice?.finish_reason || 'unknown') + ').');
+          }
         }
 
         if (replyText) {
@@ -757,6 +771,7 @@ export async function POST(req: NextRequest) {
           status: Number((providerError as { status?: number })?.status) || undefined,
           requestId: (providerError as { requestId?: string })?.requestId,
           errorName: providerError instanceof Error ? providerError.name : 'UnknownError',
+          errorMessage: (providerError instanceof Error ? providerError.message : String(providerError)).slice(0, 180),
         });
       }
     }
@@ -792,7 +807,11 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     const status = Number((error as { status?: number })?.status);
     const errorName = error instanceof Error ? error.name : 'UnknownError';
-    console.error('[POST /api/ai-assistant] Request failed.', { status: status || undefined, errorName });
+    console.error('[POST /api/ai-assistant] Request failed.', {
+      status: status || undefined,
+      errorName,
+      errorMessage: (error instanceof Error ? error.message : String(error)).slice(0, 180),
+    });
     const temporarilyUnavailable = [408, 429, 500, 502, 503, 504].includes(status) ||
       errorName === 'AbortError' || errorName === 'TimeoutError' ||
       /temporarily unavailable|overloaded|timed out|timeout|provider time budget/i.test(
