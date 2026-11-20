@@ -551,7 +551,9 @@ export async function POST(req: NextRequest) {
       : istiwaTopic
         ? [{ sura: 20, aya: 5 }]
         : [];
-    const quranTranslationIntent = isQuranTranslationRequest(message, zakariaReferences);
+    // Determine translation intent from the user's explicit references before adding
+    // the default Ta-Ha 20:5 context for an istiwa explanation.
+    const quranTranslationIntent = isQuranTranslationRequest(message, extractedQuranReferences);
     if (quranTranslationIntent && zakariaReferences.length === 0) {
       return NextResponse.json({
         reply: 'ড. আবূ বকর মুহাম্মাদ যাকারিয়ার QuranEnc অনুবাদ থেকে হুবহু বাংলা অনুবাদ দিতে সূরা ও আয়াত নম্বর দিন (যেমন: 2:255 বা “সূরা বাকারা, আয়াত ২৫৫”)। একবারে সর্বোচ্চ ২০টি আয়াতের রেঞ্জ চাইতে পারেন। অন্য কোনো বাংলা অনুবাদ বা AI-তৈরি অনুবাদ ব্যবহার করা হবে না।',
@@ -561,7 +563,8 @@ export async function POST(req: NextRequest) {
     const zakariaVerseRecords = await Promise.all(
       zakariaReferences.map((reference) => fetchZakariaVerse(reference))
     );
-    if (zakariaReferences.length > 0 &&
+    if ((extractedQuranReferences.length > 0 || quranTranslationIntent) &&
+        zakariaReferences.length > 0 &&
         (zakariaVerseRecords.length !== zakariaReferences.length ||
           zakariaVerseRecords.some((record) => !record))) {
       return NextResponse.json({
