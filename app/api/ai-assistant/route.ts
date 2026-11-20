@@ -230,7 +230,7 @@ function isQuranTranslationRequest(message: string, references: QuranReference[]
 }
 
 function isAllahIstiwaTopic(message: string): boolean {
-  return /(?:istiw[āa]?|istaw[āa]?|الاستواء|استواء|استوى|على\\s+العرش|ইস্তিওয়া|ইস্তিওয়া|ইস্তিওয়|ইস্তাওয়া|ইস্তাওয়া|আরশের?\\s*(?:উপর|ওপর)|আল্লাহ.{0,18}(?:কোথায়|কোথায়|উলূ|উলু|উচ্চ)|আল্লাহর?\\s*(?:উলূ|উলু|উচ্চতা))/iu.test(message);
+  return /(?:istiw[āa]?|istaw[āa]?|الاستواء|استواء|استوى|على\s+العرش|ইস্তিওয়া|ইস্তিওয়া|ইস্তিওয়|ইস্তাওয়া|ইস্তাওয়া|আরশের?\s*(?:উপর|ওপর)|আল্লাহ.{0,18}(?:কোথায়|কোথায়|উলূ|উলু|উচ্চ)|আল্লাহর?\s*(?:উলূ|উলু|উচ্চতা))/iu.test(message);
 }
 
 type ZakariaVerseRecord = {
