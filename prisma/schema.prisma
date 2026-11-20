@@ -119,3 +119,40 @@ model Topic {
 
   @@index([isActive, sortOrder])
 }
+
+model QuranTafsirSource {
+  slug              String   @id
+  title             String
+  author            String
+  language          String   @default("bn")
+  resourceId        String   @default("33")
+  sourceUrl         String
+  sourceVersion     String?
+  importedGroups    Int      @default(0)
+  coveredAyahs      Int      @default(0)
+  datasetSha256     String?
+  isActive          Boolean  @default(false)
+  licenseReviewedAt DateTime?
+  importedAt        DateTime?
+  passages          QuranTafsirPassage[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model QuranTafsirPassage {
+  id           String   @id @default(cuid())
+  sourceSlug   String
+  source       QuranTafsirSource @relation(fields: [sourceSlug], references: [slug], onDelete: Cascade)
+  groupAyahKey String
+  ayahKeys     String[]
+  fromSurah    Int
+  fromAyah     Int
+  toSurah      Int
+  toAyah       Int
+  text         String   @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([sourceSlug, groupAyahKey])
+  @@index([sourceSlug, fromSurah, fromAyah])
+}

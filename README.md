@@ -41,3 +41,14 @@ Transient network/server failures are retried once with a short backoff. HTTP 42
 
 Free tiers have changing quotas and availability. This fallback chain improves resilience but cannot guarantee uninterrupted service when all configured providers are rate-limited or unavailable.
 
+## Qur'anic reference data
+
+Al-Burhan's Qur'anic reference workflow is designed around three distinct sources:
+
+- **Primary Tafsir:** QUL (Tarteel) resource #33, *Tafsir Abu Bakr Zakaria*. QUL provides downloadable datasets rather than a hosted public API. Import its JSON export (or a gzip-compressed JSON export) from the admin page at /admin/quran-tafsir. The importer preserves shared multi-ayah passage groups in PostgreSQL.
+- **Translation cross-check:** QuranEnc's bengali_zakaria API response supplies Dr. Abu Bakar Muhammad Zakaria's Bengali verse translation and explanatory footnotes. The website should reproduce the translation text faithfully, identify the translator/source/version, and keep those footnotes distinct from the full Tafsir.
+- **External verification:** Quran.com links are provided for the referenced Surah and Ayah. The application does not claim to query or verify Quran.com content through its API.
+
+Before importing or displaying the QUL resource, review the licence terms that apply to resource #33 and confirm that the planned storage and display are authorised. QUL notes that licensing can vary by resource; the import confirmation records an administrator's attestation and does not grant rights.
+
+The QUL importer is restricted to administrators. Upload JSON files up to 3.8 MB, or gzip larger JSON exports and upload the resulting .json.gz file (up to the same upload-size limit). No additional environment variables are required; the existing PostgreSQL DATABASE_URL is used.

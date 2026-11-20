@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   Activity, AlertCircle, CheckCircle2, Cpu, RefreshCw,
-  ShieldAlert, Gauge, CircleHelp,
+  ShieldAlert, Gauge, CircleHelp, BookOpen,
 } from 'lucide-react';
 
 type Provider = {
@@ -133,6 +133,16 @@ export default function AdminAiUsageMonitor() {
       </div>
 
       <div className="space-y-5 p-4 sm:p-6">
+        <a
+          href="/admin/quran-tafsir"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-500/25 bg-emerald-950/15 p-4 text-sm transition hover:border-emerald-400/60"
+        >
+          <span className="flex items-center gap-3">
+            <span className="rounded-xl bg-emerald-500/15 p-2 text-emerald-300"><BookOpen className="h-5 w-5" /></span>
+            <span><span className="block font-bold text-white">Qur'an Tafsir Database</span><span className="mt-0.5 block text-xs text-slate-400">Import and manage QUL · Tafsir Abu Bakr Zakaria</span></span>
+          </span>
+          <span className="font-semibold text-emerald-300">Manage database →</span>
+        </a>
         {error && (
           <div className="flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-950/30 p-3 text-sm text-rose-200">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /> {error}
