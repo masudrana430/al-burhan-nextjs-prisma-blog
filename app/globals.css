@@ -2198,6 +2198,15 @@ body {
   background: rgba(255,255,255,.11);
   color: #f0d99e;
 }
+.alburhan-ai-brand-animation { overflow: visible; }
+.alburhan-ai-header-lottie {
+  display: block;
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+  margin: -7px;
+  pointer-events: none;
+}
 .alburhan-ai-brand-copy { min-width: 0; }
 .alburhan-ai-brand-copy h3 {
   display: flex;
