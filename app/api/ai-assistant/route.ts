@@ -742,7 +742,7 @@ export async function POST(req: NextRequest) {
     const freeMode = (process.env.AI_FREE_MODE || 'true').toLowerCase() !== 'false';
     const groqFreeTierConfirmed = process.env.AI_GROQ_FREE_TIER_CONFIRMED === 'true';
     const cloudflareFreeTierConfirmed = process.env.AI_CLOUDFLARE_FREE_TIER_CONFIRMED === 'true';
-    const generationDeadline = Date.now() + 48_000;
+    const generationDeadline = Date.now() + 54_000;
     const retryDelay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
     function safeHeaderInt(headers: Headers | undefined, name: string): number | undefined {
@@ -810,12 +810,15 @@ export async function POST(req: NextRequest) {
         if (remainingMs <= 500) {
           throw new Error('AI provider time budget exhausted.');
         }
-        const configuredTimeout = Number(process.env.AI_PROVIDER_TIMEOUT_MS || 6500);
-        // Keep each provider attempt short so one slow upstream cannot consume the
-        // whole Vercel function window before the remaining providers are tried.
+        const configuredTimeout = Number(process.env.AI_PROVIDER_TIMEOUT_MS || 10000);
+        // Give overloaded providers enough time to respond, while reserving a
+        // bounded total budget so failover can still reach the remaining providers.
+        const providerTimeoutCap = provider === 'openrouter' ? 11000
+          : provider === 'gemini' ? 10000
+            : provider === 'cloudflare' ? 8000 : 8000;
         const timeoutMs = Math.max(1000, Math.min(
-          Number.isFinite(configuredTimeout) ? configuredTimeout : 6500,
-          6500,
+          Number.isFinite(configuredTimeout) ? configuredTimeout : 10000,
+          providerTimeoutCap,
           remainingMs
         ));
         const startedAt = Date.now();
@@ -838,7 +841,16 @@ export async function POST(req: NextRequest) {
             response.headers.get('cf-ray') || undefined;
 
           if (!response.ok) {
-            const providerError = new Error(provider + ' returned HTTP ' + response.status) as Error & {
+            // Provider error bodies contain actionable details such as payload size,
+            // token-per-minute limits, or temporary overload. Record only a short,
+            // whitespace-normalized excerpt; never log request prompts or API keys.
+            const errorBody = (await response.text().catch(() => ''))
+              .replace(/\\s+/g, ' ')
+              .slice(0, 360);
+            const providerError = new Error(
+              provider + ' returned HTTP ' + response.status +
+              (errorBody ? ': ' + errorBody : '')
+            ) as Error & {
               status?: number;
               requestId?: string;
             };
@@ -930,6 +942,27 @@ export async function POST(req: NextRequest) {
       role: item.role === 'model' ? 'assistant' : 'user',
       content: item.parts[0].text,
     }));
+
+    // Groq's free-tier gpt-oss-20b token budget is much smaller than the
+    // complete research prompt. Use a compact, source-aware prompt and only
+    // the two latest short turns so this provider remains a viable fallback.
+    const groqHistory = openAIHistory.slice(-2).map((item) => ({
+      role: item.role,
+      content: item.content.slice(-1200),
+    }));
+    const groqSystemInstruction = [
+      'তুমি Al-Burhan AI। সাবলীল প্রমিত বাংলায় সরাসরি, নির্ভুল ও প্রমাণভিত্তিক উত্তর দাও।',
+      'ইসলামি প্রশ্নে কুরআন ও সহিহ/হাসান সুন্নাহকে সাহাবা, তাবিঈন ও তাবে-তাবিঈনের বুঝ অনুযায়ী অনুসরণ করো। তোমার মানহাজ সালাফি। আকীদায় তাওহীদ সাব্যস্ত করো; আল্লাহর নাম-গুণ বিকৃত, অস্বীকার, কল্পনা বা সৃষ্টির সঙ্গে তুলনা করো না।',
+      'আল্লাহর ইস্তিওয়া (الاستواء على العرش) সাব্যস্ত করবে; কেমন তা নির্ধারণ করবে না। “সমাসীন”, “বসে আছেন”, “উপবিষ্ট”, “আসীন” বা “অধিষ্ঠিত” বলবে না; “আল্লাহ সর্বত্র আছেন” বলবে না। প্রয়োজন হলে বলবে: আল্লাহ তাঁর সৃষ্টির ঊর্ধ্বে, আরশের ওপর; তাঁর জ্ঞান সবকিছুকে পরিবেষ্টন করে।',
+      'কুরআনের বাংলা অনুবাদ কেবল নিচে দেওয়া QuranEnc-এর Dr. Abu Bakar Muhammad Zakaria (bengali_zakaria) source থেকে হুবহু উদ্ধৃত করবে। অন্য অনুবাদ বা নিজের অনুবাদ তৈরি করবে না। অনুবাদ, প্রকাশিত footnote ও নিজস্ব ব্যাখ্যা আলাদা রাখবে।',
+      'QUL Tafsir-কে তাফসীর হিসেবে আলাদা পরিচয় দেবে; অনুবাদ বলবে না। হাদিস/আলেম/ইজমার উদ্ধৃতি, মান ও পৃষ্ঠা নিশ্চিত না হলে বানাবে না। গুরুতর ব্যক্তিগত ফতোয়া বা নির্দিষ্ট ব্যক্তির তাকফির করবে না।',
+      'অপ্রাসঙ্গিক প্রশ্নে ধর্মীয় আলোচনা জোর করে ঢোকাবে না। বিজ্ঞান/প্রযুক্তির তথ্য নির্ভুল রাখবে। কোনো সূত্র না পেলে তা স্পষ্ট করবে।',
+      contextBlock ? 'প্রাসঙ্গিক লাইব্রেরি তথ্য:\n' + contextBlock.slice(0, 1800) : '',
+      qulTafsirContext ? 'QUL তাফসীরের প্রাসঙ্গিক উৎস:\n' + qulTafsirContext.slice(0, 3000) : '',
+      zakariaQuranContext ? 'QuranEnc যাকারিয়া অনুবাদ ও পৃথক টীকা:\n' + zakariaQuranContext.slice(0, 4000) : '',
+      quranComVerificationLinks ? 'Quran.com পাঠ-যাচাই লিংক:\n' + quranComVerificationLinks.slice(0, 800) : '',
+    ].filter(Boolean).join('\\n');
+
     let replyText = '';
     let successfulProvider: AIProvider | undefined;
 
@@ -990,8 +1023,12 @@ export async function POST(req: NextRequest) {
               console.warn('[AI] Gemini model failed; trying its configured fallback when available.', {
                 model,
                 status: Number((modelError as { status?: number })?.status) || undefined,
+                errorName: modelError instanceof Error ? modelError.name : 'UnknownError',
               });
             }
+          }
+          if (!replyText) {
+            throw new Error('Gemini primary and fallback models did not produce an answer.');
           }
         } else if (provider === 'cloudflare') {
           const model = process.env.CLOUDFLARE_MODEL || '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
@@ -1035,16 +1072,22 @@ export async function POST(req: NextRequest) {
             apiKey,
             {
               model,
-              messages: [
-                { role: 'system', content: systemInstruction },
-                ...openAIHistory,
-                { role: 'user', content: message },
-              ],
+              messages: provider === 'groq'
+                ? [
+                    { role: 'system', content: groqSystemInstruction },
+                    ...groqHistory,
+                    { role: 'user', content: message },
+                  ]
+                : [
+                    { role: 'system', content: systemInstruction },
+                    ...openAIHistory,
+                    { role: 'user', content: message },
+                  ],
               temperature: 0.35,
               top_p: 0.9,
-              max_tokens: provider === 'openrouter' ? 1800 : undefined,
+              max_tokens: provider === 'openrouter' ? 1400 : undefined,
               ...(provider === 'groq'
-                ? { max_completion_tokens: 2400, reasoning_effort: 'low' }
+                ? { max_completion_tokens: 1000, reasoning_effort: 'low' }
                 : {}),
               stream: false,
             },
