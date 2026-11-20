@@ -52,3 +52,16 @@ Al-Burhan's Qur'anic reference workflow is designed around three distinct source
 Before importing or displaying the QUL resource, review the licence terms that apply to resource #33 and confirm that the planned storage and display are authorised. QUL notes that licensing can vary by resource; the import confirmation records an administrator's attestation and does not grant rights.
 
 The QUL importer is restricted to administrators. Upload JSON files up to 3.8 MB, or gzip larger JSON exports and upload the resulting .json.gz file (up to the same upload-size limit). No additional environment variables are required; the existing PostgreSQL DATABASE_URL is used.
+
+## Aqeedah fatwa source policy
+
+For important creed-related fatwa questions, Al-Burhan AI is instructed to provide a topic-relevant direct fatwa URL when one is verifiably available. If only an archive or subject page is available, it must label that link as an archive rather than claim it is the exact fatwa. It must not invent page URLs, fatwa numbers, quotations, or attributions.
+
+Source directory:
+- Al-Albani fatwa archive: https://al-fatawa.com/en/scholar/albani
+- Ibn Baz official fatwa collection: https://binbaz.org.sa/fatwas; secondary index: https://al-fatawa.com/en/scholar/ibn-baz
+- Ibn Uthaymeen library: https://binothaimeen.net/content; secondary index: https://al-fatawa.com/en/scholar/ibn-uthaymeen
+- Al-Fawzan fatwa archive: https://al-fatawa.com/en/scholar/fawzan; Aqeedah materials: https://dralfawzann.com/section/21/
+- Imam Ahmad's transmitted responsa: https://sites.dlib.nyu.edu/viewer/books/nyu_aco000734/display?lang=en (library record/digital edition of *Kitab Masāʼil al-Imām Aḥmad*, not a modern fatwa website).
+
+The Al-Fatawa site is a third-party archive, and some translations may be machine-generated. The old alfawzan.af.org.sa site was reported closed in April 2026; alfawzan.live describes itself as a research archive, not an official site. For Imam Ahmad, distinguish reports in classical *Masāʼil* collections from modern fatwas and verify attribution/edition before quoting.
